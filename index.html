@@ -674,6 +674,9 @@ body:has(#vRemote:not(.hidden)) main{max-width:none}
 .mewho{display:flex;align-items:center;gap:8px;min-width:0}
 .relog{font-size:.72rem!important;padding:2px 8px!important;opacity:.75;white-space:nowrap}
 
+.nqlast{display:block;margin:6px 0 2px;padding:8px 10px;border:1.5px dashed var(--gold);border-radius:10px}
+.nqlast .note{display:block;margin-left:1.6em}
+
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
 .ox.o b{color:#E53945;text-shadow:0 0 40px rgba(229,57,69,.5)}.ox.x b{color:#2C7BE5;text-shadow:0 0 40px rgba(44,123,229,.5)}
@@ -4316,6 +4319,16 @@ function hostPage() {
         limit: [5, 10, 15, 20, 30, 60].includes(+a.limit) ? +a.limit : 10, correct: null, view: "q", openedAt: Date.now(),
         counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], cut: null, champ: null, ...sfx("open") });
       if (!rf) { t0 = performance.now(); t0rid = rid; scheduleClose(); pubLive(); }
+    } else if (cmd === "endHere") {
+      if (!kan() || !H.period.active || !S.rid || S.predict || H.secret.last) return;
+      const corr = cleanC(H.secret.correct, nchOf(S)); const l = answersList();
+      const hits = l.filter((x) => corr.includes(x.c));
+      const pool = H.opt.champFrom === "all" ? hits : hits.filter((x) => H.period.stand[x.key]);
+      const champ = pool.length ? { period: H.period.no, key: pool[0].key, n: pool[0].n, ms: pool[0].ms, cands: pool.slice(0, 15).map((x) => ({ key: x.key, n: x.n, ms: x.ms })) } : null;
+      H.champs = H.champs.filter((c) => c.period !== H.period.no).concat(champ ? [champ] : []);
+      H.secret.last = true; H.secret.champ = champ;
+      setS({ last: true });
+      toast(champ ? `ピリオド終了にしました。「次へ」でチャンピオン（${champ.n}）を発表します` : "ピリオド終了にしました（条件に合う正解者がいないため、チャンピオンなし）");
     } else if (cmd === "start") {
       if (S.phase !== "read") return;
       H.answers = {};
@@ -4799,9 +4812,11 @@ function hostPage() {
     // ---- 本番 ----
     const nq = document.createElement("div"); nq.className = "ctl"; nq.id = "nqCard";
     nq.innerHTML = `<h2>次の問題 <span class="phase" id="nqNo"></span></h2><div id="nqBody"></div>
+      <label class="chk2 nqlast"><input type="checkbox" id="nqLast"> <b>この問題をピリオド最終問題にする</b><span class="note">（参加者には締め切りまで秘密。この問題でピリオドチャンピオンが決まります）</span></label>
       <div class="row"><button class="btn" id="nqPrev">◀ 前</button><button class="btn go big2" id="nqGo">この問題を出題 ▶</button><button class="btn" id="nqSkip">とばす ▶</button></div>`;
     const steps = document.createElement("div"); steps.className = "stepbar"; steps.id = "stepBar";
     cP.querySelector("h2").after(steps);
+    cP.querySelector("#bAdvance").insertAdjacentHTML("afterend", `<button class="btn hidden" id="bEndHere" style="width:100%;margin-top:8px;border:2px solid var(--gold)">🔔 この問題でピリオド終了（チャンピオン発表へ）</button>`);
     const det = document.createElement("details"); det.className = "ctl manualq";
     det.innerHTML = `<summary>その場で問題を作って出題する</summary>`;
     cQ.classList.remove("ctl"); cQ.style.marginTop = "10px"; det.append(cQ);
@@ -4999,6 +5014,8 @@ function hostPage() {
     if (H.S.rid) act("next");
     loadBank(i); $("#bOpen").click();
   };
+  $("#bEndHere").onclick = () => { if (!confirm("この問題でピリオドを終わりにして、ピリオドチャンピオンを発表します。よろしいですか？")) return; act("endHere"); };
+  $("#nqLast").onchange = () => { const b = H.bank[bankI()]; if (!b) return; b.last = $("#nqLast").checked; save(); render(); toast(b.last ? "この問題をピリオド最終問題にしました" : "最終問題の指定を外しました"); };
   const STEPS_C = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["fast", "最速"], ["list", "正解者"]];
   const STEPS_B = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["fast", "一番乗り"], ["list", "押した順"]];
   function renderExtra(S) {
@@ -5016,7 +5033,11 @@ function hostPage() {
     $("#nqNo").textContent = nB ? `${Math.min(i + 1, nB)} / ${nB}問目` : "未登録";
     $("#nqBody").innerHTML = b ? `<div class="nqq">${esc(b.q)}</div>${b.mode === "choice" ? `<div class="nqc">${b.ch.map((c, j) => `<span class="c${j}${(b.correct || []).includes(j) ? " ok" : ""}">${L[j]} ${esc(c)}</span>`).join("")}</div>` : '<div class="note">早押しボタン</div>'}<div class="note">${b.mode === "choice" ? `正解：${(b.correct || []).map((c) => L[c]).join("・") || "当日選ぶ"}　` : ""}${b.limit}秒${b.predict ? `　予想問題（${b.pts}点）` : ""}${b.last ? "　<b style='color:var(--gold)'>ピリオド最終問題</b>" : ""}</div>` : `<div class="note">${nB ? "登録した問題はすべて出題しました。" : "問題が登録されていません。"}</div>`;
     const busy = S.phase === "open" || (S.rid && S.phase !== "idle" && S.stage !== "list" && S.stage !== "champ") || S.view === "cere";
-    $("#nqGo").disabled = !b || busy; $("#nqPrev").disabled = i <= 0; $("#nqSkip").disabled = i >= nB;
+    $("#nqGo").disabled = !b || busy;
+    $("#nqLast").checked = !!(b && b.last); $("#nqLast").disabled = !b || !!b.predict || H.rule !== "kanshasai";
+    $(".nqlast").classList.toggle("hidden", H.rule !== "kanshasai");
+    { const st2 = S.stage || S.phase; const can = H.rule === "kanshasai" && H.period.active && S.rid && !S.predict && !H.secret.last && S.mode === "choice" && ["correct", "fast", "list"].includes(st2);
+      $("#bEndHere").classList.toggle("hidden", !can); } $("#nqPrev").disabled = i <= 0; $("#nqSkip").disabled = i >= nB;
     // 進行ステップ
     const st = S.stage || S.phase, list = S.mode === "buzzer" ? STEPS_B : S.predict ? STEPS_C.filter((x) => x[0] !== "fast") : STEPS_C;
     const ci = S.rid ? list.findIndex((x) => x[0] === st) : -1;
