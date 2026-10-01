@@ -610,6 +610,10 @@ body.v-player.offline #offBar{display:block}
 .noanim .tv .late2{opacity:1;animation:none}
 .noanim .tv .drum.early{display:none}
 
+.tv-ch.hide .c{filter:saturate(.35) brightness(.55);animation:tvpop .5s both}
+.tv-ch.hide .T{font-family:var(--disp);font-size:80px;opacity:.7}
+.tv-ready{position:absolute;right:20px;bottom:10px;font-family:var(--disp);font-size:70px;color:#FFC83D;letter-spacing:.15em;animation:tvblink 1s infinite;text-shadow:0 4px 0 rgba(0,0,0,.4)}
+
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
 body:has(#hostV7) main{max-width:1560px}
@@ -667,6 +671,9 @@ details.manualq summary{cursor:pointer;font-weight:900}
 :fullscreen body:has(#vRemote:not(.hidden)) main{padding:0;max-width:none}
 body:has(#vRemote:not(.hidden)) main{max-width:none}
 
+.mewho{display:flex;align-items:center;gap:8px;min-width:0}
+.relog{font-size:.72rem!important;padding:2px 8px!important;opacity:.75;white-space:nowrap}
+
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
 .ox.o b{color:#E53945;text-shadow:0 0 40px rgba(229,57,69,.5)}.ox.x b{color:#2C7BE5;text-shadow:0 0 40px rgba(44,123,229,.5)}
@@ -715,7 +722,7 @@ body:has(#vRemote:not(.hidden)) main{max-width:none}
 
   <!-- 参加者：回答 -->
   <section id="vPlay" class="hidden">
-    <div class="me"><b id="pName"></b><span><span class="score" id="pScore">0pt</span> <span class="note" id="pRank"></span></span></div>
+    <div class="me"><span class="mewho"><b id="pName"></b><button class="mini relog" id="pLogout">名前を変える</button></span><span><span class="score" id="pScore">0pt</span> <span class="note" id="pRank"></span></span></div>
     <div id="pStand" class="standbadge hidden"></div>
     <div id="pBody"></div>
   </section>
@@ -778,6 +785,7 @@ body:has(#vRemote:not(.hidden)) main{max-width:none}
               <select id="oChamp"><option value="standing">起立したまま正解した人</option><option value="all">正解した人全員</option></select></label>
             <label>重複受賞
               <select id="oDup"><option value="both">両方もらえる</option><option value="one">1人1個まで（チャンピオン賞は次点へ）</option></select></label>
+            <label class="chk2"><input type="checkbox" id="oRead"> <b>問題を先に出し、「スタート」で選択肢を表示して回答開始</b>（感謝祭方式）</label>
             <label class="chk2"><input type="checkbox" id="oVerify"> タイム検証（受信時刻と大きくずれた回答を補正）</label>
           </div>
           <div class="kan-only">
@@ -3891,7 +3899,10 @@ function monHTML(S, list, joinURL) {
     key = `q-${S.rid}-${st}`;
     const kind = `第${S.no}問　${S.mode === "choice" ? nchOf(S) + "択" : "早押し"}${S.predict ? `・予想問題（${S.pts}点）` : ""}`;
     const nAns = S.total != null && S.phase !== "open" ? S.total : list.length;
-    if (S.phase === "open") {
+    if (S.phase === "read") {
+      body = qPanel(S) + (S.mode === "choice" ? `<div class="tv-ch n${nchOf(S)} hide">${IDX(nchOf(S)).map((i) => `<div class="c c${i}"><span class="L">${L[i]}</span><span class="T">？</span></div>`).join("")}</div>` : "") + `<div class="tv-ready">READY</div>`;
+      tel = telopHTML(per, `${kind}　問題！　選択肢は「スタート」の合図で…`);
+    } else if (S.phase === "open") {
       body = qPanel(S, true) + (S.mode === "choice" ? choiceGrid(S) : `<div class="tv-center"><div class="giant gold pop">早押し！</div></div>`) + `<div class="tv-ans">回答 <b>${list.length}</b> / ${S.players || 0}人</div><div class="js-count cd"></div>`;
       tel = telopHTML(per, `${kind}　回答受付中！`);
     } else if (st === "closed") {
@@ -3953,12 +3964,13 @@ function renderMonitor(el, S, list, joinURL) {
 
 // ================= 司会・サブ司会の操作パネル（共通） =================
 let hostMode = "choice", pickedCorrect = [], preCorrect = [], curS = { ...DEF };
-const STAGE_LABEL = { open: "回答受付中", closed: "締め切り", dist: "回答分布", correct: "正解発表", fast: "最速正解者", list: "正解者一覧", champ: "ピリオドチャンピオン" };
+const STAGE_LABEL = { read: "問題を表示中（選択肢はまだ）", open: "回答受付中", closed: "締め切り", dist: "回答分布", correct: "正解発表", fast: "最速正解者", list: "正解者一覧", champ: "ピリオドチャンピオン" };
 function nextLabel(S) {
   if (S.view === "cere") { const c = S.cere || {}; return c.step === "end" ? "表彰式は終わりました" : `次へ ▶（${c.step === "intro" ? "最初の賞" : c.step === "rank" ? "名前を発表" : "次の賞"}）`; }
   if (S.view && S.view !== "q") return "問題の表示に戻る ▶";
   const st = S.stage || S.phase;
   if (S.phase === "idle" || !S.rid) return "（問題を出題してください）";
+  if (S.phase === "read") return "スタート！（選択肢を出す） ▶";
   if (S.phase === "open") return "締め切る ▶";
   if (st === "closed") return S.mode === "choice" ? "回答分布を出す ▶" : "一番乗りを発表 ▶";
   if (st === "dist") return "正解を発表 ▶";
@@ -4031,7 +4043,7 @@ function renderControls(S, answered) {
   const lab = nextLabel(S);
   $("#bAdvance").textContent = lab;
   $("#bAdvance").disabled = (S.view === "cere" && (S.cere || {}).step === "end") || ((S.phase === "idle" || !S.rid) && (!S.view || S.view === "q"));
-  const needC = S.mode === "choice" && S.rid && (S.phase === "open" || st === "closed" || st === "dist");
+  const needC = S.mode === "choice" && S.rid && (S.phase === "read" || S.phase === "open" || st === "closed" || st === "dist");
   $("#pickCorrect").classList.toggle("hidden", !needC);
   document.querySelectorAll("#pickCorrect [data-c]").forEach((b) => { b.classList.toggle("on", pickedCorrect.includes(+b.dataset.c)); b.classList.toggle("hidden", +b.dataset.c >= nchOf(S)); });
   $("#bToIdle").disabled = open;
@@ -4069,7 +4081,7 @@ function hostPage() {
   store.set("hq-is-host", true);
   const fresh = () => ({ room: rand(6), pin: String(1000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 9000)),
     roster: {}, rstore: {}, claims: {}, players: {}, points: {}, tsum: {}, scored: [], S: { ...DEF }, answers: {}, ever: {},
-    rule: "kanshasai", opt: { noCutIfOne: true, champFrom: "standing", dup: "both", verify: true },
+    rule: "kanshasai", opt: { noCutIfOne: true, champFrom: "standing", dup: "both", verify: true, readFirst: true },
     period: { no: 0, active: false, q: 0, stand: {} }, champs: [], prizes: defaultPrizes(), handed: {}, tie: {},
     bank: [], bankIdx: 0, links: {}, secret: { last: false, correct: [] }, snd: { vol: 0.8, on: true }, sfxSeq: 0, cere: null });
   let H = store.get("hq-host", null);
@@ -4136,6 +4148,7 @@ function hostPage() {
       period: { no: H.period.no, active: H.period.active, q: H.period.q } };
     if (kan() && H.period.active) { const sk = standKeys(); o.standCount = sk.length; o.stand = sk.map((k) => H.roster[k]); }
     o.show = H.show;
+    if (o.phase === "read") o.choices = (o.choices || []).map(() => "");
     if (o.view === "att") { const by = {}; Object.keys(H.roster).forEach((k) => { const s = H.rstore[k] || "店舗なし"; by[s] = by[s] || { s, n: 0, on: 0 }; by[s].n++; if (H.claims[k]) by[s].on++; }); o.att = Object.values(by); }
     if (o.view === "prizes") o.prizeTable = prizeTable();
     if (o.view === "champs") o.champList = H.champs.map((c) => ({ period: c.period, n: c.n, ms: c.ms }));
@@ -4148,12 +4161,18 @@ function hostPage() {
   const reply = (cid, o) => { if (typeof cid === "string" && /^[a-z0-9]{8,24}$/.test(cid)) cli.send("r/" + cid, o); };
   const announce = () => cli && cli.sendTo(LOBBY, "cur", { room: H.room, at: Date.now() }, { qos: 1, retain: true });
   const pubRoster = () => { if (!cli) return; const list = Object.keys(H.roster).map((k) => ({ n: H.roster[k], s: H.rstore[k] || "", k: (H.rkana || {})[k] || "" })); cli.send("roster", { list }, { qos: 1, retain: true }); };
-  const cli = connectAll(H.room, ["join", "ans", "cmd", "ping"], onMsg, () => { pubState(true); announce(); pubRoster(); });
+  const cli = connectAll(H.room, ["join", "ans", "cmd", "ping", "leave"], onMsg, () => { pubState(true); announce(); pubRoster(); });
   if (!cli) return;
   const watchSfx = sfxWatcher(), watchCount = countWatcher();
 
   function onMsg(t, d) {
     if (t === "ping") return touch(d.tok);
+    if (t === "leave") {
+      const p = validTok(d.tok) && H.players[d.tok]; if (!p || H.claims[p.key] !== d.tok) return;
+      const nm = H.roster[p.key]; delete H.claims[p.key]; delete H.players[d.tok]; delete H.answers[d.tok]; delete seen[p.key];
+      if (H.period.stand[p.key] && H.period.q === 0) delete H.period.stand[p.key];
+      save(); pubState(); render(); toast(`${nm} さんの参加を取り消しました（名前の選び直し）`); return;
+    }
     if (t === "join") return onJoin(d);
     if (t === "ans") return onAns(d);
     if (t === "cmd") { if (String(d.pin) === H.pin) act(d.cmd, d.a || {}, true); }
@@ -4292,10 +4311,16 @@ function hostPage() {
       H.answers = {};
       H.secret = { last: !!a.last && !predict, correct: cleanC(a.correct, nch), judged: false, champ: null };
       if (kan() && H.period.active && !predict) H.period.q++;
-      setS({ rid, no: (S.no || 0) + 1, phase: "open", stage: "open", mode, nch, predict, pts: predict ? Math.max(1, Math.min(10, +a.pts || 1)) : 1, question: String(a.question || "").slice(0, 300), choices,
+      const rf = H.opt.readFirst !== false;
+      setS({ rid, no: (S.no || 0) + 1, phase: rf ? "read" : "open", stage: rf ? "read" : "open", mode, nch, predict, pts: predict ? Math.max(1, Math.min(10, +a.pts || 1)) : 1, question: String(a.question || "").slice(0, 300), choices,
         limit: [5, 10, 15, 20, 30, 60].includes(+a.limit) ? +a.limit : 10, correct: null, view: "q", openedAt: Date.now(),
         counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], cut: null, champ: null, ...sfx("open") });
-      t0 = performance.now(); t0rid = rid; scheduleClose(); pubLive();
+      if (!rf) { t0 = performance.now(); t0rid = rid; scheduleClose(); pubLive(); }
+    } else if (cmd === "start") {
+      if (S.phase !== "read") return;
+      H.answers = {};
+      setS({ phase: "open", stage: "open", openedAt: Date.now(), ...sfx("chime") });
+      t0 = performance.now(); t0rid = S.rid; scheduleClose(); pubLive();
     } else if (cmd === "close") { if (S.phase === "open") doClose(); }
     else if (cmd === "setCorrect") { if (Array.isArray(a.correct)) { H.secret.correct = cleanC(a.correct, nchOf(S)); save(); render(); } }
     else if (cmd === "advance") {
@@ -4304,6 +4329,7 @@ function hostPage() {
       if (!S.rid) return;
       if (isCList(a.correct, nchOf(S))) H.secret.correct = cleanC(a.correct, nchOf(S));
       const st = S.stage || S.phase, l = answersList();
+      if (S.phase === "read") return act("start");
       if (S.phase === "open") return doClose();
       if (S.mode === "choice") {
         if (st === "closed") { const counts = IDX(nchOf(S)).map(() => 0); l.forEach((x) => { if (x.c >= 0 && x.c < counts.length) counts[x.c]++; }); return setS({ phase: "reveal", stage: "dist", counts, total: l.length, ...sfx("drum") }); }
@@ -4389,6 +4415,7 @@ function hostPage() {
   optBind("#oChamp", "champFrom", (e) => e.value);
   optBind("#oDup", "dup", (e) => e.value);
   optBind("#oVerify", "verify", (e) => e.checked);
+  optBind("#oRead", "readFirst", (e) => e.checked);
 
   // ---- 音 ----
   $("#sndUnlock").onclick = () => { if (SFX.unlock()) { SFX.play("chime"); render(); } };
@@ -4764,6 +4791,11 @@ function hostPage() {
     imp.innerHTML = `<label class="btn go fileb">📄 Excel・CSVの名簿を読み込む<input type="file" id="rFile" accept=".xlsx,.xls,.csv,.txt" hidden></label>
       <span class="note">1行目に「名前」「店舗」「ふりがな」の見出しがあればその列を使います（なければ A列=名前・B列=店舗）。ふりがながあると、参加者はひらがなでも名前を探せます。</span>`;
     rIn.closest(".field").before(imp);
+    const bIn = cBank.querySelector("#bankIn");
+    const impB = document.createElement("div"); impB.className = "impbox";
+    impB.innerHTML = `<label class="btn go fileb">📄 Excel・CSVの問題を読み込む<input type="file" id="bankFile" accept=".xlsx,.csv,.txt" hidden></label>
+      <span class="note">「問題テンプレート.xlsx」の形（問題｜A〜E｜正解｜秒数｜種類）で作ったファイルを選びます。</span>`;
+    bIn.closest(".field").before(impB);
     // ---- 本番 ----
     const nq = document.createElement("div"); nq.className = "ctl"; nq.id = "nqCard";
     nq.innerHTML = `<h2>次の問題 <span class="phase" id="nqNo"></span></h2><div id="nqBody"></div>
@@ -4892,6 +4924,23 @@ function hostPage() {
       toast(`名簿を読み込みました：追加 ${r.added}人${r.upd ? `・店舗更新 ${r.upd}人` : ""}（${stores.size}店舗）`);
     } catch (x) { toast("読み込めませんでした。Excel（.xlsx）かCSVで保存したファイルを選んでください"); }
   };
+  // ---- 問題の読み込み（Excel・CSV） ----
+  $("#bankFile").onchange = async (e) => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    try {
+      let rows;
+      if (/\.(csv|txt)$/i.test(f.name)) { let t = await f.text(); if (/\uFFFD/.test(t)) t = new TextDecoder("shift_jis").decode(await f.arrayBuffer()); rows = t.split(/\r?\n/).map((l) => l.split(/\t|,/).map((x) => x.replace(/^"|"$/g, ""))); }
+      else rows = await readXlsx(await f.arrayBuffer());
+      rows = rows.map((r) => Array.from({ length: 9 }, (_, i) => String((r || [])[i] ?? "").replace(/[\t\r\n]+/g, " ").trim()));
+      rows = rows.filter((r) => r[0] && !/^(問題|問題文|質問|No\.?)$/.test(r[0]) && !/^【例】/.test(r[0]));
+      const items = parseBank(rows.map((r) => r.join("\t")).join("\n"));
+      if (!items.length) return toast("問題が見つかりませんでした。A列に問題、B〜F列に選択肢を入れてください");
+      const replace = H.bank.length > 0 && confirm(`${items.length}問を読み込みます。\n\n今の登録問題を入れ替えますか？\n［OK］入れ替える\n［キャンセル］後ろに追加する`);
+      if (replace) { H.bank = []; H.bankIdx = 0; }
+      H.bank = H.bank.concat(items); save(); render();
+      toast(`${items.length}問を読み込みました（予想問題 ${items.filter((x) => x.predict).length}問・最終問題 ${items.filter((x) => x.last).length}問）`);
+    } catch (x) { toast("読み込めませんでした。Excel（.xlsx）かCSVで保存したファイルを選んでください"); }
+  };
   // ---- デモデータ ----
   $("#bDemo").onclick = () => {
     if ((Object.keys(H.roster).length || H.bank.length) && !confirm("デモの名簿20人と問題5問を追加します。よろしいですか？")) return;
@@ -4950,8 +4999,8 @@ function hostPage() {
     if (H.S.rid) act("next");
     loadBank(i); $("#bOpen").click();
   };
-  const STEPS_C = [["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["fast", "最速"], ["list", "正解者"]];
-  const STEPS_B = [["open", "受付"], ["closed", "締切"], ["fast", "一番乗り"], ["list", "押した順"]];
+  const STEPS_C = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["fast", "最速"], ["list", "正解者"]];
+  const STEPS_B = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["fast", "一番乗り"], ["list", "押した順"]];
   function renderExtra(S) {
     // 準備チェック
     const why = H.exact && !localReason(H.exact) ? "" : localReason(pubBase());
@@ -4988,7 +5037,7 @@ function hostPage() {
     if (fullOn) renderMonitor($("#fMon"), S, list, pURL());
     renderControls(S, l.length);
     document.querySelectorAll("#ruleSeg button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.rule === H.rule)));
-    $("#oNoCut").checked = !!H.opt.noCutIfOne; $("#oChamp").value = H.opt.champFrom; $("#oDup").value = H.opt.dup; $("#oVerify").checked = !!H.opt.verify;
+    $("#oNoCut").checked = !!H.opt.noCutIfOne; $("#oChamp").value = H.opt.champFrom; $("#oDup").value = H.opt.dup; $("#oVerify").checked = !!H.opt.verify; $("#oRead").checked = H.opt.readFirst !== false;
     $("#hLastRow").classList.toggle("hidden", !kan());
     $("#sndUnlock").textContent = SFX.unlocked ? "🔊 音は有効です（テスト再生）" : "🔊 音を有効にする";
     $("#sndVol").value = Math.round(H.snd.vol * 100); $("#sndOn").checked = !!H.snd.on;
@@ -5096,7 +5145,7 @@ function playerPage(room, bi) {
       if (d.closedRoom) { loading("司会が新しいルームを作りました", "自動で移動します…"); setTimeout(() => location.replace(baseOf(BASE)), 1500); return; }
       const prev = S.rid;
       S = { ...DEF, ...d };
-      if (S.phase === "open" && S.rid && t0rid !== S.rid) { t0 = performance.now(); t0rid = S.rid; if (prev !== S.rid) { myAns = null; if (joined) beep(880); } }
+      if (S.phase === "open" && S.rid && t0rid !== S.rid) { t0 = performance.now(); t0rid = S.rid; if (!myAns || myAns.rid !== S.rid) myAns = null; if (joined) { beep(880); try { navigator.vibrate && navigator.vibrate(120); } catch (e) {} } }
       const sn = standingNow();
       if (joined && wasStanding === true && sn === false) { seatFx = Date.now(); try { navigator.vibrate && navigator.vibrate([80, 60, 200]); } catch (e) {} }
       wasStanding = sn;
@@ -5161,6 +5210,13 @@ function playerPage(room, bi) {
   }
   $("#nsearch").addEventListener("input", () => { if (!joined) renderPick(); });
   renderPick();
+  $("#pLogout").onclick = () => {
+    if (!joined) return;
+    if (!confirm(`「${P.name}」で参加しています。\n名前をまちがえたときは、取り消して選び直せます。よろしいですか？`)) return;
+    cli.send("leave", { cid: P.cid, tok: P.tok });
+    joined = false; P.name = ""; store.set(ks, P); $("#nsearch").value = ""; show("vJoin"); renderPick();
+    $("#joinNote").textContent = "自分の名前を選び直してください。";
+  };
   $("#goHost2").onclick = () => { if (!hostPass()) return; store.set("hq-is-host", true); location.replace(baseOf(BASE)); };
   setTimeout(() => { if (!roster.length && !joined) { $("#nms").innerHTML = `<div class="empty" style="grid-column:1/-1"><b>名簿が届いていません</b><br><span class="note">司会の画面がまだ開いていないか、名簿が登録されていません。<br>司会に確認するか、下の欄に名前を入れて参加してください。</span></div>`; $("#typedBox").open = true; } }, 8000);
   // ---- 画面を消さない（対応端末のみ）・戻ったらすぐ再接続 ----
@@ -5242,12 +5298,13 @@ function playerPage(room, bi) {
         let c = "ch c" + i;
         if (showC) { if (!isHit(S, i)) c += " dim"; } else if (mine && mine.c !== i) c += " dim";
         if (mine && mine.c === i) c += " pick";
-        return `<button class="${c}" data-c="${i}" ${locked ? "disabled" : ""}><span class="L">${L[i]}<span class="kbd">${L[i]} / ${i + 1}</span></span><span class="T">${esc(S.choices[i])}</span></button>`;
+        return `<button class="${c}" data-c="${i}" ${locked ? "disabled" : ""}><span class="L">${L[i]}<span class="kbd">${L[i]} / ${i + 1}</span></span><span class="T">${S.phase === "read" ? "？" : esc(S.choices[i])}</span></button>`;
       }).join("") + `</div>`;
     } else h += `<button class="buzz" data-c="-1" ${locked ? "disabled" : ""}>押す！<br><span class="kbd" style="border-color:#fff">スペース</span></button>`;
     const cTxt = corrSet(S).length ? `<div>正解は ${corrText(S)}</div>` : "";
     let res = "";
-    if (st === "closed" && S.last) res = `<div class="h">🔔 ラスト問題でした！</div>`;
+    if (S.phase === "read") res = `<div class="h">問題をよく読んで…</div><div class="s">「スタート」の合図で選択肢が出ます</div>`;
+    else if (st === "closed" && S.last) res = `<div class="h">🔔 ラスト問題でした！</div>`;
     else if (mine) {
       if (showC && S.mode === "choice") {
         const rk = st === "list" || st === "champ" ? (S.winners || []).findIndex((w) => w.n === P.name) : -1;
