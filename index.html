@@ -614,6 +614,131 @@ body.v-player.offline #offBar{display:block}
 .tv-ch.hide .T{font-family:var(--disp);font-size:80px;opacity:.7}
 .tv-ready{position:absolute;right:20px;bottom:10px;font-family:var(--disp);font-size:70px;color:#FFC83D;letter-spacing:.15em;animation:tvblink 1s infinite;text-shadow:0 4px 0 rgba(0,0,0,.4)}
 
+/* ===== v8 明るい水色の番組風テーマ ===== */
+.tv{color:#0B2A5A}
+.tv-bg{background:
+  radial-gradient(circle at 12% 78%,rgba(255,255,255,.55) 0 60px,transparent 61px),
+  radial-gradient(circle at 86% 22%,rgba(255,255,255,.4) 0 90px,transparent 91px),
+  radial-gradient(circle at 70% 85%,rgba(255,255,255,.35) 0 40px,transparent 41px),
+  radial-gradient(circle at 30% 12%,rgba(255,255,255,.35) 0 30px,transparent 31px),
+  radial-gradient(ellipse 80% 70% at 50% 40%,#E8FAFF 0%,#8FDDF7 45%,#35A9E6 80%,#1E7FC8 100%)}
+.tv-bg::before,.tv-bg::after{background:conic-gradient(from 0deg,transparent 0 8deg,rgba(255,255,255,.35) 10deg 16deg,transparent 18deg 40deg,rgba(255,255,255,.25) 42deg 48deg,transparent 50deg 80deg,rgba(255,255,255,.3) 82deg 88deg,transparent 90deg 360deg)}
+.tv-bg.cere{background:radial-gradient(ellipse 60% 55% at 50% 42%,#FFF6D6 0%,#FFC94D 40%,#F08A1C 75%,#B85600 100%)}
+.tv-logo{background:linear-gradient(180deg,#FFFFFF,#E3F4FF);border:3px solid #FFB400;box-shadow:0 6px 20px rgba(0,60,120,.25);right:48px;left:auto;top:28px}
+.tv-logo .a{color:#0B2A5A}
+.tv-logo .b{background:linear-gradient(180deg,#FF6A00,#E60012);-webkit-background-clip:text;background-clip:text;color:transparent;filter:none}
+.tv-stand{left:48px;right:auto;top:28px;background:linear-gradient(180deg,#14306E,#0B1F4F);border-color:#FFB400}
+.tv-stand .l,.tv-stand .r{color:#fff}
+.tv .kick{color:#0B4AA0;text-shadow:0 2px 0 rgba(255,255,255,.8)}
+.tv .sub{color:#12305E}
+.tv .giant{text-shadow:0 6px 0 rgba(0,40,100,.25)}
+.tv .giant.gold{background:linear-gradient(180deg,#FFE066,#FFB000 50%,#E06A00);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #0B2A5A) drop-shadow(0 0 2px #0B2A5A)}
+.tv .giant.dim,.tv .big.dim{color:#5A7AA8}
+.tv .num{color:#E60012;text-shadow:0 8px 0 rgba(0,40,100,.2)}
+.tv .winner{color:#0B2A5A;text-shadow:0 0 30px #fff,0 0 60px rgba(255,255,255,.9),0 6px 0 rgba(255,200,0,.6)}
+.tv .time{color:#E60012}
+.tv .memo{background:#fff;color:#0B2A5A;border-color:#FFB400}
+.tv .drum{color:#E60012}
+.tv-center.spot::before{background:radial-gradient(ellipse at center,rgba(255,255,255,.75),transparent 62%)}
+.tv-center.rays::before{background:repeating-conic-gradient(rgba(255,255,255,.45) 0 6deg,transparent 6deg 18deg)}
+.tv-title .beam{background:repeating-conic-gradient(rgba(255,255,255,.45) 0 5deg,transparent 5deg 15deg)}
+.tv-title .t1{color:#0B2A5A}
+.tv-title .t2{background:linear-gradient(180deg,#FFE066,#FF9A00 50%,#E60012);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 8px 0 #0B2A5A) drop-shadow(0 0 3px #0B2A5A)}
+.tv-title .t3{color:#0B2A5A}
+.tv-telop{background:linear-gradient(180deg,#1B3F8F,#0B2160);border-top-color:#FFB400}
+.tv-telop .main{color:#fff}
+.tv-telop .tag{background:linear-gradient(180deg,#FF5A3C,#E60012);color:#fff}
+.tv-main{top:170px}
+/* 問題（左：選択肢パネル／右：Qパネル） */
+.tv-qa{flex:1;display:grid;grid-template-columns:1fr 400px;gap:28px;min-height:0}
+.tv-qa .left{display:flex;flex-direction:column;gap:18px;min-height:0}
+.tv-qa .bigimg{flex:0 0 52%;background:#fff center/contain no-repeat;border-radius:24px;border:5px solid #fff;box-shadow:0 8px 24px rgba(0,60,120,.3)}
+.tv-qa.qi .qc .cn{font-size:44px}
+.tv-qa.qi .qc .num{width:64px;height:64px;font-size:42px}
+.tv-qa .grid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:22px;min-height:0}
+.tv-qa.n5 .grid{grid-template-columns:repeat(6,1fr)}
+.tv-qa.n5 .qc{grid-column:span 2}.tv-qa.n5 .qc:nth-child(4){grid-column:2 / span 2}
+.tv-qa .qc{position:relative;background:linear-gradient(180deg,#FFFFFF,#E9F6FF);border-radius:26px;border:5px solid #fff;box-shadow:0 8px 24px rgba(0,60,120,.3),inset 0 0 0 2px rgba(0,90,160,.12);display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;min-height:0;animation:tvpop .45s both}
+.tv-qa .qc:nth-child(2){animation-delay:.08s}.tv-qa .qc:nth-child(3){animation-delay:.16s}.tv-qa .qc:nth-child(4){animation-delay:.24s}.tv-qa .qc:nth-child(5){animation-delay:.32s}
+.tv-qa .qc .num{position:absolute;left:16px;top:14px;width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:56px;color:#fff;z-index:2;box-shadow:inset 0 -6px 0 rgba(0,0,0,.25),0 3px 8px rgba(0,0,0,.3);border:4px solid #fff}
+.tv-qa .qc.c0 .num{background:#1C3F8F}.tv-qa .qc.c1 .num{background:#8A1F2B}.tv-qa .qc.c2 .num{background:#2E9A3B}.tv-qa .qc.c3 .num{background:#9A7B1E}.tv-qa .qc.c4 .num{background:#6B3FA0}
+.tv-qa .qc .pic{position:absolute;inset:0 0 96px 0;background:center 30%/contain no-repeat}
+.tv-qa .qc .cn{position:relative;z-index:1;margin:0 14px 14px;font-weight:900;font-size:60px;line-height:1.15;color:#0B2A5A;text-align:center;overflow-wrap:anywhere;flex:1;display:flex;align-items:center;justify-content:center;padding:10px 10px 0 100px}
+.tv-qa .qc.ph .cn{flex:none;height:82px;font-size:48px;background:linear-gradient(90deg,rgba(255,255,255,.95),rgba(255,255,255,.75));border-radius:14px;padding:0 10px;margin:0 10px 10px;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.tv-qa.n5 .qc .cn{font-size:44px}
+.tv-qa .qc.hide .cn{font-family:var(--disp);font-size:120px;color:#9FC3E6;padding-left:0}
+.tv-qa .qc.faded{opacity:.55;animation:none}
+.tv-qa .qbuzz{grid-column:1 / -1;grid-row:1 / -1;display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:180px;color:#E60012;text-shadow:0 8px 0 rgba(0,40,100,.25)}
+.tv-qa .qside{display:flex;flex-direction:column;gap:14px;background:linear-gradient(180deg,#3B57B8,#22378A);border-radius:28px;border:5px solid #fff;padding:18px;box-shadow:0 8px 24px rgba(0,40,100,.35);min-height:0}
+.tv-qa .qh{font-family:var(--disp);font-size:80px;line-height:1;text-align:center;color:#7FE3FF;text-shadow:0 4px 0 #0B1F4F}
+.tv-qa .qh small{font-size:36px;color:#fff;margin-left:8px}
+.tv-qa .qimg{flex:0 0 300px;background:#fff center/contain no-repeat;border-radius:16px}
+.tv-qa .qt{flex:1;min-height:0;background:linear-gradient(180deg,#FFFFFF,#EAF4FF);border-radius:18px;color:#0B2A5A;font-weight:900;font-size:52px;line-height:1.35;padding:20px 22px;overflow:hidden;overflow-wrap:anywhere;display:flex;align-items:center}
+.tv-qa .qt.s{font-size:40px}
+.tv-qa .qt.v{writing-mode:vertical-rl;text-orientation:upright;font-size:58px;letter-spacing:.06em;justify-content:center;line-height:1.5;padding:22px 10px}
+.tv-qa .qtimer{flex:none;align-self:center;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FF8A8A,#E60012 55%,#8A0008);border:8px solid #fff;box-shadow:0 8px 20px rgba(0,0,0,.35),inset 0 -10px 0 rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:96px;color:#fff;font-variant-numeric:tabular-nums}
+.tv-qa .qtimer.off{font-size:46px;background:radial-gradient(circle at 35% 30%,#9DB2D8,#5A6E9E 60%,#2E3D66)}
+.tv-qa .qtimer .hurry{color:#FFF27A}
+.tv-qa .qbar{height:12px;border-radius:99px;background:rgba(0,0,0,.3);overflow:hidden}
+.tv-qa .qbar i{display:block;height:100%;background:linear-gradient(90deg,#FFE066,#FF5A3C);transform-origin:left}
+.tv-ans{left:0;right:auto;bottom:-10px;background:#0B2160;color:#fff}
+.tv-ans b{color:#FFE066}
+.tv-ready{display:none}
+.tv .cd{color:#E60012;text-shadow:0 0 0 #fff,0 0 30px #fff,0 0 60px #fff,0 14px 0 rgba(0,40,100,.35)}
+/* 分布・正解 */
+.tv-qs{background:#fff;color:#0B2A5A;box-shadow:0 6px 16px rgba(0,60,120,.2)}
+.tv-bars .num{color:#0B2A5A}
+.tv-bars .lab .th{flex:none;width:76px;height:76px;border-radius:12px;background:#fff center/cover no-repeat;border:3px solid #fff}
+.tv-bars .lab{color:#fff}
+.tv-bars .col.lose{opacity:.3}
+.tv-seat{background:#0B2160;color:#fff}
+/* 一覧 */
+.tv-champ{background:linear-gradient(180deg,#FF6A3C,#E60012);color:#fff}
+.tv-top li{background:#fff;border-color:#fff;color:#0B2A5A;box-shadow:0 4px 12px rgba(0,60,120,.2)}
+.tv-top .no,.tv-top .tm{color:#E60012}
+.tv-more{color:#0B2A5A}
+.tv-names li{background:#fff;color:#0B2A5A}
+.tv-join .qr{box-shadow:0 0 0 10px #FFB400,0 20px 50px rgba(0,60,120,.4)}
+.tv-join .h{background:linear-gradient(180deg,#FF8A00,#E60012);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tv-join ol b{color:#E60012}
+.tv-join .cnt b{color:#E60012}
+.tv-join .url{color:#12305E}
+.tv-board li{background:#fff;color:#0B2A5A;box-shadow:0 3px 10px rgba(0,60,120,.15)}
+.tv-board li.top{background:linear-gradient(90deg,#FFE27A,#FFF6CF);border-color:#FFB400}
+.tv-board .no,.tv-board .pt{color:#E60012}
+.tv-prz .p{background:#fff;border-color:#fff;color:#0B2A5A}
+.tv-prz .p.gold{background:linear-gradient(180deg,#FFE27A,#FFF6CF);border-color:#FFB400}
+.tv-prz .r{color:#E60012}
+.tv-att .s{background:#fff;border-color:#fff;color:#0B2A5A}
+.tv-att .s.full{background:#FFF3C4;border-color:#FFB400}
+.tv-att .v{color:#E60012}.tv-att .v small{color:#0B2A5A}
+.tv-att .ok{color:#2E9A3B}
+.tv-prog{background:#0B2160;color:#fff;left:48px;right:auto;top:150px}
+.tv-stamp{background:#fff}
+
+/* 総合順位：下からスクロール */
+.tv-roll{flex:1;display:flex;flex-direction:column;min-height:0;align-items:center}
+.tv-roll .rh{font-family:var(--disp);font-size:64px;color:#E60012;text-shadow:0 4px 0 #fff,0 0 20px #fff;margin-bottom:8px}
+.tv-roll .win{flex:1;width:1300px;overflow:hidden;position:relative;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 8%,#000 92%,transparent 100%);mask-image:linear-gradient(180deg,transparent 0,#000 8%,#000 92%,transparent 100%)}
+.tv-roll .list{list-style:none;margin:0;padding:40px 0;position:absolute;left:0;right:0;top:0;animation:tvroll linear both}
+@keyframes tvroll{from{transform:translateY(calc(-1 * (var(--rows) * 92px + 80px) + 640px))}to{transform:translateY(0)}}
+.tv-roll .list li{height:80px;margin-bottom:12px;display:grid;grid-template-columns:170px 1fr 260px 170px;align-items:center;gap:16px;background:#fff;border-radius:16px;padding:0 28px;font-size:46px;color:#0B2A5A;box-shadow:0 4px 12px rgba(0,60,120,.18)}
+.tv-roll .list li.top{background:linear-gradient(90deg,#FFE27A,#FFF6CF);border:3px solid #FFB400}
+.tv-roll .list li.hid{background:linear-gradient(90deg,#1B3F8F,#3B57B8);color:#fff}
+.tv-roll .no{font-family:var(--disp);color:#E60012}.tv-roll .no small{font-size:.5em}
+.tv-roll li.hid .no{color:#FFE066}
+.tv-roll .tn{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tv-roll .st{font-size:30px;opacity:.75;font-weight:700}
+.tv-roll .pt{font-family:var(--disp);text-align:right;color:#E60012}.tv-roll .pt small{font-size:.5em}
+
+/* 予選落ち */
+.tv-cut{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(ellipse at center,rgba(20,20,60,.88),rgba(5,5,25,.95));border-radius:30px;margin:-10px -20px 0;box-shadow:0 0 0 6px #E60012,0 20px 60px rgba(0,0,0,.5);animation:tvpop .5s both}
+.tv-cut .k{font-weight:900;font-size:50px;color:#DCE3FF}
+.tv-cut .t{font-family:var(--disp);font-size:230px;line-height:1.1;color:#FF2D3B;text-shadow:0 0 50px rgba(255,45,59,.7),0 10px 0 #000;animation:tvshake .25s 6}
+.tv-cut .n{font-family:var(--disp);font-size:150px;color:#fff;text-shadow:0 0 30px rgba(255,255,255,.6);animation-delay:1.6s}
+.tv-cut .s{font-weight:900;font-size:56px;color:#FFE066;animation-delay:2.2s}
+.tv-ans{left:50%!important;right:auto!important;top:-62px;bottom:auto!important;transform:translateX(-50%)}
+
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
 body:has(#hostV7) main{max-width:1560px}
@@ -676,6 +801,12 @@ body:has(#vRemote:not(.hidden)) main{max-width:none}
 
 .nqlast{display:block;margin:6px 0 2px;padding:8px 10px;border:1.5px dashed var(--gold);border-radius:10px}
 .nqlast .note{display:block;margin-left:1.6em}
+
+.nqimg{display:flex;gap:6px;margin:4px 0 6px;flex-wrap:wrap}.nqimg img{height:56px;border-radius:8px;border:1px solid var(--line)}.nqimg .miss{font-size:.75rem;color:var(--ng);border:1px dashed var(--ng);border-radius:8px;padding:16px 6px}
+/* 参加者スマホ：写真つき選択肢 */
+.ch .ph{display:block;flex:1;min-height:56px;margin:4px 0;border-radius:10px;background:#fff center/contain no-repeat}
+body.v-player .ch:has(.ph) .L{font-size:1.2rem}
+.qimgp{display:block;max-width:100%;max-height:22vh;margin:0 auto 8px;border-radius:12px;background:#fff}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -3718,6 +3849,8 @@ const SFX = (() => {
         if (name === "bell+last") { one("bell"); return; }
         if (name === "champ") { one("drumReveal"); setTimeout(() => one("fanfare"), 2300); return; }
         if (name === "first") { one("fanfare"); return; }
+        if (name === "cut" && !custom.cut && !LINKS.has("cut")) { one("seat"); return; }
+        if ((name === "think" || name === "title" || name === "roll") && !custom[name] && !LINKS.has(name)) { if (name === "think") one("chime"); return; }
         one(name);
       } catch (e) {}
     },
@@ -3759,6 +3892,7 @@ const SFX = (() => {
 })();
 // 差し替えできる場面
 const SFX_SLOTS = [
+  ["title", "オープニング（オープニング画面を出したとき）"], ["roll", "総合順位の発表（下からスクロール）"], ["cut", "予選落ちの発表"], ["think", "回答中のBGM（スタート〜締め切り）"],
   ["period", "ピリオド開始"], ["open", "出題"], ["countdown", "残り5秒のカウント（5秒の音声を1つ）"], ["close", "締め切り"], ["bell", "最終問題の鐘"],
   ["drum", "回答分布（ドラムロール）"], ["correct", "正解発表"], ["wrong", "不正解・該当者なし"], ["seat", "着席"],
   ["drumReveal", "最速正解者の発表"], ["chime", "正解者一覧"], ["tame", "表彰「○位は…」"], ["fanfare", "1位・チャンピオン"],
@@ -3838,6 +3972,23 @@ function standHTML(S) {
 function telopHTML(tag, main, extra) {
   return `<div class="tv-telop"><span class="tag">${tag}</span><span class="main">${main}</span>${extra ? `<span class="mq"><span>${extra}</span></span>` : ""}<span class="live"><i></i>LIVE</span></div>`;
 }
+// ---- 写真 ----
+const IMG = {};
+const imgId = (name) => { const s = String(name || "").normalize("NFKC").trim().toLowerCase().replace(/\.[a-z0-9]{2,5}$/, ""); if (!s) return null; let h = 5381; for (const c of s) h = ((h << 5) + h + c.charCodeAt(0)) >>> 0; return "i" + h.toString(36); };
+const cImg = (S, i) => { const id = S.img && Array.isArray(S.img.c) ? S.img.c[i] : null; return id && IMG[id] ? IMG[id] : ""; };
+const qImg = (S) => (S.img && S.img.q && IMG[S.img.q] ? IMG[S.img.q] : "");
+// 感謝祭風：左に選択肢パネル（写真つき）、右に縦長の問題パネル
+function qaLayout(S, mode) {
+  const n = nchOf(S), hide = mode === "read";
+  const cards = S.mode === "choice" ? IDX(n).map((i) => {
+    const ph = hide ? "" : cImg(S, i);
+    return `<div class="qc c${i}${ph ? " ph" : ""}${hide ? " hide" : ""}${mode === "closed" ? " faded" : ""}"><span class="num">${L[i]}</span>${ph ? `<div class="pic" style="background-image:url('${ph}')"></div>` : ""}<div class="cn">${hide ? "？" : esc(S.choices[i])}</div></div>`;
+  }).join("") : `<div class="qbuzz">${mode === "open" ? "早押し！" : "早押し問題"}</div>`;
+  const qi = qImg(S), qt = S.question || "", vert = !qi && qt.length <= 18;
+  return `<div class="tv-qa n${n}${S.mode === "choice" ? "" : " bz"}${qi ? " qi" : ""}"><div class="left">${qi ? `<div class="bigimg" style="background-image:url('${qi}')"></div>` : ""}<div class="grid">${cards}</div></div>
+    <div class="qside"><div class="qh">Q<small>${S.no}</small></div><div class="qt${vert ? " v" : ""}${qt.length > 60 ? " s" : ""}">${esc(qt)}</div>
+      <div class="qtimer${mode === "open" ? "" : " off"}">${mode === "open" ? '<span class="js-timer"></span>' : mode === "read" ? "READY" : "締切"}</div>${mode === "open" ? '<div class="qbar"><i class="js-bar"></i></div>' : ""}</div></div>`;
+}
 function choiceGrid(S, cls) {
   const n = nchOf(S);
   return `<div class="tv-ch n${n} ${cls || ""}">${IDX(n).map((i) => `<div class="c c${i}${cls === "reveal" ? (isHit(S, i) ? " hit" : " miss") : ""}"><span class="L">${L[i]}</span><span class="T">${esc(S.choices[i])}</span></div>`).join("")}</div>`;
@@ -3856,6 +4007,14 @@ function monHTML(S, list, joinURL) {
     body = `<div class="tv-title"><div class="beam"></div><div class="t1">${esc(sh.title.split(/[\s　]+/).slice(0, -1).join(" "))}</div><div class="t2">${esc(sh.title.split(/[\s　]+/).pop())}</div><div class="t3">${esc(sh.sub)}</div></div>`;
     tel = telopHTML("ようこそ", "まもなく開演です！　スマホの準備をお願いします");
     return { key, html: `<div class="tv-bg"></div>${body}${tel}` };
+  }
+  if (view === "roll") {
+    const R = S.roll || [], hide = S.rollHide || 0, N = R.length;
+    const rows = R.map((r) => { const h = r.rank <= hide; return `<li class="${r.rank <= 3 ? "top" : ""}${h ? " hid" : ""}"><span class="no">${r.rank}<small>位</small></span><span class="tn">${h ? "？？？" : esc(r.n)}</span><span class="st">${h ? "" : esc(r.s)}</span><span class="pt">${h ? "" : r.p + "<small>pt</small>"}</span></li>`; }).join("");
+    const dur = Math.max(14, N * 0.9), el = Math.max(0, (Date.now() - (S.rollAt || Date.now())) / 1000);
+    body = `<div class="tv-roll"><div class="rh">総合順位</div><div class="win"><ol class="list" style="--rows:${N};animation-duration:${dur}s;animation-delay:-${Math.min(el, dur)}s">${rows}</ol></div></div>`;
+    tel = telopHTML("総合順位", hide ? `第${N}位から発表！　上位${hide}名は表彰式で…` : `第${N}位から発表！`);
+    return { key: "roll-" + (S.rollAt || 0), html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main">${body}</div>${tel}` };
   }
   if (view === "att") {
     const at = S.att || [], tot = at.reduce((a, x) => a + x.n, 0), on = at.reduce((a, x) => a + x.on, 0);
@@ -3903,17 +4062,17 @@ function monHTML(S, list, joinURL) {
     const kind = `第${S.no}問　${S.mode === "choice" ? nchOf(S) + "択" : "早押し"}${S.predict ? `・予想問題（${S.pts}点）` : ""}`;
     const nAns = S.total != null && S.phase !== "open" ? S.total : list.length;
     if (S.phase === "read") {
-      body = qPanel(S) + (S.mode === "choice" ? `<div class="tv-ch n${nchOf(S)} hide">${IDX(nchOf(S)).map((i) => `<div class="c c${i}"><span class="L">${L[i]}</span><span class="T">？</span></div>`).join("")}</div>` : "") + `<div class="tv-ready">READY</div>`;
+      body = qaLayout(S, "read");
       tel = telopHTML(per, `${kind}　問題！　選択肢は「スタート」の合図で…`);
     } else if (S.phase === "open") {
-      body = qPanel(S, true) + (S.mode === "choice" ? choiceGrid(S) : `<div class="tv-center"><div class="giant gold pop">早押し！</div></div>`) + `<div class="tv-ans">回答 <b>${list.length}</b> / ${S.players || 0}人</div><div class="js-count cd"></div>`;
+      body = qaLayout(S, "open") + `<div class="tv-ans">回答 <b>${list.length}</b> / ${S.players || 0}人</div><div class="js-count cd"></div>`;
       tel = telopHTML(per, `${kind}　回答受付中！`);
     } else if (st === "closed") {
       if (S.last) { body = `<div class="tv-center bell"><div class="kick">カーン　カーン　カーン</div><div class="giant red pop">ラスト問題！</div><div class="sub">これが第${S.period ? S.period.no : ""}ピリオド最後の問題でした</div></div>`; tel = telopHTML(per, "ピリオド最終問題でした！"); }
-      else { body = qPanel(S) + (S.mode === "choice" ? choiceGrid(S, "faded") : "") + `<div class="tv-stamp">締め切り！</div>`; tel = telopHTML(per, `${kind}　締め切り　回答 ${nAns}人`); }
+      else { body = qaLayout(S, "closed") + `<div class="tv-stamp">締め切り！</div>`; tel = telopHTML(per, `${kind}　締め切り　回答 ${nAns}人`); }
     } else if (S.mode === "choice" && (st === "dist" || st === "correct")) {
       const n = nchOf(S), cnt = S.counts || IDX(n).map(() => 0), mx = Math.max(1, ...cnt), showC = st === "correct" && corrSet(S).length > 0;
-      body = `<div class="tv-qs">${esc(S.question)}</div><div class="tv-bars n${n}">${IDX(n).map((i) => `<div class="col${showC ? (isHit(S, i) ? " win" : " lose") : ""}"><div class="num">${cnt[i] || 0}<small>人</small></div><div class="trk"><div class="bar c${i}" style="--h:${Math.round(((cnt[i] || 0) / mx) * 100)}%"></div></div><div class="lab c${i}"><span class="L">${L[i]}</span><span class="T">${esc(S.choices[i])}</span></div>${showC && isHit(S, i) ? '<div class="ok">正解</div>' : ""}</div>`).join("")}</div>`;
+      body = `<div class="tv-qs">${esc(S.question)}</div><div class="tv-bars n${n}">${IDX(n).map((i) => `<div class="col${showC ? (isHit(S, i) ? " win" : " lose") : ""}"><div class="num">${cnt[i] || 0}<small>人</small></div><div class="trk"><div class="bar c${i}" style="--h:${Math.round(((cnt[i] || 0) / mx) * 100)}%"></div></div><div class="lab c${i}">${cImg(S, i) ? `<span class="th" style="background-image:url('${cImg(S, i)}')"></span>` : ""}<span class="L">${L[i]}</span><span class="T">${esc(S.choices[i])}</span></div>${showC && isHit(S, i) ? '<div class="ok">正解</div>' : ""}</div>`).join("")}</div>`;
       let ex = "";
       if (showC && S.predict) body += `<div class="tv-seat">的中 <b>${cnt.reduce((s, v, i) => s + (isHit(S, i) ? v : 0), 0)}</b>人</div>`;
       else if (showC && kanAct) {
@@ -3922,6 +4081,11 @@ function monHTML(S, list, joinURL) {
         if (sn.length) ex = "着席：" + sn.slice(0, 40).map((x) => esc(x) + "さん").join("　");
       }
       tel = telopHTML(per, st === "dist" ? `${kind}　みんなの答えは…` : `${kind}　正解は ${corrSet(S).map((i) => L[i]).join("・")}！`, ex);
+    } else if (st === "cutshow") {
+      const ms = ((S.winners || []).length ? null : null);
+      body = `<div class="tv-cut"><div class="k">正解したけど、いちばん遅かったのは…</div><div class="t">予選落ち</div><div class="n late">${esc(S.cut || "")}</div><div class="s late">着席です</div></div>`;
+      tel = telopHTML(per, `${kind}　予選落ち：${esc(S.cut || "")}さん`);
+      void ms;
     } else if (st === "fast") {
       const w = (S.mode === "choice" ? S.winners : S.order) || [];
       body = !w.length ? `<div class="tv-center"><div class="giant dim pop">${S.mode === "choice" ? "正解者なし" : "押した人なし"}</div></div>`
@@ -3967,7 +4131,7 @@ function renderMonitor(el, S, list, joinURL) {
 
 // ================= 司会・サブ司会の操作パネル（共通） =================
 let hostMode = "choice", pickedCorrect = [], preCorrect = [], curS = { ...DEF };
-const STAGE_LABEL = { read: "問題を表示中（選択肢はまだ）", open: "回答受付中", closed: "締め切り", dist: "回答分布", correct: "正解発表", fast: "最速正解者", list: "正解者一覧", champ: "ピリオドチャンピオン" };
+const STAGE_LABEL = { cutshow: "予選落ちの発表", read: "問題を表示中（選択肢はまだ）", open: "回答受付中", closed: "締め切り", dist: "回答分布", correct: "正解発表", fast: "最速正解者", list: "正解者一覧", champ: "ピリオドチャンピオン" };
 function nextLabel(S) {
   if (S.view === "cere") { const c = S.cere || {}; return c.step === "end" ? "表彰式は終わりました" : `次へ ▶（${c.step === "intro" ? "最初の賞" : c.step === "rank" ? "名前を発表" : "次の賞"}）`; }
   if (S.view && S.view !== "q") return "問題の表示に戻る ▶";
@@ -3977,7 +4141,8 @@ function nextLabel(S) {
   if (S.phase === "open") return "締め切る ▶";
   if (st === "closed") return S.mode === "choice" ? "回答分布を出す ▶" : "一番乗りを発表 ▶";
   if (st === "dist") return "正解を発表 ▶";
-  if (st === "correct") return S.predict ? "的中者一覧 ▶" : "最速正解者を発表 ▶";
+  if (st === "correct") return S.predict ? "的中者一覧 ▶" : S.cut ? "予選落ちを発表 ▶" : "最速正解者を発表 ▶";
+  if (st === "cutshow") return "最速正解者を発表 ▶";
   if (st === "fast") return S.mode === "choice" ? "正解者一覧 ▶" : "2位以下を出す ▶";
   if (st === "list") return S.last && S.rule === "kanshasai" && S.period && S.period.active ? "ピリオドチャンピオン発表 ▶" : "次の問題へ ▶";
   if (st === "champ") return "次の問題へ ▶";
@@ -4011,7 +4176,8 @@ function wireControls(act) {
     if (hostMode === "buzzer" && curS.rule === "kanshasai" && curS.period && curS.period.active) return toast("感謝祭ルールのピリオド中は4択（5択）で出題してください");
     pickedCorrect = preCorrect.filter((c) => c < n);
     act("open", { question, choices, mode: hostMode === "buzzer" ? "buzzer" : "choice", nch: n, limit: +$("#hLimit").value,
-      last: $("#hLast").checked && !predict, correct: pickedCorrect, predict, pts: +$("#hPts").value });
+      last: $("#hLast").checked && !predict, correct: pickedCorrect, predict, pts: +$("#hPts").value, img: window.__pendImg || null });
+    window.__pendImg = null;
     $("#hLast").checked = false;
     preCorrect = []; applyFormMode(); // 次の問題のために、事前の正解指定を解除
   };
@@ -4091,6 +4257,14 @@ function hostPage() {
   if (!H || !H.room) H = fresh();
   { const f = fresh(); for (const k in f) if (H[k] === undefined) H[k] = f[k]; for (const k in f.opt) if (H.opt[k] === undefined) H.opt[k] = f.opt[k]; }
   if (!H.show) H.show = { ...SHOW_DEF };
+  // 写真はこのPCに別保存（名簿などのデータとは分けて保存）
+  const hostImgs = store.get("hq-imgs", {}); Object.entries(hostImgs).forEach(([id, d]) => (IMG[id] = d));
+  const cleanImg = (im) => { if (!im || typeof im !== "object") return null; const ok = (x) => (typeof x === "string" && /^i[a-z0-9]{1,12}$/.test(x) ? x : null); const o = { q: ok(im.q), c: (Array.isArray(im.c) ? im.c : []).slice(0, 5).map(ok) }; return o.q || o.c.some(Boolean) ? o : null; };
+  const pubImgs = (im) => { if (!im || !cli) return; [im.q, ...im.c].filter(Boolean).forEach((id) => { if (IMG[id]) cli.send("img/" + id, { id, d: IMG[id] }, { qos: 1, retain: true }); }); };
+  window.__hostImgs = hostImgs;
+  if (!H.linksV7) { H.links = H.links || {}; H.links.title = H.links.title || { url: "https://youtu.be/tJOL_ii0LbY" }; H.links.think = H.links.think || { url: "https://youtu.be/TI3liav5eSY" }; H.linksV7 = true; }
+  if (!H.linksV8) { H.links = H.links || {}; H.links.roll = H.links.roll || { url: "https://youtu.be/ZYAgAINllA0" }; H.linksV8 = true; }
+  if (!H.linksV9) { H.links = H.links || {}; H.links.cut = H.links.cut || { url: "https://youtu.be/D4IZxYG02u8" }; H.linksV9 = true; }
   let saveT = null;
   const save = () => { clearTimeout(saveT); saveT = setTimeout(() => store.set("hq-host", H), 150); };
   save();
@@ -4153,6 +4327,7 @@ function hostPage() {
     o.show = H.show;
     if (o.phase === "read") o.choices = (o.choices || []).map(() => "");
     if (o.view === "att") { const by = {}; Object.keys(H.roster).forEach((k) => { const s = H.rstore[k] || "店舗なし"; by[s] = by[s] || { s, n: 0, on: 0 }; by[s].n++; if (H.claims[k]) by[s].on++; }); o.att = Object.values(by); }
+    if (o.view === "roll") { o.roll = R.map((r) => ({ rank: r.rank, n: r.n, p: r.p, t: r.t, s: H.rstore[r.key] || "" })); o.rollHide = H.opt.rollHide === false ? 0 : 3; o.rollAt = H.rollAt || 0; }
     if (o.view === "prizes") o.prizeTable = prizeTable();
     if (o.view === "champs") o.champList = H.champs.map((c) => ({ period: c.period, n: c.n, ms: c.ms }));
     return o;
@@ -4164,7 +4339,7 @@ function hostPage() {
   const reply = (cid, o) => { if (typeof cid === "string" && /^[a-z0-9]{8,24}$/.test(cid)) cli.send("r/" + cid, o); };
   const announce = () => cli && cli.sendTo(LOBBY, "cur", { room: H.room, at: Date.now() }, { qos: 1, retain: true });
   const pubRoster = () => { if (!cli) return; const list = Object.keys(H.roster).map((k) => ({ n: H.roster[k], s: H.rstore[k] || "", k: (H.rkana || {})[k] || "" })); cli.send("roster", { list }, { qos: 1, retain: true }); };
-  const cli = connectAll(H.room, ["join", "ans", "cmd", "ping", "leave"], onMsg, () => { pubState(true); announce(); pubRoster(); });
+  const cli = connectAll(H.room, ["join", "ans", "cmd", "ping", "leave"], onMsg, () => { pubState(true); announce(); pubRoster(); pubImgs(H.S.img); });
   if (!cli) return;
   const watchSfx = sfxWatcher(), watchCount = countWatcher();
 
@@ -4311,13 +4486,14 @@ function hostPage() {
       const choices = mode === "choice" ? (Array.isArray(a.choices) ? a.choices : []).slice(0, nch).map((x) => String(x || "").slice(0, 60)) : ["", "", "", ""];
       if (mode === "choice" && (choices.length < nch || choices.some((x) => !x))) return;
       const rid = "r" + Date.now().toString(36);
+      pubImgs(cleanImg(a.img));
       H.answers = {};
       H.secret = { last: !!a.last && !predict, correct: cleanC(a.correct, nch), judged: false, champ: null };
       if (kan() && H.period.active && !predict) H.period.q++;
       const rf = H.opt.readFirst !== false;
       setS({ rid, no: (S.no || 0) + 1, phase: rf ? "read" : "open", stage: rf ? "read" : "open", mode, nch, predict, pts: predict ? Math.max(1, Math.min(10, +a.pts || 1)) : 1, question: String(a.question || "").slice(0, 300), choices,
         limit: [5, 10, 15, 20, 30, 60].includes(+a.limit) ? +a.limit : 10, correct: null, view: "q", openedAt: Date.now(),
-        counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], cut: null, champ: null, ...sfx("open") });
+        counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], cut: null, champ: null, img: cleanImg(a.img), ...sfx("open") });
       if (!rf) { t0 = performance.now(); t0rid = rid; scheduleClose(); pubLive(); }
     } else if (cmd === "endHere") {
       if (!kan() || !H.period.active || !S.rid || S.predict || H.secret.last) return;
@@ -4332,7 +4508,7 @@ function hostPage() {
     } else if (cmd === "start") {
       if (S.phase !== "read") return;
       H.answers = {};
-      setS({ phase: "open", stage: "open", openedAt: Date.now(), ...sfx("chime") });
+      setS({ phase: "open", stage: "open", openedAt: Date.now(), ...sfx("think") });
       t0 = performance.now(); t0rid = S.rid; scheduleClose(); pubLive();
     } else if (cmd === "close") { if (S.phase === "open") doClose(); }
     else if (cmd === "setCorrect") { if (Array.isArray(a.correct)) { H.secret.correct = cleanC(a.correct, nchOf(S)); save(); render(); } }
@@ -4348,7 +4524,8 @@ function hostPage() {
         if (st === "closed") { const counts = IDX(nchOf(S)).map(() => 0); l.forEach((x) => { if (x.c >= 0 && x.c < counts.length) counts[x.c]++; }); return setS({ phase: "reveal", stage: "dist", counts, total: l.length, ...sfx("drum") }); }
         if (st === "dist") { if (!isCList(H.secret.correct, nchOf(S))) { toast("正解を選んでから進めてください（複数選べます）"); return render(); } return doCorrect(H.secret.correct.slice()); }
         if (st === "correct" && S.predict) { const w = l.filter((x) => isHit(S, x.c)); sendPlaces(w, "corr"); return setS({ stage: "list", winners: w.map((x) => ({ n: x.n, ms: x.ms })), ...sfx("chime") }); }
-        if (st === "correct") { const w = l.filter((x) => isHit(S, x.c)); return setS({ stage: "fast", winners: w.slice(0, 1).map((x) => ({ n: x.n, ms: x.ms })), ...sfx(w.length ? "drumReveal" : "wrong") }); }
+        if (st === "correct" && S.cut && !S.predict) return setS({ stage: "cutshow", ...sfx("cut") });
+        if (st === "correct" || st === "cutshow") { const w = l.filter((x) => isHit(S, x.c)); return setS({ stage: "fast", winners: w.slice(0, 1).map((x) => ({ n: x.n, ms: x.ms })), ...sfx(w.length ? "drumReveal" : "wrong") }); }
         if (st === "fast") { const w = l.filter((x) => isHit(S, x.c)); sendPlaces(w, "corr"); return setS({ stage: "list", winners: w.map((x) => ({ n: x.n, ms: x.ms })), ...sfx("chime") }); }
       } else {
         if (st === "closed") sendPlaces(l, "push");
@@ -4364,7 +4541,7 @@ function hostPage() {
     } else if (cmd === "next") {
       if (S.phase === "open") return;
       H.answers = {};
-      setS({ phase: "idle", stage: "", rid: null, question: "", choices: ["", "", "", ""], correct: null, predict: false, nch: 4, view: S.view === "cere" ? "cere" : "q", counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], cut: null, champ: null });
+      setS({ phase: "idle", stage: "", rid: null, img: null, question: "", choices: ["", "", "", ""], correct: null, predict: false, nch: 4, view: S.view === "cere" ? "cere" : "q", counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], cut: null, champ: null });
     } else if (cmd === "period") {
       if (!kan() || S.phase === "open") return;
       startPeriod(H.period.no + 1, false);
@@ -4374,8 +4551,9 @@ function hostPage() {
       if (a.restore && !(H.psnap && H.psnap[n])) { toast(`第${n}ピリオド開始時の記録がないため、得点は戻せませんでした（起立状態だけやり直します）`); }
       startPeriod(n, !!a.restore);
     } else if (cmd === "view") {
-      const v = ["q", "board", "prizes", "champs", "title", "att"].includes(a.v) ? a.v : "q";
-      setS({ view: v, ...(v !== "q" ? sfx("chime") : {}) });
+      const v = ["q", "board", "prizes", "champs", "title", "att", "roll"].includes(a.v) ? a.v : "q";
+      if (v === "roll") H.rollAt = Date.now();
+      setS({ view: v, ...(v === "title" ? sfx("title") : v === "roll" ? sfx("roll") : v !== "q" ? sfx("chime") : {}) });
     } else if (cmd === "cereStart") {
       const list = awards();
       const before = list.filter((x) => x.kind === "manual" && x.pos === "before");
@@ -4494,7 +4672,7 @@ function hostPage() {
   $("#bankClear").onclick = () => { if (!confirm("登録した問題をすべて消しますか？")) return; H.bank = []; H.bankIdx = 0; save(); render(); };
   function loadBank(i) {
     const b = H.bank[i]; if (!b) return toast("登録された問題はもうありません");
-    H.bankIdx = i + 1; save();
+    H.bankIdx = i + 1; save(); window.__pendImg = b.img || null;
     hostMode = b.mode === "buzzer" ? "buzzer" : b.nch === 5 ? "choice5" : "choice";
     preCorrect = Array.isArray(b.correct) ? b.correct.slice() : b.correct == null ? [] : [b.correct];
     $("#hPredict").checked = !!b.predict; $("#hPts").value = String(b.pts || 1);
@@ -4505,7 +4683,7 @@ function hostPage() {
   $("#bankNext").onclick = () => loadBank(H.bankIdx || 0);
   function renderBank() {
     $("#bankCount").textContent = H.bank.length ? `${H.bank.length}問（次は ${Math.min((H.bankIdx || 0) + 1, H.bank.length + 1)}問目）` : "未登録";
-    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}</td><td>${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td>${b.predict ? `予想${b.pts || 1}点` : ""}${b.last ? "最終" : ""}</td><td><button class="mini" data-load="${i}">読込</button></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
+    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || [])].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td>${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td>${b.predict ? `予想${b.pts || 1}点` : ""}${b.last ? "最終" : ""}</td><td><button class="mini" data-load="${i}">読込</button></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
     $("#bankList").querySelectorAll("[data-load]").forEach((x) => (x.onclick = () => loadBank(+x.dataset.load)));
   }
 
@@ -4810,6 +4988,8 @@ function hostPage() {
     impB.innerHTML = `<label class="btn go fileb">📄 Excel・CSVの問題を読み込む<input type="file" id="bankFile" accept=".xlsx,.csv,.txt" hidden></label>
       <span class="note">「問題テンプレート.xlsx」の形（問題｜A〜E｜正解｜秒数｜種類）で作ったファイルを選びます。</span>`;
     bIn.closest(".field").before(impB);
+    impB.insertAdjacentHTML("beforeend", `<label class="btn fileb">📷 問題の写真をまとめて読み込む（複数選択OK）<input type="file" id="bankImgs" accept="image/*" multiple hidden></label>
+      <span class="note">Excelの「問題の写真」「Aの写真」…の列に書いたファイル名（例：q3_a.jpg）と同じ名前の写真を選びます。<span id="imgCount"></span></span>`);
     // ---- 本番 ----
     const nq = document.createElement("div"); nq.className = "ctl"; nq.id = "nqCard";
     nq.innerHTML = `<h2>次の問題 <span class="phase" id="nqNo"></span></h2><div id="nqBody"></div>
@@ -4829,10 +5009,12 @@ function hostPage() {
     P("live", "colB").append(cP, nq, det);
     // ---- 表彰 ----
     const ce = document.createElement("div"); ce.className = "ctl";
-    ce.innerHTML = `<h2>表彰式</h2><p class="note" style="margin:0 0 8px">クイズがすべて終わったら押します。賞は下位から順に、ドラムロール → 名前の順で発表されます（「本番」タブの「次へ」かスペースキーで進行）。</p>`;
+    ce.innerHTML = `<h2>表彰式</h2><p class="note" style="margin:0 0 8px">クイズが終わったら、① 総合順位を最下位から順にスクロールで発表 → ② 景品の発表（賞の下位から順に、ドラムロール → 名前）の流れです。②はスペースキーか「次へ」で進めます。</p>`;
     const cereRow = $("#bCere").parentElement; ce.append(cereRow);
-    const bc = cereRow.querySelector("#bCere"); bc.classList.add("go"); bc.textContent = "🏆 表彰式を始める";
+    const bc = cereRow.querySelector("#bCere"); bc.classList.add("go"); bc.textContent = "🏆 ② 表彰式（景品の発表）を始める";
     const bti = cereRow.querySelector("#bToIdle"); if (bti) cP.querySelector(".viewbtns").after(Object.assign(document.createElement("div"), { className: "row" })), cP.querySelector(".viewbtns").nextElementSibling.append(bti);
+    const ce0 = document.createElement("div"); ce0.className = "row"; ce0.innerHTML = `<button class="btn go" data-view="roll">📜 ① 総合順位を発表（下位からスクロール）</button><label class="chk2"><input type="checkbox" id="oRollHide"> 上位3名は「？？？」で伏せて、表彰式で発表</label>`;
+    cereRow.before(ce0);
     const ce2 = document.createElement("div"); ce2.className = "row"; ce2.innerHTML = `<button class="btn" data-view="board">モニターに総合順位</button><button class="btn" data-view="prizes">モニターに景品表</button><button class="btn" data-view="champs">チャンピオン振り返り</button>`;
     ce.append(ce2);
     P("cere", "colA").append(ce, cPrz);
@@ -4849,6 +5031,8 @@ function hostPage() {
   document.querySelectorAll("#hTabs2 [data-ht]").forEach((b) => (b.onclick = () => setTab(b.dataset.ht)));
   setTab(H.tab || (Object.keys(H.roster).length && H.bank.length ? "live" : "prep"));
   $("#bToLive").onclick = () => setTab("live");
+  $("#oRollHide").checked = H.opt.rollHide !== false;
+  $("#oRollHide").onchange = () => { H.opt.rollHide = $("#oRollHide").checked; save(); pubState(); render(); };
   $("#bFull2").onclick = () => $("#bFull").click();
   $("#bSub2").onclick = () => { const u = sURL(); (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => toast("別PCモニター用のURLをコピーしました。別のPCのブラウザで開いてください（PIN " + H.pin + " でサブ司会にもなれます）"), () => prompt("別PCモニター用URL", u)); };
   // タイトル
@@ -4949,9 +5133,11 @@ function hostPage() {
       let rows;
       if (/\.(csv|txt)$/i.test(f.name)) { let t = await f.text(); if (/\uFFFD/.test(t)) t = new TextDecoder("shift_jis").decode(await f.arrayBuffer()); rows = t.split(/\r?\n/).map((l) => l.split(/\t|,/).map((x) => x.replace(/^"|"$/g, ""))); }
       else rows = await readXlsx(await f.arrayBuffer());
-      rows = rows.map((r) => Array.from({ length: 9 }, (_, i) => String((r || [])[i] ?? "").replace(/[\t\r\n]+/g, " ").trim()));
+      rows = rows.map((r) => Array.from({ length: 15 }, (_, i) => String((r || [])[i] ?? "").replace(/[\t\r\n]+/g, " ").trim()));
       rows = rows.filter((r) => r[0] && !/^(問題|問題文|質問|No\.?)$/.test(r[0]) && !/^【例】/.test(r[0]));
-      const items = parseBank(rows.map((r) => r.join("\t")).join("\n"));
+      rows.forEach((r) => { for (let i = 0; i < 5; i++) if (!r[1 + i] && r[10 + i]) r[1 + i] = "\u200b"; });
+      const items = parseBank(rows.map((r) => r.slice(0, 9).join("\t")).join("\n"));
+      items.forEach((it, k) => { const r = rows[k]; if (!r) return; const im = { q: imgId(r[9]), c: [10, 11, 12, 13, 14].map((j) => imgId(r[j])) }; if (im.q || im.c.some(Boolean)) it.img = im; });
       if (!items.length) return toast("問題が見つかりませんでした。A列に問題、B〜F列に選択肢を入れてください");
       const replace = H.bank.length > 0 && confirm(`${items.length}問を読み込みます。\n\n今の登録問題を入れ替えますか？\n［OK］入れ替える\n［キャンセル］後ろに追加する`);
       if (replace) { H.bank = []; H.bankIdx = 0; }
@@ -4973,6 +5159,15 @@ function hostPage() {
     Object.keys(H.claims).forEach((k) => release(k, true));
     H.roster = {}; H.rstore = {}; H.rkana = {}; H.points = {}; H.tsum = {}; H.ever = {};
     save(); pubState(); pubRoster(); render(); toast("名簿を全部削除しました");
+  };
+  // ---- 写真の読み込み（小さくしてこのPCに保存） ----
+  const shrink = (file) => new Promise((res, rej) => { const fr = new FileReader(); fr.onerror = rej; fr.onload = () => { const im = new Image(); im.onerror = rej; im.onload = () => { const k = Math.min(1, 520 / Math.max(im.width, im.height)); const c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height); res(c.toDataURL("image/jpeg", 0.72)); }; im.src = fr.result; }; fr.readAsDataURL(file); });
+  $("#bankImgs").onchange = async (e) => {
+    const fs = [...e.target.files]; e.target.value = ""; if (!fs.length) return;
+    let n = 0;
+    for (const f of fs) { try { const d = await shrink(f); const id = imgId(f.name); window.__hostImgs[id] = d; IMG[id] = d; n++; } catch (x) {} }
+    try { localStorage.setItem("hq-imgs", JSON.stringify(window.__hostImgs)); } catch (x) { toast("写真が多すぎて、このPCに保存しきれませんでした。枚数を減らしてください"); }
+    render(); toast(`写真を${n}枚読み込みました`);
   };
   // ---- デモデータ ----
   $("#bDemo").onclick = () => {
@@ -5034,7 +5229,7 @@ function hostPage() {
   };
   $("#bEndHere").onclick = () => { if (!confirm("この問題でピリオドを終わりにして、ピリオドチャンピオンを発表します。よろしいですか？")) return; act("endHere"); };
   $("#nqLast").onchange = () => { const b = H.bank[bankI()]; if (!b) return; b.last = $("#nqLast").checked; save(); render(); toast(b.last ? "この問題をピリオド最終問題にしました" : "最終問題の指定を外しました"); };
-  const STEPS_C = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["fast", "最速"], ["list", "正解者"]];
+  const STEPS_C = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["cutshow", "予選落ち"], ["fast", "最速"], ["list", "正解者"]];
   const STEPS_B = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["fast", "一番乗り"], ["list", "押した順"]];
   function renderExtra(S) {
     // 準備チェック
@@ -5049,7 +5244,9 @@ function hostPage() {
     // 次の問題
     const i = bankI(), b = H.bank[i];
     $("#nqNo").textContent = nB ? `${Math.min(i + 1, nB)} / ${nB}問目` : "未登録";
-    $("#nqBody").innerHTML = b ? `<div class="nqq">${esc(b.q)}</div>${b.mode === "choice" ? `<div class="nqc">${b.ch.map((c, j) => `<span class="c${j}${(b.correct || []).includes(j) ? " ok" : ""}">${L[j]} ${esc(c)}</span>`).join("")}</div>` : '<div class="note">早押しボタン</div>'}<div class="note">${b.mode === "choice" ? `正解：${(b.correct || []).map((c) => L[c]).join("・") || "当日選ぶ"}　` : ""}${b.limit}秒${b.predict ? `　予想問題（${b.pts}点）` : ""}${b.last ? "　<b style='color:var(--gold)'>ピリオド最終問題</b>" : ""}</div>` : `<div class="note">${nB ? "登録した問題はすべて出題しました。" : "問題が登録されていません。"}</div>`;
+    $("#imgCount").textContent = `（このPCに保存済み：${Object.keys(window.__hostImgs || {}).length}枚）`;
+    const th = (id) => (id && IMG[id] ? `<img src="${IMG[id]}" alt="">` : id ? '<i class="miss">写真なし</i>' : "");
+    $("#nqBody").innerHTML = b ? `<div class="nqq">${esc(b.q)}</div>${b.img ? `<div class="nqimg">${th(b.img.q)}${(b.img.c || []).map(th).join("")}</div>` : ""}${b.mode === "choice" ? `<div class="nqc">${b.ch.map((c, j) => `<span class="c${j}${(b.correct || []).includes(j) ? " ok" : ""}">${L[j]} ${esc(c)}</span>`).join("")}</div>` : '<div class="note">早押しボタン</div>'}<div class="note">${b.mode === "choice" ? `正解：${(b.correct || []).map((c) => L[c]).join("・") || "当日選ぶ"}　` : ""}${b.limit}秒${b.predict ? `　予想問題（${b.pts}点）` : ""}${b.last ? "　<b style='color:var(--gold)'>ピリオド最終問題</b>" : ""}</div>` : `<div class="note">${nB ? "登録した問題はすべて出題しました。" : "問題が登録されていません。"}</div>`;
     const busy = S.phase === "open" || (S.rid && S.phase !== "idle" && S.stage !== "list" && S.stage !== "champ") || S.view === "cere";
     $("#nqGo").disabled = !b || busy;
     $("#nqLast").checked = !!(b && b.last); $("#nqLast").disabled = !b || !!b.predict || H.rule !== "kanshasai";
@@ -5057,7 +5254,7 @@ function hostPage() {
     { const st2 = S.stage || S.phase; const can = H.rule === "kanshasai" && H.period.active && S.rid && !S.predict && !H.secret.last && S.mode === "choice" && ["correct", "fast", "list"].includes(st2);
       $("#bEndHere").classList.toggle("hidden", !can); } $("#nqPrev").disabled = i <= 0; $("#nqSkip").disabled = i >= nB;
     // 進行ステップ
-    const st = S.stage || S.phase, list = S.mode === "buzzer" ? STEPS_B : S.predict ? STEPS_C.filter((x) => x[0] !== "fast") : STEPS_C;
+    const st = S.stage || S.phase, list = (S.mode === "buzzer" ? STEPS_B : S.predict ? STEPS_C.filter((x) => x[0] !== "fast") : STEPS_C).filter((x) => x[0] !== "cutshow" || S.cut);
     const ci = S.rid ? list.findIndex((x) => x[0] === st) : -1;
     $("#stepBar").innerHTML = S.view === "cere" ? `<span class="on">表彰式</span>` : S.rid ? list.map((x, j) => `<span class="${j === ci ? "on" : j < ci ? "done" : ""}">${x[1]}</span>`).join("") + (st === "champ" ? '<span class="on">チャンピオン</span>' : "") : `<span class="on">${S.stage === "period" ? "ピリオド開始" : "待機中"}</span><span>→ 次の問題を出題</span>`;
     renderAtt();
@@ -5106,7 +5303,8 @@ function remotePage(room, bi) {
   let pin = store.get("hq-pin-" + room, "");
   const pURL = baseOf(BASE);
   const watchSfx = sfxWatcher(), watchCount = countWatcher();
-  const cli = connectAny(bi, room, ["state", "live"], (t, d) => {
+  const cli = connectAny(bi, room, ["state", "live", "img/+"], (t, d) => {
+    if (t.startsWith("img/")) { if (typeof d.id === "string" && typeof d.d === "string" && /^data:image\//.test(d.d)) { IMG[d.id] = d.d; render(); } return; }
     if (t === "state") {
       if (d.rid !== S.rid) pickedCorrect = [];
       S = { ...DEF, ...d };
@@ -5157,7 +5355,7 @@ function playerPage(room, bi) {
   let up = false;
   document.body.classList.add("v-player");
   let roster = [], pickStore = store.get("hq-pick-store", ""), pendingForce = null;
-  const cli = connectAny(bi, room, ["state", "roster", "r/" + P.cid], onMsg, () => {
+  const cli = connectAny(bi, room, ["state", "roster", "img/+", "r/" + P.cid], onMsg, () => {
     if (!up) { up = true; if (!P.name) show("vJoin"); else loading("参加の確認をしています", ""); }
     if (P.name && !joined) sendJoin(P.name, true);
   }, (s, i) => {
@@ -5179,6 +5377,7 @@ function playerPage(room, bi) {
   }
   const standingNow = () => (S.rule === "kanshasai" && S.period && S.period.active ? (S.stand || []).includes(P.name) : null);
   function onMsg(t, d) {
+    if (t.startsWith("img/")) { if (typeof d.id === "string" && typeof d.d === "string" && /^data:image\//.test(d.d)) { IMG[d.id] = d.d; if (joined) render(); } return; }
     if (t === "roster") { roster = Array.isArray(d.list) ? d.list.filter((x) => x && typeof x.n === "string") : []; if (!joined) renderPick(); return; }
     if (t === "state") {
       if (d.closedRoom) { loading("司会が新しいルームを作りました", "自動で移動します…"); setTimeout(() => location.replace(baseOf(BASE)), 1500); return; }
@@ -5329,15 +5528,15 @@ function playerPage(room, bi) {
     const st = S.stage || S.phase;
     const pl = place.rid === S.rid ? place : {};
     const placeBox = (x, lab) => x ? `<div class="place"><span>${lab}</span><b>${x.of}</b>人中<b class="pnum">${x.p}</b>番目</div>` : "";
-    const showC = corrSet(S).length > 0 && (st === "correct" || st === "fast" || st === "list" || st === "champ");
-    let h = fx + `<div class="qno">第${S.no}問</div><div class="qtext">${esc(S.question)}</div>`;
+    const showC = corrSet(S).length > 0 && (st === "correct" || st === "cutshow" || st === "fast" || st === "list" || st === "champ");
+    let h = fx + `<div class="qno">第${S.no}問</div><div class="qtext">${esc(S.question)}</div>${qImg(S) ? `<img class="qimgp" src="${qImg(S)}" alt="">` : ""}`;
     if (open && !mine && !late) h += `<div class="tbar"><i class="js-bar"></i></div><div class="timer js-timer" style="text-align:right"></div>`;
     if (S.mode === "choice") {
       h += `<div class="choices n${nchOf(S)}">` + IDX(nchOf(S)).map((i) => {
         let c = "ch c" + i;
         if (showC) { if (!isHit(S, i)) c += " dim"; } else if (mine && mine.c !== i) c += " dim";
         if (mine && mine.c === i) c += " pick";
-        return `<button class="${c}" data-c="${i}" ${locked ? "disabled" : ""}><span class="L">${L[i]}<span class="kbd">${L[i]} / ${i + 1}</span></span><span class="T">${S.phase === "read" ? "？" : esc(S.choices[i])}</span></button>`;
+        return `<button class="${c}" data-c="${i}" ${locked ? "disabled" : ""}><span class="L">${L[i]}<span class="kbd">${L[i]} / ${i + 1}</span></span>${S.phase !== "read" && cImg(S, i) ? `<span class="ph" style="background-image:url('${cImg(S, i)}')"></span>` : ""}<span class="T">${S.phase === "read" ? "？" : esc(S.choices[i])}</span></button>`;
       }).join("") + `</div>`;
     } else h += `<button class="buzz" data-c="-1" ${locked ? "disabled" : ""}>押す！<br><span class="kbd" style="border-color:#fff">スペース</span></button>`;
     const cTxt = corrSet(S).length ? `<div>正解は ${corrText(S)}</div>` : "";
@@ -5347,7 +5546,7 @@ function playerPage(room, bi) {
     else if (mine) {
       if (showC && S.mode === "choice") {
         const rk = st === "list" || st === "champ" ? (S.winners || []).findIndex((w) => w.n === P.name) : -1;
-        const cutMe = S.cut === P.name && st === "correct";
+        const cutMe = S.cut === P.name && (st === "correct" || st === "cutshow");
         const corr = pl.corr || (rk >= 0 ? { p: rk + 1, of: (S.winners || []).length } : null);
         res = isHit(S, mine.c)
           ? `<div class="h okc">${S.predict ? "的中！" : "正解！"}</div>${S.predict ? `<div>+${S.pts}点</div>` : ""}<div>${sec(mine.ms)}</div>${st === "list" || st === "champ" ? placeBox(corr, S.predict ? "的中者" : "正解者") : ""}${placeBox(pl.all, "回答した")}${cutMe ? '<div class="ngc"><b>ただし一番遅かったため「予選落ち」で着席です</b></div>' : ""}`
