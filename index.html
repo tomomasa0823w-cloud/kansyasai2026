@@ -4881,7 +4881,9 @@ function hostPage() {
     };
     const X = (t) => new DOMParser().parseFromString(t, "application/xml");
     const ss = [], sst = await get("xl/sharedStrings.xml");
-    if (sst) [...X(sst).getElementsByTagName("si")].forEach((si) => ss.push([...si.getElementsByTagName("t")].map((t) => t.textContent).join("")));
+    // ふりがな（rPh）は除いて、本文の文字だけを取り出す
+    const txt = (el) => [...el.childNodes].filter((n) => n.localName === "t" || n.localName === "r").map((n) => n.localName === "t" ? n.textContent : [...n.childNodes].filter((x) => x.localName === "t").map((x) => x.textContent).join("")).join("");
+    if (sst) [...X(sst).getElementsByTagName("si")].forEach((si) => ss.push(txt(si)));
     let sheet = "xl/worksheets/sheet1.xml";
     try {
       const wbx = X(await get("xl/workbook.xml")), first = wbx.getElementsByTagName("sheet")[0], rid = first && (first.getAttribute("r:id") || first.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"));
@@ -4894,7 +4896,7 @@ function hostPage() {
       const out = [];
       [...row.getElementsByTagName("c")].forEach((c) => {
         const t = c.getAttribute("t"), v = c.getElementsByTagName("v")[0];
-        let val = t === "s" ? ss[+(v && v.textContent)] : t === "inlineStr" ? [...c.getElementsByTagName("t")].map((x) => x.textContent).join("") : v ? v.textContent : "";
+        let val = t === "s" ? ss[+(v && v.textContent)] : t === "inlineStr" ? (c.getElementsByTagName("is")[0] ? txt(c.getElementsByTagName("is")[0]) : "") : v ? v.textContent : "";
         out[col(c.getAttribute("r") || "A1")] = val ?? "";
       });
       return Array.from(out, (x) => x ?? "");
