@@ -12,7 +12,7 @@
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
 
 :root{
@@ -675,7 +675,7 @@ body.v-player.offline #offBar{display:block}
 .tv-qa .qimg{flex:0 0 300px;background:#fff center/contain no-repeat;border-radius:16px}
 .tv-qa .qt{flex:1;min-height:0;background:linear-gradient(180deg,#FFFFFF,#EAF4FF);border-radius:18px;color:#0B2A5A;font-weight:900;font-size:52px;line-height:1.35;padding:20px 22px;overflow:hidden;overflow-wrap:anywhere;display:flex;align-items:center}
 .tv-qa .qt.s{font-size:40px}
-.tv-qa .qt.v{writing-mode:vertical-rl;text-orientation:upright;font-size:58px;letter-spacing:.06em;justify-content:center;line-height:1.5;padding:22px 10px}
+.tv-qa .qt.v{writing-mode:vertical-rl;text-orientation:upright;font-size:54px;letter-spacing:.04em;justify-content:center;line-height:1.7;padding:22px 10px}
 .tv-qa .qtimer{flex:none;align-self:center;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FF8A8A,#E60012 55%,#8A0008);border:8px solid #fff;box-shadow:0 8px 20px rgba(0,0,0,.35),inset 0 -10px 0 rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:96px;color:#fff;font-variant-numeric:tabular-nums}
 .tv-qa .qtimer.off{font-size:46px;background:radial-gradient(circle at 35% 30%,#9DB2D8,#5A6E9E 60%,#2E3D66)}
 .tv-qa .qtimer .hurry{color:#FFF27A}
@@ -737,7 +737,105 @@ body.v-player.offline #offBar{display:block}
 .tv-cut .t{font-family:var(--disp);font-size:230px;line-height:1.1;color:#FF2D3B;text-shadow:0 0 50px rgba(255,45,59,.7),0 10px 0 #000;animation:tvshake .25s 6}
 .tv-cut .n{font-family:var(--disp);font-size:150px;color:#fff;text-shadow:0 0 30px rgba(255,255,255,.6);animation-delay:1.6s}
 .tv-cut .s{font-weight:900;font-size:56px;color:#FFE066;animation-delay:2.2s}
-.tv-ans{left:50%!important;right:auto!important;top:-62px;bottom:auto!important;transform:translateX(-50%)}
+.tv-ans{left:50%!important;right:auto!important;top:-140px;bottom:auto!important;transform:translateX(-50%)}
+
+/* ===== v9 濃い青の豪華テーマ（初期設定） ===== */
+.tv.deep{color:#fff}
+.tv.deep .tv-bg{background:
+  radial-gradient(1.5px 1.5px at 12% 22%,rgba(255,230,160,.9),transparent),radial-gradient(1px 1px at 28% 68%,rgba(255,230,160,.7),transparent),
+  radial-gradient(2px 2px at 44% 14%,rgba(255,240,200,.8),transparent),radial-gradient(1px 1px at 63% 78%,rgba(255,230,160,.7),transparent),
+  radial-gradient(1.5px 1.5px at 81% 31%,rgba(255,240,200,.9),transparent),radial-gradient(1px 1px at 92% 64%,rgba(255,230,160,.6),transparent),
+  radial-gradient(1.5px 1.5px at 6% 86%,rgba(255,230,160,.7),transparent),radial-gradient(1px 1px at 55% 46%,rgba(255,240,200,.5),transparent),
+  radial-gradient(ellipse 60% 50% at 50% 38%,rgba(40,90,200,.55) 0%,rgba(20,45,130,.25) 45%,transparent 72%),
+  radial-gradient(ellipse 120% 60% at 50% 120%,rgba(200,150,40,.22),transparent 60%),
+  linear-gradient(180deg,#050A2A 0%,#0A1650 45%,#081240 75%,#03061C 100%)}
+.tv.deep .tv-bg::before,.tv.deep .tv-bg::after{background:conic-gradient(from 0deg,transparent 0 8deg,rgba(255,225,150,.07) 10deg 15deg,transparent 17deg 44deg,rgba(255,225,150,.05) 46deg 50deg,transparent 52deg 84deg,rgba(160,200,255,.06) 86deg 90deg,transparent 92deg 360deg)}
+.tv.deep .tv-bg.cere{background:radial-gradient(ellipse 60% 55% at 50% 42%,#7A4A00 0%,#3A1C5A 45%,#0A0628 100%)}
+/* ロゴ・起立人数 */
+.tv.deep .tv-logo{background:linear-gradient(180deg,rgba(10,25,80,.92),rgba(5,12,45,.92));border:3px solid transparent;background-clip:padding-box;box-shadow:0 0 0 3px #E8B740,0 0 0 6px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.25)}
+.tv.deep .tv-logo .a{color:#CFE3FF}
+.tv.deep .tv-logo .b{background:linear-gradient(180deg,#FFF6CF 0%,#FFD55A 45%,#E39B12 70%,#FFE89A 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 0 rgba(0,0,0,.5))}
+.tv.deep .tv-stand{background:linear-gradient(180deg,rgba(10,25,80,.92),rgba(5,12,45,.92));border:none;box-shadow:0 0 0 3px #E8B740,0 0 0 6px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.25)}
+.tv.deep .tv-stand b{background:linear-gradient(180deg,#FFF6CF,#FFC83D 60%,#E39B12);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 rgba(0,0,0,.45))}
+/* 文字 */
+.tv.deep .kick{color:#9FDFFF;text-shadow:0 3px 0 rgba(0,0,0,.45)}
+.tv.deep .sub{color:#E6EEFF;text-shadow:0 2px 0 rgba(0,0,0,.4)}
+.tv.deep .giant.gold{background:linear-gradient(180deg,#FFF8D8 0%,#FFD55A 40%,#E39B12 62%,#FFE58A 80%,#C77A00 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 0 #06103F) drop-shadow(0 0 3px #06103F)}
+.tv.deep .giant.dim,.tv.deep .big.dim{color:#8FA6DA}
+.tv.deep .num{color:#FFD55A;text-shadow:0 8px 0 rgba(0,0,0,.45),0 0 40px rgba(255,200,60,.35)}
+.tv.deep .winner{color:#fff;text-shadow:0 0 40px rgba(255,210,90,.75),0 0 80px rgba(120,200,255,.35),0 8px 0 rgba(0,0,0,.45)}
+.tv.deep .time{color:#FFD55A}
+.tv.deep .drum{color:#FFD55A}
+.tv.deep .memo{background:rgba(255,255,255,.12);color:#fff;border-color:#E8B740}
+.tv.deep .tv-center.spot::before{background:radial-gradient(ellipse at center,rgba(255,236,170,.32),transparent 62%)}
+.tv.deep .tv-center.rays::before,.tv.deep .tv-title .beam{background:repeating-conic-gradient(rgba(255,210,100,.16) 0 5deg,transparent 5deg 15deg)}
+.tv.deep .tv-title .t1,.tv.deep .tv-title .t3{color:#E6EEFF;text-shadow:0 4px 0 rgba(0,0,0,.4)}
+.tv.deep .tv-title .t2{background:linear-gradient(180deg,#FFF8D8 0%,#FFD55A 40%,#E39B12 62%,#FFE58A 80%,#C77A00 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 12px 0 #06103F) drop-shadow(0 0 4px #06103F)}
+/* テロップ */
+.tv.deep .tv-telop{background:linear-gradient(180deg,#1A3C9A 0%,#0C226A 55%,#081853 100%);border-top:4px solid #E8B740;box-shadow:0 -1px 0 rgba(255,255,255,.25) inset,0 -10px 30px rgba(0,0,0,.45)}
+.tv.deep .tv-telop .tag{background:linear-gradient(180deg,#FFE27A,#E8A812 60%,#C98A00);color:#2A1700}
+/* 選択肢パネル：つやのある白＋金の縁 */
+.tv.deep .tv-qa .qc{background:linear-gradient(180deg,#FFFFFF 0%,#F4F8FF 52%,#DCE8FA 100%);border:0;box-shadow:0 0 0 4px #E8B740,0 0 0 7px rgba(5,12,45,.6),0 14px 30px rgba(0,0,0,.45),inset 0 3px 0 rgba(255,255,255,.9),inset 0 -6px 12px rgba(30,70,140,.12)}
+.tv.deep .tv-qa .qc::after{content:"";position:absolute;left:0;right:0;top:0;height:42%;background:linear-gradient(180deg,rgba(255,255,255,.65),rgba(255,255,255,0));pointer-events:none;border-radius:26px 26px 60% 60%/26px 26px 30px 30px}
+.tv.deep .tv-qa .qc .num{border:3px solid #fff;box-shadow:0 0 0 3px rgba(0,0,0,.25),inset 0 -8px 0 rgba(0,0,0,.25),inset 0 8px 10px rgba(255,255,255,.35),0 4px 10px rgba(0,0,0,.35)}
+.tv.deep .tv-qa .qc.c0 .num{background:radial-gradient(circle at 35% 30%,#4E7BE0,#1C3F8F 70%)}
+.tv.deep .tv-qa .qc.c1 .num{background:radial-gradient(circle at 35% 30%,#D2475A,#8A1F2B 70%)}
+.tv.deep .tv-qa .qc.c2 .num{background:radial-gradient(circle at 35% 30%,#5FCB6B,#2E9A3B 70%)}
+.tv.deep .tv-qa .qc.c3 .num{background:radial-gradient(circle at 35% 30%,#E0BE52,#9A7B1E 70%)}
+.tv.deep .tv-qa .qc.c4 .num{background:radial-gradient(circle at 35% 30%,#9E73D6,#6B3FA0 70%)}
+.tv.deep .tv-qa .qc .cn{color:#0B2459;text-shadow:0 1px 0 #fff}
+.tv.deep .tv-qa .qc.hide{background:linear-gradient(180deg,#2A4FB8 0%,#16348C 55%,#0E246A 100%)}
+.tv.deep .tv-qa .qc.hide .cn{color:rgba(255,255,255,.55);text-shadow:0 4px 0 rgba(0,0,0,.35)}
+.tv.deep .tv-qa .qc.hide::after{background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0))}
+.tv.deep .tv-qa .bigimg{border:0;box-shadow:0 0 0 4px #E8B740,0 0 0 7px rgba(5,12,45,.6),0 14px 30px rgba(0,0,0,.45)}
+/* 問題パネル：金縁のメタリック */
+.tv.deep .tv-qa .qside{background:linear-gradient(180deg,#2E55C8 0%,#1A3796 40%,#0F2468 100%);border:0;box-shadow:0 0 0 4px #E8B740,0 0 0 7px rgba(5,12,45,.6),0 14px 30px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.35)}
+.tv.deep .tv-qa .qh{background:linear-gradient(180deg,#FFF6CF,#FFD55A 50%,#E39B12);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 rgba(0,0,0,.45));text-shadow:none}
+.tv.deep .tv-qa .qh small{-webkit-text-fill-color:#fff;color:#fff}
+.tv.deep .tv-qa .qt{background:linear-gradient(180deg,#FFFFFF,#EEF4FF);box-shadow:inset 0 2px 6px rgba(0,30,90,.18)}
+.tv.deep .tv-qa .qtimer{border:6px solid #FFE58A;box-shadow:0 0 0 4px rgba(0,0,0,.3),0 10px 24px rgba(0,0,0,.45),inset 0 -12px 0 rgba(0,0,0,.25),inset 0 10px 16px rgba(255,255,255,.35)}
+.tv.deep .tv-ans{background:rgba(5,12,45,.85);box-shadow:0 0 0 2px #E8B740}
+.tv.deep .tv-stamp{box-shadow:0 0 0 6px rgba(255,255,255,.6),0 20px 60px rgba(0,0,0,.6)}
+.tv.deep .cd{color:#fff;text-shadow:0 0 80px rgba(255,90,95,.95),0 14px 0 rgba(0,0,0,.45)}
+/* 分布・一覧 */
+.tv.deep .tv-qs{background:linear-gradient(180deg,#FFFFFF,#EEF4FF);color:#0B2459;box-shadow:0 0 0 3px #E8B740,0 10px 24px rgba(0,0,0,.4)}
+.tv.deep .tv-bars .num{color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.45)}
+.tv.deep .tv-bars .col.lose{opacity:.28}
+.tv.deep .tv-seat{background:rgba(5,12,45,.85);box-shadow:0 0 0 3px #E8B740}
+.tv.deep .tv-champ{background:linear-gradient(180deg,#FFE27A,#E8A812 60%,#C98A00);color:#2A1700;box-shadow:0 0 0 3px #fff,0 12px 30px rgba(0,0,0,.4)}
+.tv.deep .tv-top li,.tv.deep .tv-names li,.tv.deep .tv-board li,.tv.deep .tv-prz .p,.tv.deep .tv-att .s,.tv.deep .tv-roll .list li{background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.22);color:#fff;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.tv.deep .tv-top .no,.tv.deep .tv-top .tm,.tv.deep .tv-board .no,.tv.deep .tv-board .pt,.tv.deep .tv-prz .r,.tv.deep .tv-att .v,.tv.deep .tv-roll .no,.tv.deep .tv-roll .pt{color:#FFD55A}
+.tv.deep .tv-att .v small{color:#fff}
+.tv.deep .tv-board li.top,.tv.deep .tv-prz .p.gold,.tv.deep .tv-att .s.full,.tv.deep .tv-roll .list li.top{background:linear-gradient(90deg,rgba(255,200,61,.45),rgba(255,200,61,.12));border-color:#E8B740}
+.tv.deep .tv-roll .list li.hid{background:linear-gradient(90deg,#0B1A55,#1B3A9A);border-color:#E8B740}
+.tv.deep .tv-roll .rh{background:linear-gradient(180deg,#FFF6CF,#FFD55A 50%,#E39B12);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 4px 0 rgba(0,0,0,.45))}
+.tv.deep .tv-more{color:#E6EEFF}
+.tv.deep .tv-join .h{background:linear-gradient(180deg,#FFF6CF,#FFD55A 50%,#E39B12);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tv.deep .tv-join ol b,.tv.deep .tv-join .cnt b{color:#FFD55A}
+.tv.deep .tv-join .url{color:#CFE3FF}
+.tv.deep .tv-join .qr{box-shadow:0 0 0 8px #E8B740,0 0 0 12px rgba(5,12,45,.6),0 20px 60px rgba(0,0,0,.5)}
+.tv.deep .tv-prog{background:rgba(5,12,45,.85);box-shadow:0 0 0 2px #E8B740}
+
+/* 明朝の金文字で高級感 */
+.tv.deep{--lux:"Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho","Noto Serif CJK JP",serif}
+.tv.deep .tv-logo .a{font-family:var(--lux);font-weight:700;letter-spacing:.35em;font-size:24px}
+.tv.deep .tv-logo .b{font-family:var(--lux);font-weight:800;font-size:56px;letter-spacing:.06em}
+.tv.deep .tv-title .t1{font-family:var(--lux);font-weight:700;letter-spacing:.5em}
+.tv.deep .tv-title .t2{font-family:var(--lux);font-weight:800;letter-spacing:.04em}
+.tv.deep .tv-title .t3{font-family:var(--lux);font-weight:700;letter-spacing:.2em}
+.tv.deep .giant{font-family:var(--lux);font-weight:800}
+.tv.deep .winner{font-family:var(--lux);font-weight:800}
+.tv.deep .kick{font-family:var(--lux);font-weight:700;letter-spacing:.12em}
+.tv.deep .tv-qa .qh{font-family:var(--lux);font-weight:800}
+.tv.deep .tv-roll .rh,.tv.deep .tv-join .h{font-family:var(--lux);font-weight:800;letter-spacing:.1em}
+.tv.deep .tv-cut .t{font-family:var(--lux);font-weight:800}
+.tv.deep .tv-cut .n{font-family:var(--lux);font-weight:800}
+.tv.deep .tv-telop .tag{font-family:var(--lux);font-weight:800;letter-spacing:.08em}
+/* 金の細い飾り線 */
+.tv.deep .tv-telop::before{content:"";position:absolute;left:0;right:0;top:-12px;height:2px;background:linear-gradient(90deg,transparent,#E8B740 20%,#FFF0B8 50%,#E8B740 80%,transparent)}
+.tv.deep .tv-cut{background:radial-gradient(ellipse at center,rgba(40,8,12,.92),rgba(8,2,6,.96));box-shadow:0 0 0 3px #E8B740,0 0 0 8px rgba(0,0,0,.5),0 20px 60px rgba(0,0,0,.6)}
+.tv.deep .tv-cut .t{color:#FF3B47}
+.tv.deep .tv-roll .list li.hid .tn{letter-spacing:.3em}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -807,6 +905,19 @@ body:has(#vRemote:not(.hidden)) main{max-width:none}
 .ch .ph{display:block;flex:1;min-height:56px;margin:4px 0;border-radius:10px;background:#fff center/contain no-repeat}
 body.v-player .ch:has(.ph) .L{font-size:1.2rem}
 .qimgp{display:block;max-width:100%;max-height:22vh;margin:0 auto 8px;border-radius:12px;background:#fff}
+
+/* 写真をつける画面 */
+.pmodal{position:fixed;inset:0;z-index:80;background:rgba(5,8,30,.6);display:grid;place-items:center;padding:16px}
+.pmodal>div{background:var(--stage2);color:var(--ink);border-radius:16px;padding:18px;width:min(900px,100%);max-height:92vh;overflow:auto}
+.pmodal h3{margin:0 0 4px}
+.pzs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0}
+.pz{position:relative;border:3px dashed var(--line);border-radius:14px;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--stage);overflow:hidden;outline:none}
+.pz.sel{border-color:var(--gold)}
+.pz.over{border-color:var(--ok);background:rgba(50,210,122,.12)}
+.pz img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff}
+.pz .pzh{text-align:center;color:var(--dim);font-weight:700;font-size:.9rem;line-height:1.5}
+.pz b{position:absolute;left:0;right:0;bottom:0;background:rgba(5,10,40,.75);color:#fff;font-size:.85rem;padding:4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pz .px{position:absolute;right:6px;top:6px;z-index:2;background:#fff;color:#000}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -3984,7 +4095,7 @@ function qaLayout(S, mode) {
     const ph = hide ? "" : cImg(S, i);
     return `<div class="qc c${i}${ph ? " ph" : ""}${hide ? " hide" : ""}${mode === "closed" ? " faded" : ""}"><span class="num">${L[i]}</span>${ph ? `<div class="pic" style="background-image:url('${ph}')"></div>` : ""}<div class="cn">${hide ? "？" : esc(S.choices[i])}</div></div>`;
   }).join("") : `<div class="qbuzz">${mode === "open" ? "早押し！" : "早押し問題"}</div>`;
-  const qi = qImg(S), qt = S.question || "", vert = !qi && qt.length <= 18;
+  const qi = qImg(S), qt = S.question || "", vert = !qi && qt.length <= 12;
   return `<div class="tv-qa n${n}${S.mode === "choice" ? "" : " bz"}${qi ? " qi" : ""}"><div class="left">${qi ? `<div class="bigimg" style="background-image:url('${qi}')"></div>` : ""}<div class="grid">${cards}</div></div>
     <div class="qside"><div class="qh">Q<small>${S.no}</small></div><div class="qt${vert ? " v" : ""}${qt.length > 60 ? " s" : ""}">${esc(qt)}</div>
       <div class="qtimer${mode === "open" ? "" : " off"}">${mode === "open" ? '<span class="js-timer"></span>' : mode === "read" ? "READY" : "締切"}</div>${mode === "open" ? '<div class="qbar"><i class="js-bar"></i></div>' : ""}</div></div>`;
@@ -4123,7 +4234,7 @@ function renderMonitor(el, S, list, joinURL) {
   el._key = key; el._html = html;
   el.classList.add("tvhost");
   el.classList.toggle("noanim", same);
-  el.innerHTML = `<div class="tv">${html}</div>`;
+  el.innerHTML = `<div class="tv deep">${html}</div>`;
   qrInto(el.querySelector(".js-qr"), joinURL);
   fitTV(el);
   if (!tvObs.has(el) && window.ResizeObserver) { const o = new ResizeObserver(() => fitTV(el)); o.observe(el); tvObs.set(el, o); }
@@ -4683,8 +4794,9 @@ function hostPage() {
   $("#bankNext").onclick = () => loadBank(H.bankIdx || 0);
   function renderBank() {
     $("#bankCount").textContent = H.bank.length ? `${H.bank.length}問（次は ${Math.min((H.bankIdx || 0) + 1, H.bank.length + 1)}問目）` : "未登録";
-    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || [])].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td>${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td>${b.predict ? `予想${b.pts || 1}点` : ""}${b.last ? "最終" : ""}</td><td><button class="mini" data-load="${i}">読込</button></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
+    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || [])].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td>${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td>${b.predict ? `予想${b.pts || 1}点` : ""}${b.last ? "最終" : ""}</td><td style="white-space:nowrap"><button class="mini" data-photo="${i}">📷写真</button> <button class="mini" data-load="${i}">読込</button></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
     $("#bankList").querySelectorAll("[data-load]").forEach((x) => (x.onclick = () => loadBank(+x.dataset.load)));
+    $("#bankList").querySelectorAll("[data-photo]").forEach((x) => (x.onclick = () => window.__photoEditor && window.__photoEditor(+x.dataset.photo)));
   }
 
   // ---- 賞の設定 ----
@@ -4993,7 +5105,7 @@ function hostPage() {
     // ---- 本番 ----
     const nq = document.createElement("div"); nq.className = "ctl"; nq.id = "nqCard";
     nq.innerHTML = `<h2>次の問題 <span class="phase" id="nqNo"></span></h2><div id="nqBody"></div>
-      <label class="chk2 nqlast"><input type="checkbox" id="nqLast"> <b>この問題をピリオド最終問題にする</b><span class="note">（参加者には締め切りまで秘密。この問題でピリオドチャンピオンが決まります）</span></label>
+      <div class="row" style="margin:0 0 6px"><button class="btn" id="nqPhoto">📷 この問題に写真をつける</button></div><label class="chk2 nqlast"><input type="checkbox" id="nqLast"> <b>この問題をピリオド最終問題にする</b><span class="note">（参加者には締め切りまで秘密。この問題でピリオドチャンピオンが決まります）</span></label>
       <div class="row"><button class="btn" id="nqPrev">◀ 前</button><button class="btn go big2" id="nqGo">この問題を出題 ▶</button><button class="btn" id="nqSkip">とばす ▶</button></div>`;
     const steps = document.createElement("div"); steps.className = "stepbar"; steps.id = "stepBar";
     cP.querySelector("h2").after(steps);
@@ -5169,6 +5281,46 @@ function hostPage() {
     try { localStorage.setItem("hq-imgs", JSON.stringify(window.__hostImgs)); } catch (x) { toast("写真が多すぎて、このPCに保存しきれませんでした。枚数を減らしてください"); }
     render(); toast(`写真を${n}枚読み込みました`);
   };
+  // ---- 写真をドラッグ＆ドロップ／貼り付けで付ける ----
+  function saveImgs() { try { localStorage.setItem("hq-imgs", JSON.stringify(window.__hostImgs)); return true; } catch (x) { toast("写真が多すぎて、このPCに保存しきれませんでした。枚数を減らしてください"); return false; } }
+  function photoEditor(i) {
+    const b = H.bank[i]; if (!b) return;
+    let sel = "q";
+    const d = document.createElement("div"); d.className = "pmodal";
+    const draw = () => {
+      const im = b.img || { q: null, c: [] }, n = b.mode === "choice" ? b.nch || 4 : 0;
+      const zone = (slot, label, id) => `<div class="pz${sel === slot ? " sel" : ""}" data-slot="${slot}" tabindex="0">${id && IMG[id] ? `<img src="${IMG[id]}" alt=""><button class="mini px" data-x="${slot}">×</button>` : `<span class="pzh">ここに写真を<br>ドラッグ／貼り付け<br><small>（クリックで選ぶ）</small></span>`}<b>${label}</b></div>`;
+      d.innerHTML = `<div><h3>写真をつける：第${i + 1}問</h3><p class="note" style="margin:0 0 8px">${esc(b.q)}</p>
+        <div class="pzs">${zone("q", "問題の写真", im.q)}${IDX(n).map((j) => zone("c" + j, `${L[j]}：${esc((b.ch[j] || "").replace(/\u200b/g, "")) || "（文字なし）"}`, (im.c || [])[j])).join("")}</div>
+        <p class="note">写真ファイルを枠にドラッグするか、枠を選んでから <b>Ctrl+V</b>（コピーした画像の貼り付け）でもOK。クリックするとファイルを選べます。</p>
+        <div class="row"><button class="btn go" id="pzOk">閉じる</button></div><input type="file" id="pzFile" accept="image/*" hidden></div>`;
+      d.querySelectorAll(".pz").forEach((z) => {
+        z.onclick = (e) => { if (e.target.closest("[data-x]")) return; sel = z.dataset.slot; d.querySelector("#pzFile").click(); };
+        z.onmouseenter = () => { sel = z.dataset.slot; d.querySelectorAll(".pz").forEach((x) => x.classList.toggle("sel", x === z)); };
+        z.ondragover = (e) => { e.preventDefault(); z.classList.add("over"); };
+        z.ondragleave = () => z.classList.remove("over");
+        z.ondrop = (e) => { e.preventDefault(); z.classList.remove("over"); const f = [...(e.dataTransfer.files || [])].find((x) => /^image\//.test(x.type)); if (f) put(z.dataset.slot, f); else toast("画像ファイルをドロップしてください"); };
+      });
+      d.querySelectorAll("[data-x]").forEach((x) => (x.onclick = () => put(x.dataset.x, null)));
+      d.querySelector("#pzFile").onchange = (e) => { const f = e.target.files[0]; if (f) put(sel, f); };
+      d.querySelector("#pzOk").onclick = close;
+    };
+    async function put(slot, file) {
+      b.img = b.img || { q: null, c: [] }; b.img.c = b.img.c || [];
+      let id = null;
+      if (file) { try { const data = await shrink(file); id = "i" + rand(9, lower); window.__hostImgs[id] = data; IMG[id] = data; if (!saveImgs()) return; } catch (x) { return toast("この画像は読み込めませんでした"); } }
+      if (slot === "q") b.img.q = id; else b.img.c[+slot.slice(1)] = id;
+      if (!b.img.q && !b.img.c.some(Boolean)) delete b.img;
+      if (b.mode === "choice" && file) { const j = slot === "q" ? -1 : +slot.slice(1); if (j >= 0 && !b.ch[j]) b.ch[j] = "\u200b"; }
+      save(); render(); draw();
+    }
+    const onPaste = (e) => { const it = [...(e.clipboardData ? e.clipboardData.items : [])].find((x) => /^image\//.test(x.type)); if (!it) return; e.preventDefault(); put(sel, it.getAsFile()); };
+    const close = () => { document.removeEventListener("paste", onPaste); d.remove(); };
+    document.addEventListener("paste", onPaste);
+    d.addEventListener("click", (e) => { if (e.target === d) close(); });
+    document.body.appendChild(d); draw();
+  }
+  window.__photoEditor = photoEditor;
   // ---- デモデータ ----
   $("#bDemo").onclick = () => {
     if ((Object.keys(H.roster).length || H.bank.length) && !confirm("デモの名簿20人と問題5問を追加します。よろしいですか？")) return;
@@ -5228,6 +5380,7 @@ function hostPage() {
     loadBank(i); $("#bOpen").click();
   };
   $("#bEndHere").onclick = () => { if (!confirm("この問題でピリオドを終わりにして、ピリオドチャンピオンを発表します。よろしいですか？")) return; act("endHere"); };
+  $("#nqPhoto").onclick = () => { if (!H.bank[bankI()]) return toast("登録された問題がありません"); photoEditor(bankI()); };
   $("#nqLast").onchange = () => { const b = H.bank[bankI()]; if (!b) return; b.last = $("#nqLast").checked; save(); render(); toast(b.last ? "この問題をピリオド最終問題にしました" : "最終問題の指定を外しました"); };
   const STEPS_C = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["cutshow", "予選落ち"], ["fast", "最速"], ["list", "正解者"]];
   const STEPS_B = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["fast", "一番乗り"], ["list", "押した順"]];
