@@ -4804,6 +4804,7 @@ function hostPage() {
     imp.innerHTML = `<label class="btn go fileb">📄 Excel・CSVの名簿を読み込む<input type="file" id="rFile" accept=".xlsx,.xls,.csv,.txt" hidden></label>
       <span class="note">1行目に「名前」「店舗」「ふりがな」の見出しがあればその列を使います（なければ A列=名前・B列=店舗）。ふりがながあると、参加者はひらがなでも名前を探せます。</span>`;
     rIn.closest(".field").before(imp);
+    cRoster.querySelector("#rAdd").parentElement.insertAdjacentHTML("afterend", `<div class="row"><button class="btn" id="rRelAll">参加を全員解除</button><button class="ghost" id="rDelAll">名簿を全部削除</button></div>`);
     const bIn = cBank.querySelector("#bankIn");
     const impB = document.createElement("div"); impB.className = "impbox";
     impB.innerHTML = `<label class="btn go fileb">📄 Excel・CSVの問題を読み込む<input type="file" id="bankFile" accept=".xlsx,.csv,.txt" hidden></label>
@@ -4955,6 +4956,21 @@ function hostPage() {
       H.bank = H.bank.concat(items); save(); render();
       toast(`${items.length}問を読み込みました（予想問題 ${items.filter((x) => x.predict).length}問・最終問題 ${items.filter((x) => x.last).length}問）`);
     } catch (x) { toast("読み込めませんでした。Excel（.xlsx）かCSVで保存したファイルを選んでください"); }
+  };
+  // ---- 名簿の一括操作 ----
+  $("#rRelAll").onclick = () => {
+    const ks = Object.keys(H.claims).filter((k) => H.roster[k]);
+    if (!ks.length) return toast("参加中の人はいません");
+    if (!confirm(`参加中の ${ks.length}人 を全員解除します。\nスマホは名前を選ぶ画面に戻ります（名簿・得点はそのまま）。よろしいですか？`)) return;
+    ks.forEach((k) => release(k, true)); Object.keys(seen).forEach((k) => delete seen[k]);
+    save(); pubState(); render(); toast(`${ks.length}人の参加を解除しました`);
+  };
+  $("#rDelAll").onclick = () => {
+    const n = Object.keys(H.roster).length; if (!n) return toast("名簿は空です");
+    if (!confirm(`名簿の ${n}人 を全部削除します（参加中の人も解除され、得点も消えます）。よろしいですか？`)) return;
+    Object.keys(H.claims).forEach((k) => release(k, true));
+    H.roster = {}; H.rstore = {}; H.rkana = {}; H.points = {}; H.tsum = {}; H.ever = {};
+    save(); pubState(); pubRoster(); render(); toast("名簿を全部削除しました");
   };
   // ---- デモデータ ----
   $("#bDemo").onclick = () => {
