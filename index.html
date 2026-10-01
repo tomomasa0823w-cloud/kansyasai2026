@@ -836,6 +836,13 @@ body.v-player.offline #offBar{display:block}
 .tv.deep .tv-cut{background:radial-gradient(ellipse at center,rgba(40,8,12,.92),rgba(8,2,6,.96));box-shadow:0 0 0 3px #E8B740,0 0 0 8px rgba(0,0,0,.5),0 20px 60px rgba(0,0,0,.6)}
 .tv.deep .tv-cut .t{color:#FF3B47}
 .tv.deep .tv-roll .list li.hid .tn{letter-spacing:.3em}
+/* 動画の問題 */
+.tv-qa .bigimg.vid{position:relative;overflow:hidden;background:#000}
+.tv-qa .bigimg.vid video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;display:block}
+.tv-qa.vf .grid{display:none}
+.tv-qa.vf .bigimg{flex:1 1 100%}
+.tv-qa .vmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#E8B740;font:700 44px/1.5 var(--lux,serif);padding:30px}
+.tv-qa .vmsg.tap{background:rgba(0,0,0,.55);cursor:pointer;font-size:60px}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -918,6 +925,11 @@ body.v-player .ch:has(.ph) .L{font-size:1.2rem}
 .pz .pzh{text-align:center;color:var(--dim);font-weight:700;font-size:.9rem;line-height:1.5}
 .pz b{position:absolute;left:0;right:0;bottom:0;background:rgba(5,10,40,.75);color:#fff;font-size:.85rem;padding:4px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pz .px{position:absolute;right:6px;top:6px;z-index:2;background:#fff;color:#000}
+.pz.pzv{grid-column:1/-1;aspect-ratio:auto;min-height:150px}
+.pz.pzv video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+.vctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:8px 0 0;padding:8px 10px;border:1.5px solid var(--gold);border-radius:10px}
+.vctl b{margin-right:auto}
+.vidnote{margin:6px 0;padding:8px;border-radius:10px;background:rgba(232,183,64,.15);font-weight:900;text-align:center}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -1155,6 +1167,7 @@ body.v-player .ch:has(.ph) .L{font-size:1.2rem}
       <button class="ghost" id="pinBtn">サブ司会として操作</button>
       <button class="ghost" id="rmSnd">🔊 音を有効にする</button>
       <button class="ghost" id="rmSfx">🎵 音の差し替え</button>
+      <label class="ghost btn fileb" id="rmVid">🎬 動画を読み込む<input type="file" id="rmVidIn" accept="video/*" multiple hidden></label>
       <button class="ghost" id="rmFs">全画面（F）</button>
     </div>
     <div id="rmSfxBox" class="ctl hidden" style="margin-bottom:10px"></div>
@@ -4088,6 +4101,34 @@ const IMG = {};
 const imgId = (name) => { const s = String(name || "").normalize("NFKC").trim().toLowerCase().replace(/\.[a-z0-9]{2,5}$/, ""); if (!s) return null; let h = 5381; for (const c of s) h = ((h << 5) + h + c.charCodeAt(0)) >>> 0; return "i" + h.toString(36); };
 const cImg = (S, i) => { const id = S.img && Array.isArray(S.img.c) ? S.img.c[i] : null; return id && IMG[id] ? IMG[id] : ""; };
 const qImg = (S) => (S.img && S.img.q && IMG[S.img.q] ? IMG[S.img.q] : "");
+// ---- 動画（このPCのブラウザ内に保存。モニターでだけ再生） ----
+const VID = {};
+const VDB = {
+  p: null,
+  open() { return this.p || (this.p = new Promise((res, rej) => { const r = indexedDB.open("hq-vid", 1); r.onupgradeneeded = () => r.result.createObjectStore("v"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); })); },
+  async put(k, v) { const db = await this.open(); return new Promise((res, rej) => { const t = db.transaction("v", "readwrite"); t.objectStore("v").put(v, k); t.oncomplete = () => res(); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); },
+  async del(k) { const db = await this.open(); return new Promise((res) => { const t = db.transaction("v", "readwrite"); t.objectStore("v").delete(k); t.oncomplete = () => res(); t.onerror = () => res(); }); },
+  async all() { const db = await this.open(); return new Promise((res) => { const out = []; const t = db.transaction("v", "readonly"); const c = t.objectStore("v").openCursor(); c.onsuccess = () => { const r = c.result; if (r) { out.push([r.key, r.value]); r.continue(); } else res(out); }; c.onerror = () => res(out); }); },
+};
+const vidAdd = (k, name, blob) => { if (VID[k] && VID[k].url) URL.revokeObjectURL(VID[k].url); VID[k] = { name, url: URL.createObjectURL(blob) }; };
+const vidLoadAll = async () => { try { (await VDB.all()).forEach(([k, v]) => { if (v && v.blob) vidAdd(k, v.name, v.blob); }); } catch (e) {} };
+const vidOf = (S) => (S && S.vid && (VID[S.vid.id] || VID["n:" + S.vid.name])) || null;
+let VEL = null;
+function vidSync(el, S) {
+  const slot = el.querySelector(".js-vid");
+  const isHostPrev = el.id === "hMon" && document.querySelector("#fullMon:not(.hidden)");
+  if (!slot || !S.vid) { if (VEL && !VEL.paused) VEL.pause(); return; }
+  if (isHostPrev) { slot.innerHTML = '<div class="vmsg">🎬 全画面モニターで再生中</div>'; return; }
+  const v = vidOf(S);
+  if (!v) { slot.innerHTML = `<div class="vmsg">🎬 動画「${esc(S.vid.name || "")}」が<br>このPCに読み込まれていません</div>`; return; }
+  if (!VEL) { VEL = document.createElement("video"); VEL.playsInline = true; VEL.preload = "auto"; VEL.onclick = () => (VEL.paused ? VEL.play().catch(() => {}) : VEL.pause()); }
+  VEL.muted = el.id === "hMon";
+  if (VEL.parentNode !== slot) slot.replaceChildren(VEL);
+  const play = () => { const pr = VEL.play(); if (pr) pr.catch(() => { slot.insertAdjacentHTML("beforeend", '<div class="vmsg tap">▶ クリックで再生</div>'); const t = slot.querySelector(".tap"); if (t) t.onclick = () => { t.remove(); VEL.play().catch(() => {}); }; }); };
+  if (VEL._src !== v.url) { VEL._src = v.url; VEL.src = v.url; }
+  if (VEL._rid !== S.rid) { VEL._rid = S.rid; VEL._n = S.vctl ? S.vctl.n : 0; try { VEL.currentTime = 0; } catch (e) {} play(); }
+  else if (S.vctl && S.vctl.n !== VEL._n) { VEL._n = S.vctl.n; const a = S.vctl.a; if (a === "pause") VEL.pause(); else { if (a === "restart") try { VEL.currentTime = 0; } catch (e) {} play(); } }
+}
 // 感謝祭風：左に選択肢パネル（写真つき）、右に縦長の問題パネル
 function qaLayout(S, mode) {
   const n = nchOf(S), hide = mode === "read";
@@ -4095,8 +4136,9 @@ function qaLayout(S, mode) {
     const ph = hide ? "" : cImg(S, i);
     return `<div class="qc c${i}${ph ? " ph" : ""}${hide ? " hide" : ""}${mode === "closed" ? " faded" : ""}"><span class="num">${L[i]}</span>${ph ? `<div class="pic" style="background-image:url('${ph}')"></div>` : ""}<div class="cn">${hide ? "？" : esc(S.choices[i])}</div></div>`;
   }).join("") : `<div class="qbuzz">${mode === "open" ? "早押し！" : "早押し問題"}</div>`;
-  const qi = qImg(S), qt = S.question || "", vert = !qi && qt.length <= 12;
-  return `<div class="tv-qa n${n}${S.mode === "choice" ? "" : " bz"}${qi ? " qi" : ""}"><div class="left">${qi ? `<div class="bigimg" style="background-image:url('${qi}')"></div>` : ""}<div class="grid">${cards}</div></div>
+  const hv = !!(S.vid && S.vid.id), vf = hv && mode === "read";
+  const qi = qImg(S), qt = S.question || "", vert = !qi && !hv && qt.length <= 12;
+  return `<div class="tv-qa n${n}${S.mode === "choice" ? "" : " bz"}${qi || hv ? " qi" : ""}${vf ? " vf" : ""}"><div class="left">${hv ? '<div class="bigimg vid js-vid"></div>' : qi ? `<div class="bigimg" style="background-image:url('${qi}')"></div>` : ""}<div class="grid">${cards}</div></div>
     <div class="qside"><div class="qh">Q<small>${S.no}</small></div><div class="qt${vert ? " v" : ""}${qt.length > 60 ? " s" : ""}">${esc(qt)}</div>
       <div class="qtimer${mode === "open" ? "" : " off"}">${mode === "open" ? '<span class="js-timer"></span>' : mode === "read" ? "READY" : "締切"}</div>${mode === "open" ? '<div class="qbar"><i class="js-bar"></i></div>' : ""}</div></div>`;
 }
@@ -4229,13 +4271,14 @@ function fitTV(el) {
 function renderMonitor(el, S, list, joinURL) {
   if (!el) return;
   const { key, html } = monHTML(S, list, joinURL);
-  if (el._html === html) return;
+  if (el._html === html) return vidSync(el, S);
   const same = el._key === key;
   el._key = key; el._html = html;
   el.classList.add("tvhost");
   el.classList.toggle("noanim", same);
   el.innerHTML = `<div class="tv deep">${html}</div>`;
   qrInto(el.querySelector(".js-qr"), joinURL);
+  vidSync(el, S);
   fitTV(el);
   if (!tvObs.has(el) && window.ResizeObserver) { const o = new ResizeObserver(() => fitTV(el)); o.observe(el); tvObs.set(el, o); }
 }
@@ -4287,8 +4330,8 @@ function wireControls(act) {
     if (hostMode === "buzzer" && curS.rule === "kanshasai" && curS.period && curS.period.active) return toast("感謝祭ルールのピリオド中は4択（5択）で出題してください");
     pickedCorrect = preCorrect.filter((c) => c < n);
     act("open", { question, choices, mode: hostMode === "buzzer" ? "buzzer" : "choice", nch: n, limit: +$("#hLimit").value,
-      last: $("#hLast").checked && !predict, correct: pickedCorrect, predict, pts: +$("#hPts").value, img: window.__pendImg || null });
-    window.__pendImg = null;
+      last: $("#hLast").checked && !predict, correct: pickedCorrect, predict, pts: +$("#hPts").value, img: window.__pendImg || null, vid: window.__pendVid || null });
+    window.__pendImg = null; window.__pendVid = null;
     $("#hLast").checked = false;
     preCorrect = []; applyFormMode(); // 次の問題のために、事前の正解指定を解除
   };
@@ -4373,6 +4416,7 @@ function hostPage() {
   const cleanImg = (im) => { if (!im || typeof im !== "object") return null; const ok = (x) => (typeof x === "string" && /^i[a-z0-9]{1,12}$/.test(x) ? x : null); const o = { q: ok(im.q), c: (Array.isArray(im.c) ? im.c : []).slice(0, 5).map(ok) }; return o.q || o.c.some(Boolean) ? o : null; };
   const pubImgs = (im) => { if (!im || !cli) return; [im.q, ...im.c].filter(Boolean).forEach((id) => { if (IMG[id]) cli.send("img/" + id, { id, d: IMG[id] }, { qos: 1, retain: true }); }); };
   window.__hostImgs = hostImgs;
+  const cleanVid = (v) => (v && typeof v === "object" && typeof v.id === "string" && /^v[a-z0-9]{1,12}$/.test(v.id) ? { id: v.id, name: String(v.name || "").slice(0, 120) } : null);
   if (!H.linksV7) { H.links = H.links || {}; H.links.title = H.links.title || { url: "https://youtu.be/tJOL_ii0LbY" }; H.links.think = H.links.think || { url: "https://youtu.be/TI3liav5eSY" }; H.linksV7 = true; }
   if (!H.linksV8) { H.links = H.links || {}; H.links.roll = H.links.roll || { url: "https://youtu.be/ZYAgAINllA0" }; H.linksV8 = true; }
   if (!H.linksV9) { H.links = H.links || {}; H.links.cut = H.links.cut || { url: "https://youtu.be/D4IZxYG02u8" }; H.linksV9 = true; }
@@ -4604,7 +4648,7 @@ function hostPage() {
       const rf = H.opt.readFirst !== false;
       setS({ rid, no: (S.no || 0) + 1, phase: rf ? "read" : "open", stage: rf ? "read" : "open", mode, nch, predict, pts: predict ? Math.max(1, Math.min(10, +a.pts || 1)) : 1, question: String(a.question || "").slice(0, 300), choices,
         limit: [5, 10, 15, 20, 30, 60].includes(+a.limit) ? +a.limit : 10, correct: null, view: "q", openedAt: Date.now(),
-        counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], cut: null, champ: null, img: cleanImg(a.img), ...sfx("open") });
+        counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], cut: null, champ: null, img: cleanImg(a.img), vid: cleanVid(a.vid), vctl: null, ...sfx("open") });
       if (!rf) { t0 = performance.now(); t0rid = rid; scheduleClose(); pubLive(); }
     } else if (cmd === "endHere") {
       if (!kan() || !H.period.active || !S.rid || S.predict || H.secret.last) return;
@@ -4616,6 +4660,9 @@ function hostPage() {
       H.secret.last = true; H.secret.champ = champ;
       setS({ last: true });
       toast(champ ? `ピリオド終了にしました。「次へ」でチャンピオン（${champ.n}）を発表します` : "ピリオド終了にしました（条件に合う正解者がいないため、チャンピオンなし）");
+    } else if (cmd === "vctl") {
+      if (!S.vid || !S.rid) return;
+      setS({ vctl: { n: ((S.vctl && S.vctl.n) || 0) + 1, a: ["play", "pause", "restart"].includes(a.a) ? a.a : "play" } });
     } else if (cmd === "start") {
       if (S.phase !== "read") return;
       H.answers = {};
@@ -4652,7 +4699,7 @@ function hostPage() {
     } else if (cmd === "next") {
       if (S.phase === "open") return;
       H.answers = {};
-      setS({ phase: "idle", stage: "", rid: null, img: null, question: "", choices: ["", "", "", ""], correct: null, predict: false, nch: 4, view: S.view === "cere" ? "cere" : "q", counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], cut: null, champ: null });
+      setS({ phase: "idle", stage: "", rid: null, img: null, vid: null, vctl: null, question: "", choices: ["", "", "", ""], correct: null, predict: false, nch: 4, view: S.view === "cere" ? "cere" : "q", counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], cut: null, champ: null });
     } else if (cmd === "period") {
       if (!kan() || S.phase === "open") return;
       startPeriod(H.period.no + 1, false);
@@ -4783,7 +4830,7 @@ function hostPage() {
   $("#bankClear").onclick = () => { if (!confirm("登録した問題をすべて消しますか？")) return; H.bank = []; H.bankIdx = 0; save(); render(); };
   function loadBank(i) {
     const b = H.bank[i]; if (!b) return toast("登録された問題はもうありません");
-    H.bankIdx = i + 1; save(); window.__pendImg = b.img || null;
+    H.bankIdx = i + 1; save(); window.__pendImg = b.img || null; window.__pendVid = b.vid || null;
     hostMode = b.mode === "buzzer" ? "buzzer" : b.nch === 5 ? "choice5" : "choice";
     preCorrect = Array.isArray(b.correct) ? b.correct.slice() : b.correct == null ? [] : [b.correct];
     $("#hPredict").checked = !!b.predict; $("#hPts").value = String(b.pts || 1);
@@ -4794,7 +4841,7 @@ function hostPage() {
   $("#bankNext").onclick = () => loadBank(H.bankIdx || 0);
   function renderBank() {
     $("#bankCount").textContent = H.bank.length ? `${H.bank.length}問（次は ${Math.min((H.bankIdx || 0) + 1, H.bank.length + 1)}問目）` : "未登録";
-    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || [])].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td>${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td>${b.predict ? `予想${b.pts || 1}点` : ""}${b.last ? "最終" : ""}</td><td style="white-space:nowrap"><button class="mini" data-photo="${i}">📷写真</button> <button class="mini" data-load="${i}">読込</button></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
+    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || [])].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td>${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td>${b.predict ? `予想${b.pts || 1}点` : ""}${b.last ? "最終" : ""}</td><td style="white-space:nowrap"><button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
     $("#bankList").querySelectorAll("[data-load]").forEach((x) => (x.onclick = () => loadBank(+x.dataset.load)));
     $("#bankList").querySelectorAll("[data-photo]").forEach((x) => (x.onclick = () => window.__photoEditor && window.__photoEditor(+x.dataset.photo)));
   }
@@ -4915,7 +4962,7 @@ function hostPage() {
   $("#bLeaveHost").onclick = () => { if (!confirm("この端末を司会から外します（名簿・得点はこの端末に残ります）。よろしいですか？")) return; store.set("hq-is-host", false); location.replace(baseOf(BASE)); };
   $("#bCopy").onclick = () => { navigator.clipboard?.writeText(pURL()).then(() => toast("コピーしました"), () => toast(pURL())); };
   $("#bFull").onclick = () => { fullOn = true; $("#fullMon").classList.remove("hidden"); fullscreen(true); if (!SFX.unlocked) SFX.unlock(); render(); };
-  const exitFull = () => { fullOn = false; $("#fullMon").classList.add("hidden"); fullscreen(false); };
+  const exitFull = () => { fullOn = false; $("#fullMon").classList.add("hidden"); fullscreen(false); render(); };
   $("#fClose").onclick = exitFull;
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && fullOn) exitFull();
@@ -5105,10 +5152,11 @@ function hostPage() {
     // ---- 本番 ----
     const nq = document.createElement("div"); nq.className = "ctl"; nq.id = "nqCard";
     nq.innerHTML = `<h2>次の問題 <span class="phase" id="nqNo"></span></h2><div id="nqBody"></div>
-      <div class="row" style="margin:0 0 6px"><button class="btn" id="nqPhoto">📷 この問題に写真をつける</button></div><label class="chk2 nqlast"><input type="checkbox" id="nqLast"> <b>この問題をピリオド最終問題にする</b><span class="note">（参加者には締め切りまで秘密。この問題でピリオドチャンピオンが決まります）</span></label>
+      <div class="row" style="margin:0 0 6px"><button class="btn" id="nqPhoto">📷 この問題に写真・動画をつける</button></div><label class="chk2 nqlast"><input type="checkbox" id="nqLast"> <b>この問題をピリオド最終問題にする</b><span class="note">（参加者には締め切りまで秘密。この問題でピリオドチャンピオンが決まります）</span></label>
       <div class="row"><button class="btn" id="nqPrev">◀ 前</button><button class="btn go big2" id="nqGo">この問題を出題 ▶</button><button class="btn" id="nqSkip">とばす ▶</button></div>`;
     const steps = document.createElement("div"); steps.className = "stepbar"; steps.id = "stepBar";
     cP.querySelector("h2").after(steps);
+    cP.querySelector("#bAdvance").insertAdjacentHTML("afterend", `<div class="vctl hidden" id="vCtl"><b>🎬 動画</b><button class="btn" data-va="play">▶ 再生</button><button class="btn" data-va="pause">⏸ 一時停止</button><button class="btn" data-va="restart">⟲ 最初から</button></div>`);
     cP.querySelector("#bAdvance").insertAdjacentHTML("afterend", `<button class="btn hidden" id="bEndHere" style="width:100%;margin-top:8px;border:2px solid var(--gold)">🔔 この問題でピリオド終了（チャンピオン発表へ）</button>`);
     const det = document.createElement("details"); det.className = "ctl manualq";
     det.innerHTML = `<summary>その場で問題を作って出題する</summary>`;
@@ -5287,24 +5335,38 @@ function hostPage() {
     const b = H.bank[i]; if (!b) return;
     let sel = "q";
     const d = document.createElement("div"); d.className = "pmodal";
+    const vzone = () => { const v = b.vid && vidOf({ vid: b.vid }); return `<div class="pz pzv${sel === "v" ? " sel" : ""}" data-slot="v" tabindex="0">${b.vid ? (v ? `<video src="${v.url}" muted controls preload="metadata"></video>` : `<span class="pzh">動画「${esc(b.vid.name)}」がこのPCにありません<br>もう一度ドラッグしてください</span>`) + '<button class="mini px" data-x="v">×</button>' : '<span class="pzh">🎬 動画をつけるときは、ここに動画ファイルをドラッグ<br><small>（クリックで選ぶ）プロジェクターのモニターで流れます。スマホには出ません</small></span>'}<b>🎬 問題の動画${b.vid ? "：" + esc(b.vid.name) : "（モニターで再生）"}</b></div>`; };
     const draw = () => {
       const im = b.img || { q: null, c: [] }, n = b.mode === "choice" ? b.nch || 4 : 0;
       const zone = (slot, label, id) => `<div class="pz${sel === slot ? " sel" : ""}" data-slot="${slot}" tabindex="0">${id && IMG[id] ? `<img src="${IMG[id]}" alt=""><button class="mini px" data-x="${slot}">×</button>` : `<span class="pzh">ここに写真を<br>ドラッグ／貼り付け<br><small>（クリックで選ぶ）</small></span>`}<b>${label}</b></div>`;
-      d.innerHTML = `<div><h3>写真をつける：第${i + 1}問</h3><p class="note" style="margin:0 0 8px">${esc(b.q)}</p>
-        <div class="pzs">${zone("q", "問題の写真", im.q)}${IDX(n).map((j) => zone("c" + j, `${L[j]}：${esc((b.ch[j] || "").replace(/\u200b/g, "")) || "（文字なし）"}`, (im.c || [])[j])).join("")}</div>
-        <p class="note">写真ファイルを枠にドラッグするか、枠を選んでから <b>Ctrl+V</b>（コピーした画像の貼り付け）でもOK。クリックするとファイルを選べます。</p>
-        <div class="row"><button class="btn go" id="pzOk">閉じる</button></div><input type="file" id="pzFile" accept="image/*" hidden></div>`;
+      d.innerHTML = `<div><h3>写真・動画をつける：第${i + 1}問</h3><p class="note" style="margin:0 0 8px">${esc(b.q)}</p>
+        <div class="pzs">${vzone()}${zone("q", "問題の写真", im.q)}${IDX(n).map((j) => zone("c" + j, `${L[j]}：${esc((b.ch[j] || "").replace(/\u200b/g, "")) || "（文字なし）"}`, (im.c || [])[j])).join("")}</div>
+        <p class="note">写真ファイルを枠にドラッグするか、枠を選んでから <b>Ctrl+V</b>（コピーした画像の貼り付け）でもOK。クリックするとファイルを選べます。<br>動画は一番上の枠へ（スマホで撮った動画もそのまま使えます）。</p>
+        <div class="row"><button class="btn go" id="pzOk">閉じる</button></div><input type="file" id="pzFile" accept="image/*,video/*" hidden></div>`;
       d.querySelectorAll(".pz").forEach((z) => {
-        z.onclick = (e) => { if (e.target.closest("[data-x]")) return; sel = z.dataset.slot; d.querySelector("#pzFile").click(); };
+        z.onclick = (e) => { if (e.target.closest("[data-x]") || e.target.closest("video")) return; sel = z.dataset.slot; d.querySelector("#pzFile").click(); };
         z.onmouseenter = () => { sel = z.dataset.slot; d.querySelectorAll(".pz").forEach((x) => x.classList.toggle("sel", x === z)); };
         z.ondragover = (e) => { e.preventDefault(); z.classList.add("over"); };
         z.ondragleave = () => z.classList.remove("over");
-        z.ondrop = (e) => { e.preventDefault(); z.classList.remove("over"); const f = [...(e.dataTransfer.files || [])].find((x) => /^image\//.test(x.type)); if (f) put(z.dataset.slot, f); else toast("画像ファイルをドロップしてください"); };
+        z.ondrop = (e) => { e.preventDefault(); z.classList.remove("over"); const fs = [...(e.dataTransfer.files || [])], fv = fs.find((x) => /^video\//.test(x.type)), f = fs.find((x) => /^image\//.test(x.type)); if (fv) putVid(fv); else if (z.dataset.slot === "v") toast("動画ファイルをドロップしてください"); else if (f) put(z.dataset.slot, f); else toast("画像ファイルをドロップしてください"); };
       });
-      d.querySelectorAll("[data-x]").forEach((x) => (x.onclick = () => put(x.dataset.x, null)));
-      d.querySelector("#pzFile").onchange = (e) => { const f = e.target.files[0]; if (f) put(sel, f); };
+      d.querySelectorAll("[data-x]").forEach((x) => (x.onclick = () => (x.dataset.x === "v" ? putVid(null) : put(x.dataset.x, null))));
+      d.querySelector("#pzFile").onchange = (e) => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; if (/^video\//.test(f.type)) putVid(f); else if (sel === "v") toast("動画ファイルを選んでください"); else put(sel, f); };
       d.querySelector("#pzOk").onclick = close;
     };
+    async function putVid(file) {
+      const old = b.vid;
+      if (file) {
+        if (file.size > 800 * 1024 * 1024 && !confirm(`この動画は ${Math.round(file.size / 1048576)}MB あります。大きいと保存に時間がかかります。続けますか？`)) return;
+        const id = "v" + rand(9, lower);
+        toast("動画を保存しています…");
+        try { await VDB.put(id, { name: file.name, blob: file }); } catch (x) { return toast("動画を保存できませんでした（PCの空き容量を確認してください）"); }
+        vidAdd(id, file.name, file); b.vid = { id, name: String(file.name).slice(0, 120) };
+        toast("動画をつけました");
+      } else delete b.vid;
+      if (old && !H.bank.some((x) => x.vid && x.vid.id === old.id)) { VDB.del(old.id); delete VID[old.id]; }
+      save(); render(); draw();
+    }
     async function put(slot, file) {
       b.img = b.img || { q: null, c: [] }; b.img.c = b.img.c || [];
       let id = null;
@@ -5380,6 +5442,8 @@ function hostPage() {
     loadBank(i); $("#bOpen").click();
   };
   $("#bEndHere").onclick = () => { if (!confirm("この問題でピリオドを終わりにして、ピリオドチャンピオンを発表します。よろしいですか？")) return; act("endHere"); };
+  document.querySelectorAll("#vCtl [data-va]").forEach((x) => (x.onclick = () => act("vctl", { a: x.dataset.va })));
+  vidLoadAll().then(() => render());
   $("#nqPhoto").onclick = () => { if (!H.bank[bankI()]) return toast("登録された問題がありません"); photoEditor(bankI()); };
   $("#nqLast").onchange = () => { const b = H.bank[bankI()]; if (!b) return; b.last = $("#nqLast").checked; save(); render(); toast(b.last ? "この問題をピリオド最終問題にしました" : "最終問題の指定を外しました"); };
   const STEPS_C = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["cutshow", "予選落ち"], ["fast", "最速"], ["list", "正解者"]];
@@ -5399,13 +5463,14 @@ function hostPage() {
     $("#nqNo").textContent = nB ? `${Math.min(i + 1, nB)} / ${nB}問目` : "未登録";
     $("#imgCount").textContent = `（このPCに保存済み：${Object.keys(window.__hostImgs || {}).length}枚）`;
     const th = (id) => (id && IMG[id] ? `<img src="${IMG[id]}" alt="">` : id ? '<i class="miss">写真なし</i>' : "");
-    $("#nqBody").innerHTML = b ? `<div class="nqq">${esc(b.q)}</div>${b.img ? `<div class="nqimg">${th(b.img.q)}${(b.img.c || []).map(th).join("")}</div>` : ""}${b.mode === "choice" ? `<div class="nqc">${b.ch.map((c, j) => `<span class="c${j}${(b.correct || []).includes(j) ? " ok" : ""}">${L[j]} ${esc(c)}</span>`).join("")}</div>` : '<div class="note">早押しボタン</div>'}<div class="note">${b.mode === "choice" ? `正解：${(b.correct || []).map((c) => L[c]).join("・") || "当日選ぶ"}　` : ""}${b.limit}秒${b.predict ? `　予想問題（${b.pts}点）` : ""}${b.last ? "　<b style='color:var(--gold)'>ピリオド最終問題</b>" : ""}</div>` : `<div class="note">${nB ? "登録した問題はすべて出題しました。" : "問題が登録されていません。"}</div>`;
+    $("#nqBody").innerHTML = b ? `<div class="nqq">${esc(b.q)}</div>${b.img ? `<div class="nqimg">${th(b.img.q)}${(b.img.c || []).map(th).join("")}</div>` : ""}${b.vid ? `<div class="note">🎬 動画：${esc(b.vid.name)}${vidOf({ vid: b.vid }) ? "" : ' <b style="color:var(--ng)">このPCに動画がありません（📷写真・動画から入れ直してください）</b>'}</div>` : ""}${b.mode === "choice" ? `<div class="nqc">${b.ch.map((c, j) => `<span class="c${j}${(b.correct || []).includes(j) ? " ok" : ""}">${L[j]} ${esc(c)}</span>`).join("")}</div>` : '<div class="note">早押しボタン</div>'}<div class="note">${b.mode === "choice" ? `正解：${(b.correct || []).map((c) => L[c]).join("・") || "当日選ぶ"}　` : ""}${b.limit}秒${b.predict ? `　予想問題（${b.pts}点）` : ""}${b.last ? "　<b style='color:var(--gold)'>ピリオド最終問題</b>" : ""}</div>` : `<div class="note">${nB ? "登録した問題はすべて出題しました。" : "問題が登録されていません。"}</div>`;
     const busy = S.phase === "open" || (S.rid && S.phase !== "idle" && S.stage !== "list" && S.stage !== "champ") || S.view === "cere";
     $("#nqGo").disabled = !b || busy;
     $("#nqLast").checked = !!(b && b.last); $("#nqLast").disabled = !b || !!b.predict || H.rule !== "kanshasai";
     $(".nqlast").classList.toggle("hidden", H.rule !== "kanshasai");
     { const st2 = S.stage || S.phase; const can = H.rule === "kanshasai" && H.period.active && S.rid && !S.predict && !H.secret.last && S.mode === "choice" && ["correct", "fast", "list"].includes(st2);
       $("#bEndHere").classList.toggle("hidden", !can); } $("#nqPrev").disabled = i <= 0; $("#nqSkip").disabled = i >= nB;
+    $("#vCtl").classList.toggle("hidden", !(S.vid && S.rid && S.view === "q" && ["read", "open", "closed"].includes(S.phase)));
     // 進行ステップ
     const st = S.stage || S.phase, list = (S.mode === "buzzer" ? STEPS_B : S.predict ? STEPS_C.filter((x) => x[0] !== "fast") : STEPS_C).filter((x) => x[0] !== "cutshow" || S.cut);
     const ci = S.rid ? list.findIndex((x) => x[0] === st) : -1;
@@ -5480,6 +5545,14 @@ function remotePage(room, bi) {
   $("#rmFs").onclick = () => { fullscreen(!document.fullscreenElement); if (!SFX.unlocked) SFX.unlock(); render(); };
   $("#rmSnd").onclick = () => { if (SFX.unlock()) { SFX.play("chime"); render(); } };
   $("#rmSfx").onclick = () => $("#rmSfxBox").classList.toggle("hidden");
+  vidLoadAll().then(() => { const n = Object.keys(VID).length; if (n) $("#rmVid").firstChild.textContent = `🎬 動画を読み込む（${n}本 保存済み）`; render(); });
+  $("#rmVidIn").onchange = async (e) => {
+    const fs = [...e.target.files]; e.target.value = ""; let n = 0;
+    toast("動画を保存しています…");
+    for (const f of fs) { try { await VDB.put("n:" + f.name, { name: f.name, blob: f }); vidAdd("n:" + f.name, f.name, f); n++; } catch (x) {} }
+    $("#rmVid").firstChild.textContent = `🎬 動画を読み込む（${Object.keys(VID).length}本 保存済み）`;
+    toast(`動画を${n}本読み込みました（本部で付けたのと同じファイルを選んでください）`); render();
+  };
   sfxCustomUI($("#rmSfxBox"));
   document.addEventListener("keydown", (e) => {
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || "")) return;
@@ -5682,7 +5755,7 @@ function playerPage(room, bi) {
     const pl = place.rid === S.rid ? place : {};
     const placeBox = (x, lab) => x ? `<div class="place"><span>${lab}</span><b>${x.of}</b>人中<b class="pnum">${x.p}</b>番目</div>` : "";
     const showC = corrSet(S).length > 0 && (st === "correct" || st === "cutshow" || st === "fast" || st === "list" || st === "champ");
-    let h = fx + `<div class="qno">第${S.no}問</div><div class="qtext">${esc(S.question)}</div>${qImg(S) ? `<img class="qimgp" src="${qImg(S)}" alt="">` : ""}`;
+    let h = fx + `<div class="qno">第${S.no}問</div><div class="qtext">${esc(S.question)}</div>${qImg(S) ? `<img class="qimgp" src="${qImg(S)}" alt="">` : ""}${S.vid && S.phase === "read" ? '<div class="vidnote">🎬 前のモニターの映像をご覧ください</div>' : ""}`;
     if (open && !mine && !late) h += `<div class="tbar"><i class="js-bar"></i></div><div class="timer js-timer" style="text-align:right"></div>`;
     if (S.mode === "choice") {
       h += `<div class="choices n${nchOf(S)}">` + IDX(nchOf(S)).map((i) => {
