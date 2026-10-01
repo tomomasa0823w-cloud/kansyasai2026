@@ -5161,7 +5161,7 @@ function playerPage(room, bi) {
   }
   $("#nsearch").addEventListener("input", () => { if (!joined) renderPick(); });
   renderPick();
-  $("#goHost2").onclick = () => { if (!confirm("このブラウザを司会（本部）用にします。参加者として使う端末では押さないでください。よろしいですか？")) return; store.set("hq-is-host", true); location.replace(baseOf(BASE)); };
+  $("#goHost2").onclick = () => { if (!hostPass()) return; store.set("hq-is-host", true); location.replace(baseOf(BASE)); };
   setTimeout(() => { if (!roster.length && !joined) { $("#nms").innerHTML = `<div class="empty" style="grid-column:1/-1"><b>名簿が届いていません</b><br><span class="note">司会の画面がまだ開いていないか、名簿が登録されていません。<br>司会に確認するか、下の欄に名前を入れて参加してください。</span></div>`; $("#typedBox").open = true; } }, 8000);
   // ---- 画面を消さない（対応端末のみ）・戻ったらすぐ再接続 ----
   let wl = null;
@@ -5273,6 +5273,13 @@ function playerPage(room, bi) {
   }
 }
 
+// 司会（本部）にするときのパスワード
+function hostPass() {
+  const v = prompt("司会（本部）用のパスワードを入れてください");
+  if (v == null) return false;
+  if (v.normalize("NFKC").trim() !== "1106") { alert("パスワードがちがいます"); return false; }
+  return true;
+}
 function flashOX(ok) {
   const d = document.createElement("div"); d.className = "ox " + (ok ? "o" : "x"); d.innerHTML = `<b>${ok ? "○" : "×"}</b>`;
   document.body.appendChild(d); setTimeout(() => d.remove(), 1800);
@@ -5285,7 +5292,7 @@ window.__appStarted = true;
   const get = (k) => Q.get(k) || HP.get(k) || "";
   const room = get("r").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
   const bi = Math.min(BROKERS.length - 1, Math.max(0, +get("b") || 0));
-  const isHost = Q.has("host") || HP.has("host") || store.get("hq-is-host", false);
+  const isHost = store.get("hq-is-host", false) || ((Q.has("host") || HP.has("host")) && hostPass());
   if (isHost && !room) return hostPage();
   if (room && get("view") === "sub") return remotePage(room, bi);
   if (room) return playerPage(room, bi);
@@ -5309,7 +5316,7 @@ function home(msg) {
   const goRoom = () => { const r = $("#roomIn").value.toUpperCase().replace(/[^A-Z0-9]/g, ""); if (r.length !== 6) return toast("6文字のルームコードを入れてください"); location.href = baseOf(BASE) + "#r=" + r; location.reload(); };
   $("#goRoom").onclick = goRoom;
   $("#roomIn").addEventListener("keydown", (e) => { if (e.key === "Enter") goRoom(); });
-  $("#goHost").onclick = () => { if (!confirm("このブラウザを司会用にします。参加者として使う端末では押さないでください。よろしいですか？")) return; store.set("hq-is-host", true); location.reload(); };
+  $("#goHost").onclick = () => { if (!hostPass()) return; store.set("hq-is-host", true); location.reload(); };
 }
 
 </script>

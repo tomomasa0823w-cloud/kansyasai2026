@@ -4033,12 +4033,18 @@ window.__appStarted = true;
 (function main() {
   const get = (k) => Q.get(k) || HP.get(k) || "";
   const room = get("r").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
-  const isHost = Q.has("host") || HP.has("host") || store.get("mk-is-host", false);
-  $("#goHost").onclick = () => { if (!confirm("このブラウザを大会の本部（データを持つPC）にします。審判・観戦用の端末では押さないでください。よろしいですか？")) return; store.set("mk-is-host", true); location.reload(); };
+  const isHost = store.get("mk-is-host", false) || ((Q.has("host") || HP.has("host")) && hostPass());
+  $("#goHost").onclick = () => { if (!hostPass()) return; store.set("mk-is-host", true); location.reload(); };
   if (isHost && !room) return hostPage();
   if (room) return clientPage(room, get("view") === "mon");
   lobby();
 })();
+function hostPass() {
+  const v = prompt("本部用のパスワードを入れてください");
+  if (v == null) return false;
+  if (v.normalize("NFKC").trim() !== "1106") { alert("パスワードがちがいます"); return false; }
+  return true;
+}
 function lobby() {
   loading("大会を探しています…", "");
   let done = false, homeShown = false;
