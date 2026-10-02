@@ -967,6 +967,26 @@ body.v-player .ch:has(.ph) .L{font-size:1.2rem}
 body.v-player .choices.n3 .ch{flex-direction:row;align-items:center;gap:12px;text-align:left}
 body.v-player .choices.n3 .ch .T{font-size:clamp(1rem,4.4vw,1.3rem);line-height:1.35}
 body.v-player .choices.n3 .ch .L{flex:none}
+/* 参加者スマホ：分布・最速・正解者一覧 */
+.ch{position:relative}
+.ch .pcnt{position:absolute;right:8px;top:8px;z-index:2;min-width:64px;text-align:right;font-size:.95rem;font-weight:800;color:#fff;padding:3px 10px;border-radius:99px;background:rgba(0,0,0,.35) linear-gradient(90deg,rgba(255,255,255,.45) var(--w),transparent var(--w)) no-repeat}
+.ch .pcnt b{font-size:1.35rem;margin-right:2px}
+.ch.dim .pcnt{opacity:1}
+.pinfo{margin:10px 0 0;padding:12px 14px;border-radius:14px;background:var(--stage2,#fff);border:2px solid var(--gold,#B07A00);text-align:center;font-weight:800;line-height:1.5}
+.pinfo b{font-size:1.5rem}
+.pinfo.fast span{display:block;font-size:1.1rem;color:var(--gold,#B07A00)}
+.pinfo.cut{border-color:var(--ng,#d33)}
+.pinfo.list{text-align:left}
+.pinfo .lt{text-align:center;margin-bottom:6px}
+.pinfo ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.pinfo li{display:grid;grid-template-columns:2em 1fr auto;gap:8px;align-items:center;padding:4px 8px;border-radius:8px;background:rgba(0,0,0,.05)}
+.pinfo li i{font-style:normal;color:var(--gold,#B07A00)}
+.pinfo li b{font-size:1rem}
+.pinfo li span{font-size:.9rem;opacity:.8}
+.pinfo li.me{outline:2px solid var(--gold,#B07A00)}
+.pinfo .s{text-align:center;font-size:.85rem;opacity:.8;margin-top:4px}
+.choices.n3 .ch:has(.pcnt){padding-right:92px}
+.choices.n3 .ch .pcnt{top:50%;transform:translateY(-50%)}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5818,6 +5838,8 @@ function playerPage(room, bi) {
     const pl = place.rid === S.rid ? place : {};
     const placeBox = (x, lab) => x ? `<div class="place"><span>${lab}</span><b>${x.of}</b>人中<b class="pnum">${x.p}</b>番目</div>` : "";
     const showC = corrSet(S).length > 0 && (st === "correct" || st === "cutshow" || st === "fast" || st === "list" || st === "champ");
+    const cnts = S.mode === "choice" && Array.isArray(S.counts) && ["dist", "correct", "cutshow", "fast", "list", "champ"].includes(st) ? S.counts : null;
+    const cMax = cnts ? Math.max(1, ...cnts) : 1;
     let h = fx + `<div class="qno">第${S.no}問</div><div class="qtext">${esc(S.question)}</div>${qImg(S) ? `<img class="qimgp" src="${qImg(S)}" alt="">` : ""}${S.vid && S.phase === "read" ? '<div class="vidnote">🎬 前のモニターの映像をご覧ください</div>' : ""}`;
     if (open && !mine && !late) h += `<div class="tbar"><i class="js-bar"></i></div><div class="timer js-timer" style="text-align:right"></div>`;
     if (S.mode === "choice") {
@@ -5825,7 +5847,7 @@ function playerPage(room, bi) {
         let c = "ch c" + i;
         if (showC) { if (!isHit(S, i)) c += " dim"; } else if (mine && mine.c !== i) c += " dim";
         if (mine && mine.c === i) c += " pick";
-        return `<button class="${c}" data-c="${i}" ${locked ? "disabled" : ""}><span class="L">${L[i]}<span class="kbd">${L[i]} / ${i + 1}</span></span>${S.phase !== "read" && cImg(S, i) ? `<span class="ph" style="background-image:url('${cImg(S, i)}')"></span>` : ""}<span class="T">${S.phase === "read" ? "？" : esc(S.choices[i])}</span></button>`;
+        return `<button class="${c}" data-c="${i}" ${locked ? "disabled" : ""}>${cnts ? `<span class="pcnt" style="--w:${Math.round(((cnts[i] || 0) / cMax) * 100)}%"><b>${cnts[i] || 0}</b>人</span>` : ""}<span class="L">${L[i]}<span class="kbd">${L[i]} / ${i + 1}</span></span>${S.phase !== "read" && cImg(S, i) ? `<span class="ph" style="background-image:url('${cImg(S, i)}')"></span>` : ""}<span class="T">${S.phase === "read" ? "？" : esc(S.choices[i])}</span></button>`;
       }).join("") + `</div>`;
     } else h += `<button class="buzz" data-c="-1" ${locked ? "disabled" : ""}>押す！<br><span class="kbd" style="border-color:#fff">スペース</span></button>`;
     const cTxt = corrSet(S).length ? `<div>正解は ${corrText(S)}</div>` : "";
@@ -5850,6 +5872,16 @@ function playerPage(room, bi) {
     } else if (!open || late) res = `<div class="h ngc">時間切れ</div>${showC && S.mode === "choice" ? cTxt : ""}`;
     if (st === "champ" && S.champ) res += `<div class="h" style="margin-top:8px">${S.champ.n === P.name ? "🏆 あなたがピリオドチャンピオン！" : `🏆 チャンピオン：${esc(S.champ.n)}`}</div>`;
     if (res) h += `<div class="result">${res}</div>`;
+    if (S.mode === "choice") {
+      const W = S.winners || [];
+      if (st === "dist" && cnts) h += `<div class="pinfo">📊 回答分布　<b>${S.total || 0}</b>人が回答</div>`;
+      else if (st === "cutshow" && S.cut) h += `<div class="pinfo cut">予選落ち…<br><b>${esc(S.cut)}</b>${S.cut === P.name ? "（あなた）" : ""}</div>`;
+      else if (st === "fast") h += W.length ? `<div class="pinfo fast">⚡ 最速正解<br><b>${esc(W[0].n)}</b>${W[0].n === P.name ? "（あなた！）" : ""}<span>${sec(W[0].ms)}</span></div>` : `<div class="pinfo">正解者はいませんでした</div>`;
+      else if ((st === "list" || st === "champ") && W.length) {
+        const me = W.findIndex((w) => w.n === P.name);
+        h += `<div class="pinfo list"><div class="lt">${S.predict ? "的中者" : "正解者"} ${W.length}人</div><ol>${W.slice(0, 10).map((w, j) => `<li class="${j === me ? "me" : ""}"><i>${j + 1}</i><b>${esc(w.n)}</b><span>${sec(w.ms)}</span></li>`).join("")}${me >= 10 ? `<li class="me"><i>${me + 1}</i><b>${esc(W[me].n)}</b><span>${sec(W[me].ms)}</span></li>` : ""}</ol>${W.length > 10 ? `<div class="s">ほか ${W.length - 10}人</div>` : ""}</div>`;
+      } else if (st === "list" && !W.length) h += `<div class="pinfo">正解者はいませんでした</div>`;
+    }
     if (showC && mine && S.mode === "choice" && st === "correct" && oxRid !== S.rid) { oxRid = S.rid; flashOX(isHit(S, mine.c)); }
     el.innerHTML = h;
     el.querySelectorAll("[data-c]").forEach((b) => b.addEventListener("pointerdown", (e) => { e.preventDefault(); press(+b.dataset.c); }));
