@@ -1074,6 +1074,7 @@ body.v-player .choices.n3 .ch .L{flex:none}
             <button data-rule="kanshasai" aria-pressed="false">感謝祭ルール</button>
           </div>
           <div class="opts">
+            <label class="chk2 kan-only"><input type="checkbox" id="oCutOff"> <b>予選落ちなし</b>（一番遅い正解者も脱落させない。間違えた人だけ着席）</label>
             <label class="chk2 kan-only"><input type="checkbox" id="oNoCut"> 正解者が1人だけのときは「予選落ち」にしない</label>
             <label class="kan-only">ピリオドチャンピオンの対象
               <select id="oChamp"><option value="standing">起立したまま正解した人</option><option value="all">正解した人全員</option></select></label>
@@ -4632,7 +4633,7 @@ function hostPage() {
           champ = { period: H.period.no, key: pool[0].key, n: pool[0].n, ms: pool[0].ms, cands: pool.slice(0, 15).map((x) => ({ key: x.key, n: x.n, ms: x.ms })) };
           H.champs = H.champs.filter((c) => c.period !== H.period.no).concat([champ]);
         }
-      } else if (corrStand.length >= 2 || (corrStand.length === 1 && !H.opt.noCutIfOne)) {
+      } else if (!H.opt.noCut && (corrStand.length >= 2 || (corrStand.length === 1 && !H.opt.noCutIfOne))) {
         const slow = corrStand[corrStand.length - 1];
         H.period.stand[slow.key] = false; cut = slow.n; seatedNow.push(slow.n);
       }
@@ -4801,6 +4802,7 @@ function hostPage() {
   };
   const optBind = (id, key, conv) => { const el = $(id); el.onchange = () => { H.opt[key] = conv(el); save(); render(); }; };
   optBind("#oNoCut", "noCutIfOne", (e) => e.checked);
+  optBind("#oCutOff", "noCut", (e) => e.checked);
   optBind("#oChamp", "champFrom", (e) => e.value);
   optBind("#oDup", "dup", (e) => e.value);
   optBind("#oVerify", "verify", (e) => e.checked);
@@ -5549,7 +5551,7 @@ function hostPage() {
     if (fullOn) renderMonitor($("#fMon"), S, list, pURL());
     renderControls(S, l.length);
     document.querySelectorAll("#ruleSeg button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.rule === H.rule)));
-    $("#oNoCut").checked = !!H.opt.noCutIfOne; $("#oChamp").value = H.opt.champFrom; $("#oDup").value = H.opt.dup; $("#oVerify").checked = !!H.opt.verify; $("#oRead").checked = H.opt.readFirst !== false;
+    $("#oNoCut").checked = !!H.opt.noCutIfOne; $("#oCutOff").checked = !!H.opt.noCut; $("#oNoCut").disabled = !!H.opt.noCut; $("#oChamp").value = H.opt.champFrom; $("#oDup").value = H.opt.dup; $("#oVerify").checked = !!H.opt.verify; $("#oRead").checked = H.opt.readFirst !== false;
     $("#hLastRow").classList.toggle("hidden", !kan());
     $("#sndUnlock").textContent = SFX.unlocked ? "🔊 音は有効です（テスト再生）" : "🔊 音を有効にする";
     $("#sndVol").value = Math.round(H.snd.vol * 100); $("#sndOn").checked = !!H.snd.on;
