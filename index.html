@@ -843,6 +843,12 @@ body.v-player.offline #offBar{display:block}
 .tv-qa.vf .bigimg{flex:1 1 100%}
 .tv-qa .vmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#E8B740;font:700 44px/1.5 var(--lux,serif);padding:30px}
 .tv-qa .vmsg.tap{background:rgba(0,0,0,.55);cursor:pointer;font-size:60px}
+/* 3択：横長のカードを縦に3つ（長い選択肢でも読める） */
+.tv-qa.n3 .grid{grid-template-columns:1fr}
+.tv-qa.n3 .qc .cn{font-size:46px;justify-content:flex-start;text-align:left;padding-left:110px}
+.tv-qa.n3 .qc .num{top:50%;transform:translateY(-50%)}
+.tv-qa.n3 .qc.hide .cn{justify-content:center;padding-left:0}
+.tv-bars.n3{grid-template-columns:repeat(3,1fr)}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -930,6 +936,37 @@ body.v-player .ch:has(.ph) .L{font-size:1.2rem}
 .vctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:8px 0 0;padding:8px 10px;border:1.5px solid var(--gold);border-radius:10px}
 .vctl b{margin-right:auto}
 .vidnote{margin:6px 0;padding:8px;border-radius:10px;background:rgba(232,183,64,.15);font-weight:900;text-align:center}
+.freej{display:block;margin:0 0 8px;padding:8px 10px;border:1.5px dashed var(--gold);border-radius:10px}
+.freej .note{display:block;margin-left:1.6em}
+.phonehint{display:none}
+/* ===== スマホで司会 ===== */
+@media (max-width:700px){
+  .phonehint{display:block;margin:0 0 8px;padding:8px 10px;border-radius:10px;background:rgba(232,183,64,.18);font-weight:800;font-size:.85rem;line-height:1.5}
+  .htabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:6px 0;top:calc(44px + env(safe-area-inset-top,0px))}
+  .htabs button{min-width:0;padding:8px 2px;align-items:center;border-radius:10px}
+  .htabs button b{font-size:.92rem;white-space:nowrap}
+  .htabs button small,.hkeys{display:none}
+  #hostV7 .hlive>.colB{order:-1}
+  .monCol{position:static}
+  .monCol>.row:first-child{display:none}
+  #pCard #bAdvance{font-size:1.35rem;padding:18px}
+  #nqCard .nqc{grid-template-columns:1fr}
+  .chklist li{grid-template-columns:28px 1fr}
+  .chklist .d{grid-column:2}
+  .pzs{grid-template-columns:1fr 1fr}
+}
+.mobbar{display:none}
+@media (max-width:700px){
+  body:has(.hpanel[data-hp="live"].on) .mobbar{display:block;position:fixed;left:0;right:0;bottom:0;z-index:60;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(10,16,48,.92);backdrop-filter:blur(6px)}
+  .mobbar button{width:100%;font-size:1.25rem;padding:16px 10px;border-radius:14px}
+  body:has(.hpanel[data-hp="live"].on) main{padding-bottom:110px}
+}
+/* 3択 */
+#hChoices.three .donly{display:none}
+.choices.n3{grid-template-columns:1fr!important}
+body.v-player .choices.n3 .ch{flex-direction:row;align-items:center;gap:12px;text-align:left}
+body.v-player .choices.n3 .ch .T{font-size:clamp(1rem,4.4vw,1.3rem);line-height:1.35}
+body.v-player .choices.n3 .ch .L{flex:none}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -969,7 +1006,7 @@ body.v-player .ch:has(.ph) .L{font-size:1.2rem}
       <div class="nms" id="nms"></div>
       <p class="note" id="joinNote" style="margin-top:14px;text-align:center"></p>
       <details class="typed" id="typedBox"><summary>名前が見つからないときは、ここから入力</summary>
-        <div class="field" style="margin-top:10px"><label for="nick">お名前（司会に登録された名前）</label><input type="text" id="nick" maxlength="30" placeholder="例：山田 太郎" autocomplete="name"></div>
+        <div class="field" style="margin-top:10px"><label for="nick">お名前</label><input type="text" id="nick" maxlength="30" placeholder="例：山田 太郎" autocomplete="name"></div>
         <button class="big" id="joinBtn">参加する</button>
       </details>
       <p class="note pc-hint" style="margin-top:14px">パソコンでは A〜D（または 1〜4）のキーで回答、早押しはスペースキーでも押せます。</p>
@@ -1054,6 +1091,7 @@ body.v-player .ch:has(.ph) .L{font-size:1.2rem}
         <div class="ctl" style="margin-top:12px" id="qCard">
           <h2>問題を作る</h2>
           <div class="seg" id="modeSeg">
+            <button data-m="choice3" aria-pressed="false">3択</button>
             <button data-m="choice" aria-pressed="true">4択</button>
             <button data-m="choice5" aria-pressed="false">5択</button>
             <button data-m="buzzer" aria-pressed="false">早押しボタン</button>
@@ -1063,7 +1101,7 @@ body.v-player .ch:has(.ph) .L{font-size:1.2rem}
             <span class="c0">A</span><input type="text" maxlength="60" aria-label="選択肢A">
             <span class="c1">B</span><input type="text" maxlength="60" aria-label="選択肢B">
             <span class="c2">C</span><input type="text" maxlength="60" aria-label="選択肢C">
-            <span class="c3">D</span><input type="text" maxlength="60" aria-label="選択肢D">
+            <span class="c3 donly">D</span><input type="text" maxlength="60" aria-label="選択肢D" class="donly">
             <span class="c4 eonly">E</span><input type="text" maxlength="60" aria-label="選択肢E" class="eonly">
           </div>
           <div class="row2">
@@ -3552,7 +3590,7 @@ const SITE_ID = "kotobuki7q4m";
 const LOBBY = "_lobby_" + SITE_ID;
 const DEF = { rid: null, no: 0, phase: "idle", stage: "", mode: "choice", nch: 4, predict: false, pts: 1, question: "", choices: ["", "", "", ""], correct: null, limit: 10, view: "q", openedAt: 0 };
 const IDX = (n) => Array.from({ length: n }, (_, i) => i);
-const nchOf = (S) => (S.nch === 5 ? 5 : 4);
+const nchOf = (S) => (S.nch === 5 ? 5 : S.nch === 3 ? 3 : 4);
 const corrSet = (S) => (Array.isArray(S.correct) ? S.correct : S.correct == null ? [] : [S.correct]);
 const isHit = (S, c) => corrSet(S).includes(c);
 const corrText = (S) => corrSet(S).map((i) => `${L[i]}「${esc(S.choices[i])}」`).join("・");
@@ -3612,6 +3650,7 @@ function connectAll(room, subs, onMsg, onUp) {
     get connected() { return cs.some((c) => c.connected); },
     upCount() { return Object.values(st).filter((x) => x === "up").length; },
     sendTo(r, x, o, opt) { cs.forEach((c) => c.sendTo(r, x, o, opt)); },
+    poke() { cs.forEach((c) => { if (!c.connected) { try { c.reconnect(); } catch (e) {} } }); },
   };
 }
 // 参加者・サブ司会：つながる中継サーバーを順番に探す
@@ -4305,15 +4344,15 @@ function nextLabel(S) {
 function applyFormMode() {
   const ch = hostMode !== "buzzer";
   $("#hChoices").classList.toggle("hidden", !ch); $("#hCorrectRow").classList.toggle("hidden", !ch);
-  $("#hChoices").classList.toggle("five", hostMode === "choice5");
-  document.querySelectorAll("#hCorrectBtns [data-c]").forEach((b) => { b.classList.toggle("hidden", +b.dataset.c === 4 && hostMode !== "choice5"); b.classList.toggle("on", preCorrect.includes(+b.dataset.c)); });
+  $("#hChoices").classList.toggle("five", hostMode === "choice5"); $("#hChoices").classList.toggle("three", hostMode === "choice3");
+  document.querySelectorAll("#hCorrectBtns [data-c]").forEach((b) => { b.classList.toggle("hidden", (+b.dataset.c === 4 && hostMode !== "choice5") || (+b.dataset.c === 3 && hostMode === "choice3")); b.classList.toggle("on", preCorrect.includes(+b.dataset.c)); });
   document.querySelectorAll("#modeSeg button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.m === hostMode)));
   $("#hPtsRow").classList.toggle("hidden", !$("#hPredict").checked);
 }
 function wireControls(act) {
   $("#modeSeg").onclick = (e) => {
     const b = e.target.closest("[data-m]"); if (!b) return; hostMode = b.dataset.m;
-    if (hostMode !== "choice5") preCorrect = preCorrect.filter((c) => c < 4);
+    if (hostMode !== "choice5") preCorrect = preCorrect.filter((c) => c < (hostMode === "choice3" ? 3 : 4));
     applyFormMode(); act("_render");
   };
   $("#hPredict").onchange = () => applyFormMode();
@@ -4322,7 +4361,7 @@ function wireControls(act) {
   }));
   $("#bOpen").onclick = () => {
     const question = $("#hq").value.trim();
-    const n = hostMode === "choice5" ? 5 : 4;
+    const n = hostMode === "choice5" ? 5 : hostMode === "choice3" ? 3 : 4;
     const choices = [...document.querySelectorAll("#hChoices input")].slice(0, n).map((i) => i.value.trim());
     const predict = $("#hPredict").checked;
     if (hostMode !== "buzzer" && choices.some((c) => !c)) return toast(`${L.slice(0, n).join("・")}の選択肢をすべて入れてください`);
@@ -4493,7 +4532,7 @@ function hostPage() {
   const pubLive = () => { if (liveT) return; liveT = setTimeout(() => { liveT = null; cli && cli.send("live", { rid: H.S.rid, list: answersList().map((a) => ({ n: a.n, ms: a.ms, c: a.c })) }, { qos: 0 }); }, 500); };
   const reply = (cid, o) => { if (typeof cid === "string" && /^[a-z0-9]{8,24}$/.test(cid)) cli.send("r/" + cid, o); };
   const announce = () => cli && cli.sendTo(LOBBY, "cur", { room: H.room, at: Date.now() }, { qos: 1, retain: true });
-  const pubRoster = () => { if (!cli) return; const list = Object.keys(H.roster).map((k) => ({ n: H.roster[k], s: H.rstore[k] || "", k: (H.rkana || {})[k] || "" })); cli.send("roster", { list }, { qos: 1, retain: true }); };
+  const pubRoster = () => { if (!cli) return; const list = Object.keys(H.roster).map((k) => ({ n: H.roster[k], s: H.rstore[k] || "", k: (H.rkana || {})[k] || "" })); cli.send("roster", { list, free: !!H.opt.freeJoin }, { qos: 1, retain: true }); };
   const cli = connectAll(H.room, ["join", "ans", "cmd", "ping", "leave"], onMsg, () => { pubState(true); announce(); pubRoster(); pubImgs(H.S.img); });
   if (!cli) return;
   const watchSfx = sfxWatcher(), watchCount = countWatcher();
@@ -4513,9 +4552,10 @@ function hostPage() {
   function validTok(tok) { return typeof tok === "string" && /^[A-Za-z0-9]{16,40}$/.test(tok); }
   function onJoin(d) {
     if (!validTok(d.tok) || typeof d.name !== "string") return;
-    if (!Object.keys(H.roster).length) return reply(d.cid, { t: "join", ok: false, reason: "noroster" });
+    if (!Object.keys(H.roster).length && !H.opt.freeJoin) return reply(d.cid, { t: "join", ok: false, reason: "noroster" });
     let key = normName(d.name).slice(0, 60);
     if (key && !H.roster[key]) { const f = foldName(d.name); const hit = Object.keys(H.roster).filter((k) => foldName(H.roster[k]) === f); if (hit.length === 1) key = hit[0]; }
+    if (key && !H.roster[key] && H.opt.freeJoin && Object.keys(H.roster).length < 300) { H.roster[key] = String(d.name).replace(/\s+/g, " ").trim().slice(0, 30); H.rstore[key] = H.rstore[key] || ""; pubRoster(); }
     if (!key || !H.roster[key]) return reply(d.cid, { t: "join", ok: false, reason: "notlisted" });
     if (H.claims[key] && H.claims[key] !== d.tok) {
       if (!d.force) return reply(d.cid, { t: "join", ok: false, reason: "taken", name: H.roster[key] });
@@ -4635,7 +4675,7 @@ function hostPage() {
     if (cmd === "open") {
       if (S.phase === "open" || H.S.view === "cere") return;
       const mode = a.mode === "buzzer" ? "buzzer" : "choice";
-      const nch = mode === "choice" && +a.nch === 5 ? 5 : 4;
+      const nch = mode === "choice" && +a.nch === 5 ? 5 : mode === "choice" && +a.nch === 3 ? 3 : 4;
       const predict = mode === "choice" && !!a.predict;
       if (mode === "buzzer" && kan() && H.period.active) { toast("感謝祭ルールのピリオド中は4択（5択）で出題してください"); return; }
       const choices = mode === "choice" ? (Array.isArray(a.choices) ? a.choices : []).slice(0, nch).map((x) => String(x || "").slice(0, 60)) : ["", "", "", ""];
@@ -4809,8 +4849,8 @@ function hostPage() {
       const ch = five ? f.slice(1, 6) : f.slice(1, 5);
       const rest = five ? f.slice(6) : f.slice(5);
       const filled = ch.filter(Boolean).length;
-      const nch = five && ch[4] ? 5 : 4;
-      const mode = filled >= 4 && ch.slice(0, 4).every(Boolean) ? "choice" : "buzzer";
+      const nch = five && ch[4] ? 5 : !ch[3] && ch.slice(0, 3).every(Boolean) ? 3 : 4;
+      const mode = (nch === 3 ? true : filled >= 4 && ch.slice(0, 4).every(Boolean)) ? "choice" : "buzzer";
       const lim = parseInt((rest[1] || "").normalize("NFKC"), 10);
       const flags = rest.slice(2).join(" ").normalize("NFKC");
       const pm = flags.match(/(?:予想|配点)\s*(\d+)/);
@@ -4831,7 +4871,7 @@ function hostPage() {
   function loadBank(i) {
     const b = H.bank[i]; if (!b) return toast("登録された問題はもうありません");
     H.bankIdx = i + 1; save(); window.__pendImg = b.img || null; window.__pendVid = b.vid || null;
-    hostMode = b.mode === "buzzer" ? "buzzer" : b.nch === 5 ? "choice5" : "choice";
+    hostMode = b.mode === "buzzer" ? "buzzer" : b.nch === 5 ? "choice5" : b.nch === 3 ? "choice3" : "choice";
     preCorrect = Array.isArray(b.correct) ? b.correct.slice() : b.correct == null ? [] : [b.correct];
     $("#hPredict").checked = !!b.predict; $("#hPts").value = String(b.pts || 1);
     $("#hq").value = b.q; document.querySelectorAll("#hChoices input").forEach((x, j) => (x.value = b.ch[j] || ""));
@@ -5111,6 +5151,7 @@ function hostPage() {
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
         <span class="hkeys">スペースキー／→ で「次へ」</span>
       </div>
+      <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
       <div class="hpanel" data-hp="prep"><div class="hgrid2"><div class="colA"></div><div class="colB"></div></div></div>
       <div class="hpanel" data-hp="live"><div class="hlive"><div class="colA"></div><div class="colB"></div></div></div>
       <div class="hpanel" data-hp="cere"><div class="hgrid2"><div class="colA"></div><div class="colB"></div></div></div>
@@ -5141,6 +5182,7 @@ function hostPage() {
     imp.innerHTML = `<label class="btn go fileb">📄 Excel・CSVの名簿を読み込む<input type="file" id="rFile" accept=".xlsx,.xls,.csv,.txt" hidden></label>
       <span class="note">1行目に「名前」「店舗」「ふりがな」の見出しがあればその列を使います（なければ A列=名前・B列=店舗）。ふりがながあると、参加者はひらがなでも名前を探せます。</span>`;
     rIn.closest(".field").before(imp);
+    imp.insertAdjacentHTML("afterbegin", `<label class="chk2 freej"><input type="checkbox" id="oFree"> <b>名簿なしでOK（参加者が自分で名前を入力）</b><span class="note">練習やちょっとした集まり向け。入力した名前が自動で名簿に追加されます。</span></label>`);
     cRoster.querySelector("#rAdd").parentElement.insertAdjacentHTML("afterend", `<div class="row"><button class="btn" id="rRelAll">参加を全員解除</button><button class="ghost" id="rDelAll">名簿を全部削除</button></div>`);
     const bIn = cBank.querySelector("#bankIn");
     const impB = document.createElement("div"); impB.className = "impbox";
@@ -5444,6 +5486,12 @@ function hostPage() {
   $("#bEndHere").onclick = () => { if (!confirm("この問題でピリオドを終わりにして、ピリオドチャンピオンを発表します。よろしいですか？")) return; act("endHere"); };
   document.querySelectorAll("#vCtl [data-va]").forEach((x) => (x.onclick = () => act("vctl", { a: x.dataset.va })));
   vidLoadAll().then(() => render());
+  $("#oFree").onchange = (e) => { H.opt.freeJoin = e.target.checked; save(); pubRoster(); render(); toast(e.target.checked ? "名簿なしで参加できるようにしました" : "名簿の人だけ参加できるようにしました"); };
+  // スマホで司会：画面を消さない・戻ったらすぐ再接続
+  { let wl = null; const wake = async () => { try { if (navigator.wakeLock && document.visibilityState === "visible" && !wl) { wl = await navigator.wakeLock.request("screen"); wl.addEventListener("release", () => { wl = null; }); } } catch (e) { wl = null; } };
+    document.addEventListener("click", wake, { capture: true });
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { cli && cli.poke && cli.poke(); wake(); pubState(true); } });
+    window.addEventListener("pageshow", () => { cli && cli.poke && cli.poke(); }); wake(); }
   $("#nqPhoto").onclick = () => { if (!H.bank[bankI()]) return toast("登録された問題がありません"); photoEditor(bankI()); };
   $("#nqLast").onchange = () => { const b = H.bank[bankI()]; if (!b) return; b.last = $("#nqLast").checked; save(); render(); toast(b.last ? "この問題をピリオド最終問題にしました" : "最終問題の指定を外しました"); };
   const STEPS_C = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["cutshow", "予選落ち"], ["fast", "最速"], ["list", "正解者"]];
@@ -5454,10 +5502,11 @@ function hostPage() {
     const nR = Object.keys(H.roster).length, nS = new Set(Object.values(H.rstore)).size, nB = H.bank.length;
     const item = (ok, t, d) => `<li class="${ok ? "ok" : "ng"}"><span class="ic">${ok ? "✓" : "!"}</span><b>${t}</b><span class="d">${d}</span></li>`;
     $("#chkList").innerHTML = item(!why, "参加用URL（公開ページ）", why ? "まだスマホから開けません。下の「ルーム」で公開URLを入れてください" : esc(pURL()))
-      + item(nR > 0, "名簿", nR ? `${nR}人（${nS}店舗）` : "Excelから読み込むか、貼り付けてください")
+      + item(nR > 0 || !!H.opt.freeJoin, "名簿", H.opt.freeJoin ? `名簿なしでOK（入力した名前で参加・いま${nR}人）` : nR ? `${nR}人（${nS}店舗）` : "Excelから読み込むか、貼り付けてください")
       + item(nB > 0, "問題", nB ? `${nB}問 登録済み` : "「問題の事前登録」に貼り付けてください（当日その場で作ることもできます）")
       + item(H.rule === "kanshasai", "感謝祭ルール", H.rule === "kanshasai" ? "ON（起立・着席・ピリオド制）" : "OFF（設定タブで切り替え）")
       + item(H.prizes.length > 0, "賞・景品", `${H.prizes.length}件（表彰タブで景品名を入れられます）`);
+    $("#oFree").checked = !!H.opt.freeJoin;
     // 次の問題
     const i = bankI(), b = H.bank[i];
     $("#nqNo").textContent = nB ? `${Math.min(i + 1, nB)} / ${nB}問目` : "未登録";
@@ -5471,6 +5520,15 @@ function hostPage() {
     { const st2 = S.stage || S.phase; const can = H.rule === "kanshasai" && H.period.active && S.rid && !S.predict && !H.secret.last && S.mode === "choice" && ["correct", "fast", "list"].includes(st2);
       $("#bEndHere").classList.toggle("hidden", !can); } $("#nqPrev").disabled = i <= 0; $("#nqSkip").disabled = i >= nB;
     $("#vCtl").classList.toggle("hidden", !(S.vid && S.rid && S.view === "q" && ["read", "open", "closed"].includes(S.phase)));
+    // スマホ：画面下の大きなボタン（いま押すべきボタンを1つだけ出す）
+    { let mb = $("#mobGo");
+      if (!mb) { document.body.insertAdjacentHTML("beforeend", '<div class="mobbar" id="mobBar"><button class="btn go" id="mobGo"></button></div>'); mb = $("#mobGo"); mb.onclick = () => { const t = mb._t && $(mb._t); if (t && !t.disabled) t.click(); }; }
+      const adv = $("#bAdvance"), go = $("#nqGo"), per = $("#bPeriod");
+      let t = null, lab = "";
+      if (H.rule === "kanshasai" && !H.period.active && !S.rid && per && !per.disabled && S.view !== "cere") { t = "#bPeriod"; lab = per.textContent; }
+      else if (adv && !adv.disabled) { t = "#bAdvance"; lab = adv.textContent; }
+      else if (go && !go.disabled) { t = "#nqGo"; lab = `第${Math.min(i + 1, nB)}問を出題 ▶`; }
+      mb._t = t; mb.disabled = !t; mb.textContent = t ? lab.trim() : "（問題が登録されていません）"; }
     // 進行ステップ
     const st = S.stage || S.phase, list = (S.mode === "buzzer" ? STEPS_B : S.predict ? STEPS_C.filter((x) => x[0] !== "fast") : STEPS_C).filter((x) => x[0] !== "cutshow" || S.cut);
     const ci = S.rid ? list.findIndex((x) => x[0] === st) : -1;
@@ -5604,7 +5662,7 @@ function playerPage(room, bi) {
   const standingNow = () => (S.rule === "kanshasai" && S.period && S.period.active ? (S.stand || []).includes(P.name) : null);
   function onMsg(t, d) {
     if (t.startsWith("img/")) { if (typeof d.id === "string" && typeof d.d === "string" && /^data:image\//.test(d.d)) { IMG[d.id] = d.d; if (joined) render(); } return; }
-    if (t === "roster") { roster = Array.isArray(d.list) ? d.list.filter((x) => x && typeof x.n === "string") : []; if (!joined) renderPick(); return; }
+    if (t === "roster") { freeJ = !!d.free; roster = Array.isArray(d.list) ? d.list.filter((x) => x && typeof x.n === "string") : []; if (!joined) renderPick(); return; }
     if (t === "state") {
       if (d.closedRoom) { loading("司会が新しいルームを作りました", "自動で移動します…"); setTimeout(() => location.replace(baseOf(BASE)), 1500); return; }
       const prev = S.rid;
@@ -5658,19 +5716,22 @@ function playerPage(room, bi) {
     };
   }
   function closeSheet() { const w = $("#sheet"); if (w) w.remove(); }
+  var freeJ = false;
   function renderPick() {
     const stores = [...new Set(roster.map((x) => x.s).filter(Boolean))];
     const q = foldName($("#nsearch").value);
     if (pickStore && !stores.includes(pickStore)) pickStore = "";
     $("#stcs").innerHTML = stores.length ? [["", "すべて"], ...stores.map((x) => [x, x])].map(([v, l]) => `<button class="stc" data-s="${esc(v)}" aria-pressed="${v === pickStore}">${esc(l)}</button>`).join("") : "";
     $("#stcs").querySelectorAll("[data-s]").forEach((b) => (b.onclick = () => { pickStore = b.dataset.s; store.set("hq-pick-store", pickStore); renderPick(); }));
-    $("#pickLead").textContent = stores.length ? "① 店舗を選ぶ → ② 自分の名前をタップ" : "自分の名前をタップしてください";
+    $("#pickLead").textContent = freeJ ? (roster.length ? "自分の名前をタップ（はじめての人は下に名前を入力）" : "下の欄に名前を入れて参加してください") : stores.length ? "① 店舗を選ぶ → ② 自分の名前をタップ" : "自分の名前をタップしてください";
     const list = roster.slice().sort((a, b) => a.n.localeCompare(b.n, "ja")).filter((x) => (q ? foldName(x.n).includes(q) || (x.k && foldName(x.k).includes(q)) : !pickStore || x.s === pickStore));
-    $("#nms").innerHTML = !roster.length ? `<div class="empty" style="grid-column:1/-1">名簿を読み込んでいます…<br><span class="note">しばらく出ない場合は、下の「ここから入力」で名前を入れてください</span></div>`
+    $("#nms").innerHTML = !roster.length && freeJ ? "" : !roster.length ? `<div class="empty" style="grid-column:1/-1">名簿を読み込んでいます…<br><span class="note">しばらく出ない場合は、下の「ここから入力」で名前を入れてください</span></div>`
       : list.length ? list.map((x) => `<button class="nm" data-n="${esc(x.n)}">${esc(x.n)}${x.s && (!pickStore || q) ? `<small>${esc(x.s)}</small>` : ""}</button>`).join("")
       : `<div class="empty" style="grid-column:1/-1">見つかりません</div>`;
     $("#nms").querySelectorAll("[data-n]").forEach((b) => (b.onclick = () => { const n = b.dataset.n; sheet(n, "", "この名前で参加する", () => sendJoin(n, false)); }));
-    $("#typedBox").open = false;
+    $("#typedBox").open = freeJ;
+    $("#nsearch").classList.toggle("hidden", freeJ && !roster.length);
+    $("#typedBox summary").textContent = freeJ ? "名前を入れて参加（ニックネームでもOK）" : "名前が見つからないときは、ここから入力";
   }
   $("#nsearch").addEventListener("input", () => { if (!joined) renderPick(); });
   renderPick();
@@ -5682,7 +5743,7 @@ function playerPage(room, bi) {
     $("#joinNote").textContent = "自分の名前を選び直してください。";
   };
   $("#goHost2").onclick = () => { if (!hostPass()) return; store.set("hq-is-host", true); location.replace(baseOf(BASE)); };
-  setTimeout(() => { if (!roster.length && !joined) { $("#nms").innerHTML = `<div class="empty" style="grid-column:1/-1"><b>名簿が届いていません</b><br><span class="note">司会の画面がまだ開いていないか、名簿が登録されていません。<br>司会に確認するか、下の欄に名前を入れて参加してください。</span></div>`; $("#typedBox").open = true; } }, 8000);
+  setTimeout(() => { if (!roster.length && !joined && !freeJ) { $("#nms").innerHTML = `<div class="empty" style="grid-column:1/-1"><b>名簿が届いていません</b><br><span class="note">司会の画面がまだ開いていないか、名簿が登録されていません。<br>司会に確認するか、下の欄に名前を入れて参加してください。</span></div>`; $("#typedBox").open = true; } }, 8000);
   // ---- 画面を消さない（対応端末のみ）・戻ったらすぐ再接続 ----
   let wl = null;
   async function wake() { try { if (joined && navigator.wakeLock && document.visibilityState === "visible" && !wl) { wl = await navigator.wakeLock.request("screen"); wl.addEventListener("release", () => { wl = null; }); } } catch (e) { wl = null; } }
@@ -5712,7 +5773,7 @@ function playerPage(room, bi) {
     myAns = { rid: S.rid, c, ms, acked: false }; beep(); render();
     const msg = { cid: P.cid, tok: P.tok, rid: S.rid, c, ms };
     let tries = 0;
-    const send = () => { if (!myAns || myAns.acked || myAns.rid !== msg.rid) return; cli.send("ans", msg); if (++tries < 4) setTimeout(send, 2500); else if (!myAns.acked) toast("通信が不安定です。電波の良い場所で開き直してください"); };
+    const send = () => { if (!myAns || myAns.acked || myAns.rid !== msg.rid) return; cli.send("ans", msg); if (++tries < 10) setTimeout(send, 2500); else if (!myAns.acked) toast("通信が不安定です。電波の良い場所で開き直してください"); };
     send();
   }
   document.addEventListener("keydown", (e) => {
