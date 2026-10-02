@@ -1074,7 +1074,7 @@ body.v-player .choices.n3 .ch .L{flex:none}
             <button data-rule="kanshasai" aria-pressed="false">感謝祭ルール</button>
           </div>
           <div class="opts">
-            <label class="chk2 kan-only"><input type="checkbox" id="oCutOff"> <b>予選落ちなし</b>（一番遅い正解者も脱落させない。間違えた人だけ着席）</label>
+            <label class="chk2 kan-only"><input type="checkbox" id="oCutOff"> <b>着席なし</b>（予選落ちも、間違えた人の着席もしない。全員最後まで起立のまま、得点で競う）</label>
             <label class="chk2 kan-only"><input type="checkbox" id="oNoCut"> 正解者が1人だけのときは「予選落ち」にしない</label>
             <label class="kan-only">ピリオドチャンピオンの対象
               <select id="oChamp"><option value="standing">起立したまま正解した人</option><option value="all">正解した人全員</option></select></label>
@@ -4625,7 +4625,7 @@ function hostPage() {
       const byKey = {}; l.forEach((a) => (byKey[a.key] = a));
       const sk = standKeys();
       const corrStand = l.filter((a) => hit(a.c) && H.period.stand[a.key]);
-      sk.forEach((k) => { const a = byKey[k]; if (!a || !hit(a.c)) { H.period.stand[k] = false; seatedNow.push(H.roster[k]); } });
+      if (!H.opt.noCut) sk.forEach((k) => { const a = byKey[k]; if (!a || !hit(a.c)) { H.period.stand[k] = false; seatedNow.push(H.roster[k]); } });
       const isLast = !!H.secret.last;
       if (isLast) {
         const pool = H.opt.champFrom === "all" ? win : corrStand;
