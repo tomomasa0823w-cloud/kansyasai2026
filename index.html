@@ -5250,7 +5250,7 @@ function hostPage() {
         <button data-ht="live"><b>② 本番</b><small>出題・進行</small></button>
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」</span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/05-2</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -5301,7 +5301,7 @@ function hostPage() {
     const steps = document.createElement("div"); steps.className = "stepbar"; steps.id = "stepBar";
     cP.querySelector("h2").after(steps);
     cP.querySelector("#bAdvance").insertAdjacentHTML("afterend", `<div class="rvctl hidden" id="rvCtl"></div>`);
-    cP.querySelector("#bAdvance").insertAdjacentHTML("afterend", `<button class="btn hidden" id="bBack" style="width:100%;margin-top:8px">◀ 1つ戻る（まちがえて進めたとき）</button>`);
+    cP.querySelector("#bAdvance").insertAdjacentHTML("afterend", `<button class="btn" id="bBack" style="width:100%;margin-top:8px">◀ 1つ戻る（まちがえて進めたとき）</button>`);
     cP.querySelector("#bAdvance").insertAdjacentHTML("afterend", `<div class="vctl hidden" id="vCtl"><b>🎬 動画</b><button class="btn" data-va="play">▶ 再生</button><button class="btn" data-va="pause">⏸ 一時停止</button><button class="btn" data-va="restart">⟲ 最初から</button></div>`);
     cP.querySelector("#bAdvance").insertAdjacentHTML("afterend", `<button class="btn hidden" id="bEndHere" style="width:100%;margin-top:8px;border:2px solid var(--gold)">🔔 この問題でピリオド終了（チャンピオン発表へ）</button>`);
     const det = document.createElement("details"); det.className = "ctl manualq";
@@ -5628,7 +5628,7 @@ function hostPage() {
     $(".nqlast").classList.toggle("hidden", H.rule !== "kanshasai");
     { const st2 = S.stage || S.phase; const can = H.rule === "kanshasai" && H.period.active && S.rid && !S.predict && !H.secret.last && S.mode === "choice" && ["correct", "fast", "list"].includes(st2);
       $("#bEndHere").classList.toggle("hidden", !can); } $("#nqPrev").disabled = i <= 0; $("#nqSkip").disabled = i >= nB;
-    { const hs = H.hist || [], pv = hs[hs.length - 1]; $("#bBack").classList.toggle("hidden", !(pv && pv.rid === S.rid && S.view === "q")); }
+    { const hs = H.hist || [], pv = hs[hs.length - 1]; $("#bBack").disabled = !(pv && pv.rid === S.rid && S.view === "q"); }
     $("#vCtl").classList.toggle("hidden", !(S.vid && S.rid && S.view === "q" && ["read", "open", "closed"].includes(S.phase)));
     // スマホ：画面下の大きなボタン（いま押すべきボタンを1つだけ出す）
     { let mb = $("#mobGo");
