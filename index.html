@@ -849,6 +849,18 @@ body.v-player.offline #offBar{display:block}
 .tv-qa.n3 .qc .num{top:50%;transform:translateY(-50%)}
 .tv-qa.n3 .qc.hide .cn{justify-content:center;padding-left:0}
 .tv-bars.n3{grid-template-columns:repeat(3,1fr)}
+/* 写真のふりかえり */
+.tv-rv{flex:1;display:grid;grid-template-columns:repeat(var(--cols),1fr);grid-auto-rows:1fr;gap:22px;min-height:0;padding:4px 10px 10px}
+.tv-rv .card{position:relative;display:flex;flex-direction:column;border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 0 0 4px rgba(232,183,64,.55),0 14px 30px rgba(0,0,0,.45);animation:rvIn .5s cubic-bezier(.2,1.4,.4,1) both;min-height:0}
+.tv-rv .card.hit{box-shadow:0 0 0 8px #E8B740,0 0 40px rgba(255,214,90,.8),0 14px 30px rgba(0,0,0,.45)}
+.tv-rv .ph{flex:1;min-height:0;background:#fff center/contain no-repeat}
+.tv-rv .cap{flex:none;display:flex;align-items:center;gap:14px;padding:10px 18px;background:linear-gradient(180deg,#0E1A4A,#08102E);color:#fff;font:800 34px/1.2 var(--lux,serif);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tv-rv .ok{margin-left:auto;flex:none;padding:4px 16px;border-radius:10px;background:#E60012;color:#fff;font-size:30px;transform:rotate(-4deg)}
+.tv-rv.zoom{display:flex;flex-direction:column;border-radius:24px;overflow:hidden;background:#fff;box-shadow:0 0 0 5px #E8B740,0 14px 30px rgba(0,0,0,.5);animation:rvIn .45s ease both}
+.tv-rv.zoom .cap{font-size:44px;padding:14px 24px}
+.tv-rv.zoom .ok{font-size:40px}
+@keyframes rvIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+.tvhost.noanim .tv-rv .card,.tvhost.noanim .tv-rv.zoom{animation:none}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -987,6 +999,28 @@ body.v-player .choices.n3 .ch .L{flex:none}
 .pinfo .s{text-align:center;font-size:.85rem;opacity:.8;margin-top:4px}
 .choices.n3 .ch:has(.pcnt){padding-right:92px}
 .choices.n3 .ch .pcnt{top:50%;transform:translateY(-50%)}
+.takebar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 0 10px;padding:12px 14px;border-radius:14px;background:#FFF1E0;border:2px solid #E9A100;color:#3A2A00}
+.takebar span{display:block;font-size:.85rem;margin-top:2px}
+.takebar .btn{white-space:nowrap}
+.takebar.hidden{display:none}
+/* スマホ：写真のふりかえり */
+.rvnow{margin:10px 0 4px;font-weight:900;text-align:center;color:var(--gold,#B07A00)}
+.rvps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.rvp{display:flex;flex-direction:column;padding:0;border:0;border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 0 0 2px rgba(0,0,0,.12),0 4px 10px rgba(0,0,0,.15);cursor:zoom-in;text-align:left;width:100%}
+.rvp img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;background:#fff}
+.rvp.big img{aspect-ratio:auto;max-height:50vh}
+.rvp .cap{display:flex;gap:6px;align-items:center;padding:6px 8px;background:#0E1A4A;color:#fff;font-weight:800;font-size:.85rem;line-height:1.3}
+.rvp .cap i{margin-left:auto;font-style:normal;opacity:.8;white-space:nowrap}
+.rvp .ok{background:#E60012;color:#fff;border-radius:6px;padding:1px 6px;font-size:.75rem;white-space:nowrap}
+.rvp.hit{box-shadow:0 0 0 4px #E8B740,0 4px 12px rgba(0,0,0,.2)}
+.rvp.big{margin-top:4px}
+.rvlight{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;color:#fff;text-align:center}
+.rvlight img{max-width:100%;max-height:78vh;object-fit:contain;border-radius:10px;background:#fff}
+.rvlight div{font-weight:800}
+.rvlight small{opacity:.6}
+.rvctl{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:8px 0 0;padding:8px 10px;border:1.5px solid var(--gold);border-radius:10px}
+.rvctl b{width:100%;font-size:.9rem}
+.rvctl .btn.on{background:var(--gold);color:#1A1400}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -3639,14 +3673,14 @@ function rawConnect(bi, room, subs, onMsg, onStatus) {
   const c = mqtt.connect(b.url, { clientId: "hq_" + rand(12, lower), clean: true, reconnectPeriod: 3000, connectTimeout: 8000, keepalive: 30 });
   const T = (x) => APP + room + "/" + x;
   c.bi = bi;
-  c.on("connect", () => { c.subscribe(subs.map((x) => T(x)), { qos: 1 }); onStatus(bi, "up"); });
+  c.on("connect", () => { c.subscribe(subs.map((x) => (x[0] === "@" ? APP + x.slice(1) : T(x))), { qos: 1 }); onStatus(bi, "up"); });
   c.on("offline", () => onStatus(bi, "down"));
   c.on("close", () => onStatus(bi, "down"));
   c.on("error", () => {});
   c.on("message", (topic, buf) => {
     let d; try { d = JSON.parse(buf.toString()); } catch (e) { return; }
     if (!d || typeof d !== "object") return;
-    onMsg(topic.slice((APP + room + "/").length), d, bi);
+    onMsg(topic.startsWith(APP + room + "/") ? topic.slice((APP + room + "/").length) : "@" + topic.slice(APP.length), d, bi);
   });
   c.send = (x, obj, opt) => { if (c.connected) c.publish(T(x), JSON.stringify(obj), opt || { qos: 1 }); return c.connected; };
   c.sendTo = (r, x, obj, opt) => { if (c.connected) c.publish(APP + r + "/" + x, JSON.stringify(obj), opt || { qos: 1 }); return c.connected; };
@@ -4189,6 +4223,21 @@ function vidSync(el, S) {
   if (VEL._rid !== S.rid) { VEL._rid = S.rid; VEL._n = S.vctl ? S.vctl.n : 0; try { VEL.currentTime = 0; } catch (e) {} play(); }
   else if (S.vctl && S.vctl.n !== VEL._n) { VEL._n = S.vctl.n; const a = S.vctl.a; if (a === "pause") VEL.pause(); else { if (a === "restart") try { VEL.currentTime = 0; } catch (e) {} play(); } }
 }
+// ---- 写真のふりかえり（正解発表のあと） ----
+const hasPics = (S) => !!(S.img && (S.img.q || (S.img.c || []).some(Boolean)));
+function rvItems(S) {
+  const out = [];
+  if (S.img && S.img.q && IMG[S.img.q]) out.push({ i: -1, src: IMG[S.img.q], lab: "問題の写真", hit: false });
+  IDX(nchOf(S)).forEach((i) => { const src = cImg(S, i); if (src) out.push({ i, src, lab: `${L[i]}　${(S.choices[i] || "").replace(/\u200b/g, "")}`, hit: isHit(S, i) }); });
+  return out;
+}
+function reviewHTML(S) {
+  const it = rvItems(S);
+  const z = S.rvZoom != null ? it.find((x) => x.i === S.rvZoom) : null;
+  if (z) return `<div class="tv-rv zoom${z.hit ? " hit" : ""}"><div class="ph" style="background-image:url('${z.src}')"></div><div class="cap">${esc(z.lab)}${z.hit ? '<span class="ok">正解</span>' : ""}</div></div>`;
+  const n = it.length, cols = n <= 1 ? 1 : n <= 2 ? 2 : n <= 4 ? 2 : 3;
+  return `<div class="tv-rv g${cols}" style="--cols:${cols}">${it.map((x, k) => `<div class="card${x.hit ? " hit" : ""}" style="animation-delay:${0.08 * k}s"><div class="ph" style="background-image:url('${x.src}')"></div><div class="cap">${esc(x.lab)}${x.hit ? '<span class="ok">正解</span>' : ""}</div></div>`).join("")}</div>`;
+}
 // 感謝祭風：左に選択肢パネル（写真つき）、右に縦長の問題パネル
 function qaLayout(S, mode) {
   const n = nchOf(S), hide = mode === "read";
@@ -4283,6 +4332,9 @@ function monHTML(S, list, joinURL) {
     } else if (st === "closed") {
       if (S.last) { body = `<div class="tv-center bell"><div class="kick">カーン　カーン　カーン</div><div class="giant red pop">ラスト問題！</div><div class="sub">これが第${S.period ? S.period.no : ""}ピリオド最後の問題でした</div></div>`; tel = telopHTML(per, "ピリオド最終問題でした！"); }
       else { body = qaLayout(S, "closed") + `<div class="tv-stamp">締め切り！</div>`; tel = telopHTML(per, `${kind}　締め切り　回答 ${nAns}人`); }
+    } else if (st === "review") {
+      body = reviewHTML(S);
+      tel = telopHTML(per, `${kind}　正解は ${corrText(S)}　📷 写真をふりかえり`);
     } else if (S.mode === "choice" && (st === "dist" || st === "correct")) {
       const n = nchOf(S), cnt = S.counts || IDX(n).map(() => 0), mx = Math.max(1, ...cnt), showC = st === "correct" && corrSet(S).length > 0;
       body = `<div class="tv-qs">${esc(S.question)}</div><div class="tv-bars n${n}">${IDX(n).map((i) => `<div class="col${showC ? (isHit(S, i) ? " win" : " lose") : ""}"><div class="num">${cnt[i] || 0}<small>人</small></div><div class="trk"><div class="bar c${i}" style="--h:${Math.round(((cnt[i] || 0) / mx) * 100)}%"></div></div><div class="lab c${i}">${cImg(S, i) ? `<span class="th" style="background-image:url('${cImg(S, i)}')"></span>` : ""}<span class="L">${L[i]}</span><span class="T">${esc(S.choices[i])}</span></div>${showC && isHit(S, i) ? '<div class="ok">正解</div>' : ""}</div>`).join("")}</div>`;
@@ -4345,7 +4397,7 @@ function renderMonitor(el, S, list, joinURL) {
 
 // ================= 司会・サブ司会の操作パネル（共通） =================
 let hostMode = "choice", pickedCorrect = [], preCorrect = [], curS = { ...DEF };
-const STAGE_LABEL = { cutshow: "予選落ちの発表", read: "問題を表示中（選択肢はまだ）", open: "回答受付中", closed: "締め切り", dist: "回答分布", correct: "正解発表", fast: "最速正解者", list: "正解者一覧", champ: "ピリオドチャンピオン" };
+const STAGE_LABEL = { review: "写真のふりかえり", cutshow: "予選落ちの発表", read: "問題を表示中（選択肢はまだ）", open: "回答受付中", closed: "締め切り", dist: "回答分布", correct: "正解発表", fast: "最速正解者", list: "正解者一覧", champ: "ピリオドチャンピオン" };
 function nextLabel(S) {
   if (S.view === "cere") { const c = S.cere || {}; return c.step === "end" ? "表彰式は終わりました" : `次へ ▶（${c.step === "intro" ? "最初の賞" : c.step === "rank" ? "名前を発表" : "次の賞"}）`; }
   if (S.view && S.view !== "q") return "問題の表示に戻る ▶";
@@ -4355,7 +4407,8 @@ function nextLabel(S) {
   if (S.phase === "open") return "締め切る ▶";
   if (st === "closed") return S.mode === "choice" ? "回答分布を出す ▶" : "一番乗りを発表 ▶";
   if (st === "dist") return "正解を発表 ▶";
-  if (st === "correct") return S.predict ? "的中者一覧 ▶" : S.cut ? "予選落ちを発表 ▶" : "最速正解者を発表 ▶";
+  if (st === "correct" && hasPics(S)) return "📷 写真をふりかえる ▶";
+  if (st === "correct" || st === "review") return S.predict ? "的中者一覧 ▶" : S.cut ? "予選落ちを発表 ▶" : "最速正解者を発表 ▶";
   if (st === "cutshow") return "最速正解者を発表 ▶";
   if (st === "fast") return S.mode === "choice" ? "正解者一覧 ▶" : "2位以下を出す ▶";
   if (st === "list") return S.last && S.rule === "kanshasai" && S.period && S.period.active ? "ピリオドチャンピオン発表 ▶" : "次の問題へ ▶";
@@ -4554,11 +4607,15 @@ function hostPage() {
   const reply = (cid, o) => { if (typeof cid === "string" && /^[a-z0-9]{8,24}$/.test(cid)) cli.send("r/" + cid, o); };
   const announce = () => cli && cli.sendTo(LOBBY, "cur", { room: H.room, at: Date.now() }, { qos: 1, retain: true });
   const pubRoster = () => { if (!cli) return; const list = Object.keys(H.roster).map((k) => ({ n: H.roster[k], s: H.rstore[k] || "", k: (H.rkana || {})[k] || "" })); cli.send("roster", { list, free: !!H.opt.freeJoin }, { qos: 1, retain: true }); };
-  const cli = connectAll(H.room, ["join", "ans", "cmd", "ping", "leave"], onMsg, () => { pubState(true); announce(); pubRoster(); pubImgs(H.S.img); });
+  let lobbyCur, annT = null;
+  const takeOver = () => { announce(); lobbyCur = H.room; render(); };
+  const cli = connectAll(H.room, ["join", "ans", "cmd", "ping", "leave", "@" + LOBBY + "/cur"], onMsg, () => { pubState(true); pubRoster(); pubImgs(H.S.img);
+    clearTimeout(annT); annT = setTimeout(() => { if (lobbyCur === undefined || !lobbyCur || lobbyCur === H.room) { announce(); lobbyCur = H.room; } render(); }, 1800); });
   if (!cli) return;
   const watchSfx = sfxWatcher(), watchCount = countWatcher();
 
   function onMsg(t, d) {
+    if (t === "@" + LOBBY + "/cur") { if (typeof d.room === "string") { const was = lobbyCur; lobbyCur = d.room; if (was !== lobbyCur) render(); } return; }
     if (t === "ping") return touch(d.tok);
     if (t === "leave") {
       const p = validTok(d.tok) && H.players[d.tok]; if (!p || H.claims[p.key] !== d.tok) return;
@@ -4709,7 +4766,7 @@ function hostPage() {
       const rf = H.opt.readFirst !== false;
       setS({ rid, no: (S.no || 0) + 1, phase: rf ? "read" : "open", stage: rf ? "read" : "open", mode, nch, predict, pts: predict ? Math.max(1, Math.min(10, +a.pts || 1)) : 1, question: String(a.question || "").slice(0, 300), choices,
         limit: [5, 10, 15, 20, 30, 60].includes(+a.limit) ? +a.limit : 10, correct: null, view: "q", openedAt: Date.now(),
-        counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], cut: null, champ: null, img: cleanImg(a.img), vid: cleanVid(a.vid), vctl: null, ...sfx("open") });
+        counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], cut: null, champ: null, rvZoom: null, img: cleanImg(a.img), vid: cleanVid(a.vid), vctl: null, ...sfx("open") });
       if (!rf) { t0 = performance.now(); t0rid = rid; scheduleClose(); pubLive(); }
     } else if (cmd === "endHere") {
       if (!kan() || !H.period.active || !S.rid || S.predict || H.secret.last) return;
@@ -4721,6 +4778,10 @@ function hostPage() {
       H.secret.last = true; H.secret.champ = champ;
       setS({ last: true });
       toast(champ ? `ピリオド終了にしました。「次へ」でチャンピオン（${champ.n}）を発表します` : "ピリオド終了にしました（条件に合う正解者がいないため、チャンピオンなし）");
+    } else if (cmd === "rvZoom") {
+      if (S.stage !== "review") return;
+      const i = a.i == null ? null : +a.i;
+      setS({ rvZoom: Number.isInteger(i) && i >= -1 && i < 5 ? i : null });
     } else if (cmd === "vctl") {
       if (!S.vid || !S.rid) return;
       setS({ vctl: { n: ((S.vctl && S.vctl.n) || 0) + 1, a: ["play", "pause", "restart"].includes(a.a) ? a.a : "play" } });
@@ -4742,9 +4803,10 @@ function hostPage() {
       if (S.mode === "choice") {
         if (st === "closed") { const counts = IDX(nchOf(S)).map(() => 0); l.forEach((x) => { if (x.c >= 0 && x.c < counts.length) counts[x.c]++; }); return setS({ phase: "reveal", stage: "dist", counts, total: l.length, ...sfx("drum") }); }
         if (st === "dist") { if (!isCList(H.secret.correct, nchOf(S))) { toast("正解を選んでから進めてください（複数選べます）"); return render(); } return doCorrect(H.secret.correct.slice()); }
-        if (st === "correct" && S.predict) { const w = l.filter((x) => isHit(S, x.c)); sendPlaces(w, "corr"); return setS({ stage: "list", winners: w.map((x) => ({ n: x.n, ms: x.ms })), ...sfx("chime") }); }
-        if (st === "correct" && S.cut && !S.predict) return setS({ stage: "cutshow", ...sfx("cut") });
-        if (st === "correct" || st === "cutshow") { const w = l.filter((x) => isHit(S, x.c)); return setS({ stage: "fast", winners: w.slice(0, 1).map((x) => ({ n: x.n, ms: x.ms })), ...sfx(w.length ? "drumReveal" : "wrong") }); }
+        if (st === "correct" && hasPics(S)) return setS({ stage: "review", rvZoom: null, ...sfx("chime") });
+        if ((st === "correct" || st === "review") && S.predict) { const w = l.filter((x) => isHit(S, x.c)); sendPlaces(w, "corr"); return setS({ stage: "list", winners: w.map((x) => ({ n: x.n, ms: x.ms })), ...sfx("chime") }); }
+        if ((st === "correct" || st === "review") && S.cut && !S.predict) return setS({ stage: "cutshow", ...sfx("cut") });
+        if (st === "correct" || st === "review" || st === "cutshow") { const w = l.filter((x) => isHit(S, x.c)); return setS({ stage: "fast", winners: w.slice(0, 1).map((x) => ({ n: x.n, ms: x.ms })), ...sfx(w.length ? "drumReveal" : "wrong") }); }
         if (st === "fast") { const w = l.filter((x) => isHit(S, x.c)); sendPlaces(w, "corr"); return setS({ stage: "list", winners: w.map((x) => ({ n: x.n, ms: x.ms })), ...sfx("chime") }); }
       } else {
         if (st === "closed") sendPlaces(l, "push");
@@ -5042,7 +5104,7 @@ function hostPage() {
   $("#bNewRoom").onclick = () => {
     if (!confirm("新しいルームを作ります。今のルームの参加者は入り直しになります（名簿・賞・問題は引き継ぎます）。よろしいですか？")) return;
     cli.send("state", { ...DEF, closedRoom: true }, { qos: 1, retain: true });
-    cli.sendTo(LOBBY, "cur", { room: "", at: Date.now() }, { qos: 1, retain: true });
+    cli.sendTo(LOBBY, "cur", { room: "", at: Date.now(), closed: 1 }, { qos: 1, retain: true });
     const keep = { roster: H.roster, rstore: H.rstore, pub: H.pub, prizes: H.prizes, bank: H.bank, rule: H.rule, opt: H.opt, snd: H.snd };
     H = fresh(); Object.assign(H, keep); store.set("hq-host", H);
     setTimeout(() => location.reload(), 400);
@@ -5173,6 +5235,7 @@ function hostPage() {
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
         <span class="hkeys">スペースキー／→ で「次へ」</span>
       </div>
+      <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
       <div class="hpanel" data-hp="prep"><div class="hgrid2"><div class="colA"></div><div class="colB"></div></div></div>
       <div class="hpanel" data-hp="live"><div class="hlive"><div class="colA"></div><div class="colB"></div></div></div>
@@ -5220,6 +5283,7 @@ function hostPage() {
       <div class="row"><button class="btn" id="nqPrev">◀ 前</button><button class="btn go big2" id="nqGo">この問題を出題 ▶</button><button class="btn" id="nqSkip">とばす ▶</button></div>`;
     const steps = document.createElement("div"); steps.className = "stepbar"; steps.id = "stepBar";
     cP.querySelector("h2").after(steps);
+    cP.querySelector("#bAdvance").insertAdjacentHTML("afterend", `<div class="rvctl hidden" id="rvCtl"></div>`);
     cP.querySelector("#bAdvance").insertAdjacentHTML("afterend", `<div class="vctl hidden" id="vCtl"><b>🎬 動画</b><button class="btn" data-va="play">▶ 再生</button><button class="btn" data-va="pause">⏸ 一時停止</button><button class="btn" data-va="restart">⟲ 最初から</button></div>`);
     cP.querySelector("#bAdvance").insertAdjacentHTML("afterend", `<button class="btn hidden" id="bEndHere" style="width:100%;margin-top:8px;border:2px solid var(--gold)">🔔 この問題でピリオド終了（チャンピオン発表へ）</button>`);
     const det = document.createElement("details"); det.className = "ctl manualq";
@@ -5508,6 +5572,7 @@ function hostPage() {
   $("#bEndHere").onclick = () => { if (!confirm("この問題でピリオドを終わりにして、ピリオドチャンピオンを発表します。よろしいですか？")) return; act("endHere"); };
   document.querySelectorAll("#vCtl [data-va]").forEach((x) => (x.onclick = () => act("vctl", { a: x.dataset.va })));
   vidLoadAll().then(() => render());
+  $("#takeBtn").onclick = () => { if (!confirm("参加者をこの端末に集めます。\n別の司会端末に参加中の人も、自動でこちらに移ります（名前はそのまま）。\nよろしいですか？")) return; takeOver(); toast("参加者をこの端末に集めました"); };
   $("#oFree").onchange = (e) => { H.opt.freeJoin = e.target.checked; save(); pubRoster(); render(); toast(e.target.checked ? "名簿なしで参加できるようにしました" : "名簿の人だけ参加できるようにしました"); };
   // スマホで司会：画面を消さない・戻ったらすぐ再接続
   { let wl = null; const wake = async () => { try { if (navigator.wakeLock && document.visibilityState === "visible" && !wl) { wl = await navigator.wakeLock.request("screen"); wl.addEventListener("release", () => { wl = null; }); } } catch (e) { wl = null; } };
@@ -5516,7 +5581,7 @@ function hostPage() {
     window.addEventListener("pageshow", () => { cli && cli.poke && cli.poke(); }); wake(); }
   $("#nqPhoto").onclick = () => { if (!H.bank[bankI()]) return toast("登録された問題がありません"); photoEditor(bankI()); };
   $("#nqLast").onchange = () => { const b = H.bank[bankI()]; if (!b) return; b.last = $("#nqLast").checked; save(); render(); toast(b.last ? "この問題をピリオド最終問題にしました" : "最終問題の指定を外しました"); };
-  const STEPS_C = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["cutshow", "予選落ち"], ["fast", "最速"], ["list", "正解者"]];
+  const STEPS_C = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["review", "写真"], ["cutshow", "予選落ち"], ["fast", "最速"], ["list", "正解者"]];
   const STEPS_B = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["fast", "一番乗り"], ["list", "押した順"]];
   function renderExtra(S) {
     // 準備チェック
@@ -5524,11 +5589,14 @@ function hostPage() {
     const nR = Object.keys(H.roster).length, nS = new Set(Object.values(H.rstore)).size, nB = H.bank.length;
     const item = (ok, t, d) => `<li class="${ok ? "ok" : "ng"}"><span class="ic">${ok ? "✓" : "!"}</span><b>${t}</b><span class="d">${d}</span></li>`;
     $("#chkList").innerHTML = item(!why, "参加用URL（公開ページ）", why ? "まだスマホから開けません。下の「ルーム」で公開URLを入れてください" : esc(pURL()))
+      + item(!lobbyCur || lobbyCur === H.room, "参加者の行き先", !lobbyCur || lobbyCur === H.room ? "この端末に集まっています" : "別の司会端末に集まっています（上の「この端末に参加者を集める」を押してください）")
       + item(nR > 0 || !!H.opt.freeJoin, "名簿", H.opt.freeJoin ? `名簿なしでOK（入力した名前で参加・いま${nR}人）` : nR ? `${nR}人（${nS}店舗）` : "Excelから読み込むか、貼り付けてください")
       + item(nB > 0, "問題", nB ? `${nB}問 登録済み` : "「問題の事前登録」に貼り付けてください（当日その場で作ることもできます）")
       + item(H.rule === "kanshasai", "感謝祭ルール", H.rule === "kanshasai" ? "ON（起立・着席・ピリオド制）" : "OFF（設定タブで切り替え）")
       + item(H.prizes.length > 0, "賞・景品", `${H.prizes.length}件（表彰タブで景品名を入れられます）`);
     $("#oFree").checked = !!H.opt.freeJoin;
+    { const other = !!lobbyCur && lobbyCur !== H.room; $("#takeBar").classList.toggle("hidden", !other);
+      if (other) $("#takeTxt").textContent = `（この端末のルーム ${H.room} ／ 参加者のいるルーム ${lobbyCur}）このままでは、ここで出題しても参加者には届きません。`; }
     // 次の問題
     const i = bankI(), b = H.bank[i];
     $("#nqNo").textContent = nB ? `${Math.min(i + 1, nB)} / ${nB}問目` : "未登録";
@@ -5551,8 +5619,16 @@ function hostPage() {
       else if (adv && !adv.disabled) { t = "#bAdvance"; lab = adv.textContent; }
       else if (go && !go.disabled) { t = "#nqGo"; lab = `第${Math.min(i + 1, nB)}問を出題 ▶`; }
       mb._t = t; mb.disabled = !t; mb.textContent = t ? lab.trim() : "（問題が登録されていません）"; }
+    // 写真のふりかえり：モニターに1枚ずつ大きく映す
+    { const box = $("#rvCtl"), on = S.stage === "review" && S.view === "q";
+      box.classList.toggle("hidden", !on);
+      if (on) {
+        const it = rvItems(S), z = S.rvZoom;
+        const html = `<b>📷 モニターに大きく映す</b>${it.map((x) => `<button class="btn${z === x.i ? " on" : ""}" data-rz="${x.i}">${x.i === -1 ? "問題" : L[x.i]}${x.hit ? " ✓" : ""}</button>`).join("")}<button class="btn${z == null ? " on" : ""}" data-rz="">一覧</button>`;
+        if (box._h !== html) { box._h = html; box.innerHTML = html; box.querySelectorAll("[data-rz]").forEach((b) => (b.onclick = () => act("rvZoom", { i: b.dataset.rz === "" ? null : +b.dataset.rz }))); }
+      } }
     // 進行ステップ
-    const st = S.stage || S.phase, list = (S.mode === "buzzer" ? STEPS_B : S.predict ? STEPS_C.filter((x) => x[0] !== "fast") : STEPS_C).filter((x) => x[0] !== "cutshow" || S.cut);
+    const st = S.stage || S.phase, list = (S.mode === "buzzer" ? STEPS_B : S.predict ? STEPS_C.filter((x) => x[0] !== "fast") : STEPS_C).filter((x) => x[0] !== "cutshow" || S.cut).filter((x) => x[0] !== "review" || hasPics(S));
     const ci = S.rid ? list.findIndex((x) => x[0] === st) : -1;
     $("#stepBar").innerHTML = S.view === "cere" ? `<span class="on">表彰式</span>` : S.rid ? list.map((x, j) => `<span class="${j === ci ? "on" : j < ci ? "done" : ""}">${x[1]}</span>`).join("") + (st === "champ" ? '<span class="on">チャンピオン</span>' : "") : `<span class="on">${S.stage === "period" ? "ピリオド開始" : "待機中"}</span><span>→ 次の問題を出題</span>`;
     renderAtt();
@@ -5661,7 +5737,8 @@ function playerPage(room, bi) {
   let up = false;
   document.body.classList.add("v-player");
   let roster = [], pickStore = store.get("hq-pick-store", ""), pendingForce = null;
-  const cli = connectAny(bi, room, ["state", "roster", "img/+", "r/" + P.cid], onMsg, () => {
+  const openedAt = Date.now();
+  const cli = connectAny(bi, room, ["state", "roster", "img/+", "r/" + P.cid, "@" + LOBBY + "/cur"], onMsg, () => {
     if (!up) { up = true; if (!P.name) show("vJoin"); else loading("参加の確認をしています", ""); }
     if (P.name && !joined) sendJoin(P.name, true);
   }, (s, i) => {
@@ -5683,6 +5760,14 @@ function playerPage(room, bi) {
   }
   const standingNow = () => (S.rule === "kanshasai" && S.period && S.period.active ? (S.stand || []).includes(P.name) : null);
   function onMsg(t, d) {
+    if (t === "@" + LOBBY + "/cur") {
+      if (typeof d.room === "string" && /^[A-Z0-9]{6}$/.test(d.room) && d.room !== room && +d.at > openedAt) {
+        if (P.name) store.set("hq-p-" + d.room, { cid: rand(14, lower), tok: rand(24, "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"), name: P.name });
+        loading("司会の端末が切り替わりました", "自動で移動します…");
+        setTimeout(() => { location.href = baseOf(BASE) + "#r=" + d.room; location.reload(); }, 800);
+      }
+      return;
+    }
     if (t.startsWith("img/")) { if (typeof d.id === "string" && typeof d.d === "string" && /^data:image\//.test(d.d)) { IMG[d.id] = d.d; if (joined) render(); } return; }
     if (t === "roster") { freeJ = !!d.free; roster = Array.isArray(d.list) ? d.list.filter((x) => x && typeof x.n === "string") : []; if (!joined) renderPick(); return; }
     if (t === "state") {
@@ -5837,13 +5922,13 @@ function playerPage(room, bi) {
     const st = S.stage || S.phase;
     const pl = place.rid === S.rid ? place : {};
     const placeBox = (x, lab) => x ? `<div class="place"><span>${lab}</span><b>${x.of}</b>人中<b class="pnum">${x.p}</b>番目</div>` : "";
-    const showC = corrSet(S).length > 0 && (st === "correct" || st === "cutshow" || st === "fast" || st === "list" || st === "champ");
-    const cnts = S.mode === "choice" && Array.isArray(S.counts) && ["dist", "correct", "cutshow", "fast", "list", "champ"].includes(st) ? S.counts : null;
+    const showC = corrSet(S).length > 0 && (st === "correct" || st === "review" || st === "cutshow" || st === "fast" || st === "list" || st === "champ");
+    const cnts = S.mode === "choice" && Array.isArray(S.counts) && ["dist", "correct", "review", "cutshow", "fast", "list", "champ"].includes(st) ? S.counts : null;
     const cMax = cnts ? Math.max(1, ...cnts) : 1;
-    let h = fx + `<div class="qno">第${S.no}問</div><div class="qtext">${esc(S.question)}</div>${qImg(S) ? `<img class="qimgp" src="${qImg(S)}" alt="">` : ""}${S.vid && S.phase === "read" ? '<div class="vidnote">🎬 前のモニターの映像をご覧ください</div>' : ""}`;
+    let h = fx + `<div class="qno">第${S.no}問</div><div class="qtext">${esc(S.question)}</div>${qImg(S) && st !== "review" ? `<img class="qimgp" src="${qImg(S)}" alt="">` : ""}${S.vid && S.phase === "read" ? '<div class="vidnote">🎬 前のモニターの映像をご覧ください</div>' : ""}`;
     if (open && !mine && !late) h += `<div class="tbar"><i class="js-bar"></i></div><div class="timer js-timer" style="text-align:right"></div>`;
     if (S.mode === "choice") {
-      h += `<div class="choices n${nchOf(S)}">` + IDX(nchOf(S)).map((i) => {
+      if (st !== "review") h += `<div class="choices n${nchOf(S)}">` + IDX(nchOf(S)).map((i) => {
         let c = "ch c" + i;
         if (showC) { if (!isHit(S, i)) c += " dim"; } else if (mine && mine.c !== i) c += " dim";
         if (mine && mine.c === i) c += " pick";
@@ -5857,7 +5942,7 @@ function playerPage(room, bi) {
     else if (mine) {
       if (showC && S.mode === "choice") {
         const rk = st === "list" || st === "champ" ? (S.winners || []).findIndex((w) => w.n === P.name) : -1;
-        const cutMe = S.cut === P.name && (st === "correct" || st === "cutshow");
+        const cutMe = S.cut === P.name && (st === "correct" || st === "review" || st === "cutshow");
         const corr = pl.corr || (rk >= 0 ? { p: rk + 1, of: (S.winners || []).length } : null);
         res = isHit(S, mine.c)
           ? `<div class="h okc">${S.predict ? "的中！" : "正解！"}</div>${S.predict ? `<div>+${S.pts}点</div>` : ""}<div>${sec(mine.ms)}</div>${st === "list" || st === "champ" ? placeBox(corr, S.predict ? "的中者" : "正解者") : ""}${placeBox(pl.all, "回答した")}${cutMe ? '<div class="ngc"><b>ただし一番遅かったため「予選落ち」で着席です</b></div>' : ""}`
@@ -5874,7 +5959,13 @@ function playerPage(room, bi) {
     if (res) h += `<div class="result">${res}</div>`;
     if (S.mode === "choice") {
       const W = S.winners || [];
-      if (st === "dist" && cnts) h += `<div class="pinfo">📊 回答分布　<b>${S.total || 0}</b>人が回答</div>`;
+      if (st === "review") {
+        const it = rvItems(S), z = S.rvZoom != null ? it.find((x) => x.i === S.rvZoom) : null;
+        const card = (x, big) => `<button class="rvp${x.hit ? " hit" : ""}${big ? " big" : ""}" data-z="${x.i}"><img src="${x.src}" alt=""><span class="cap">${esc(x.lab)}${x.hit ? '<b class="ok">正解</b>' : ""}${cnts && x.i >= 0 ? `<i>${cnts[x.i] || 0}人</i>` : ""}</span></button>`;
+        h += `<div class="pinfo">📷 写真のふりかえり<span style="display:block;font-size:.8rem;opacity:.75">写真をタップすると大きく見られます</span></div>`;
+        if (z) h += `<div class="rvnow">📺 いまモニターに映っている写真</div>` + card(z, true);
+        h += `<div class="rvps">${it.filter((x) => !z || x.i !== z.i).map((x) => card(x, false)).join("")}</div>`;
+      } else if (st === "dist" && cnts) h += `<div class="pinfo">📊 回答分布　<b>${S.total || 0}</b>人が回答</div>`;
       else if (st === "cutshow" && S.cut) h += `<div class="pinfo cut">予選落ち…<br><b>${esc(S.cut)}</b>${S.cut === P.name ? "（あなた）" : ""}</div>`;
       else if (st === "fast") h += W.length ? `<div class="pinfo fast">⚡ 最速正解<br><b>${esc(W[0].n)}</b>${W[0].n === P.name ? "（あなた！）" : ""}<span>${sec(W[0].ms)}</span></div>` : `<div class="pinfo">正解者はいませんでした</div>`;
       else if ((st === "list" || st === "champ") && W.length) {
@@ -5884,6 +5975,7 @@ function playerPage(room, bi) {
     }
     if (showC && mine && S.mode === "choice" && st === "correct" && oxRid !== S.rid) { oxRid = S.rid; flashOX(isHit(S, mine.c)); }
     el.innerHTML = h;
+    el.querySelectorAll(".rvp[data-z]").forEach((b) => (b.onclick = () => { const im = b.querySelector("img"); if (!im) return; const o = document.createElement("div"); o.className = "rvlight"; o.innerHTML = `<img src="${im.src}" alt=""><div>${b.querySelector(".cap").innerHTML}</div><small>タップで閉じる</small>`; o.onclick = () => o.remove(); document.body.appendChild(o); }));
     el.querySelectorAll("[data-c]").forEach((b) => b.addEventListener("pointerdown", (e) => { e.preventDefault(); press(+b.dataset.c); }));
     tick(() => ({ S, t0, t0rid, onEnd: render }));
   }
