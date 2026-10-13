@@ -1049,6 +1049,9 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
 .seatfx.revfx div{color:#FFE066}
 .seatfx.revfx div{animation:rvUp .9s cubic-bezier(.2,1.4,.4,1) both}
 @keyframes rvUp{from{opacity:0;transform:translateY(60px) scale(.6)}to{opacity:1;transform:none}}
+.xcode{margin-top:10px;padding:12px;border:2px solid var(--gold);border-radius:12px;text-align:center}
+.xcode b{display:block;font-family:var(--disp);font-size:2.6rem;letter-spacing:.2em;color:var(--gold)}
+.xcode.hidden{display:none}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5303,7 +5306,7 @@ function hostPage() {
         <button data-ht="live"><b>② 本番</b><small>出題・進行</small></button>
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/08-3</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/13-1</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -5329,7 +5332,15 @@ function hostPage() {
       <div class="tbl-wrap" style="max-height:420px;overflow:auto"><table class="attt"><tbody id="attList"></tbody></table></div>
       <p class="note" style="margin:8px 0 0"><span class="dot on"></span>参加中（スマホがつながっている）　<span class="dot stale"></span>参加済み・応答なし（画面OFFなど）　<span class="dot off"></span>未参加</p>
       <div class="row"><button class="btn" data-view="att">モニターに参加状況を出す</button></div>`;
-    P("prep", "colA").append(chk, cRoom, showC);
+    const xc = document.createElement("div"); xc.className = "ctl"; xc.id = "xferCard";
+    xc.innerHTML = `<h2>🔁 別の司会PCへ引き継ぐ</h2>
+      <p class="note" style="margin:0 0 8px">このPCの<b>名簿・問題・写真・賞・設定</b>を、もう1台の司会PCにそのままコピーできます。<br>（動画ファイルはコピーされません。受け取ったPCでも入れ直してください）</p>
+      <label class="chk2"><input type="checkbox" id="xProg"> 得点・ピリオドの進み具合も含める<span class="note">（本番中に司会PCを交代するとき）</span></label>
+      <div class="row"><button class="btn go" id="xSend">📤 送る（引き継ぎコードを出す）</button><button class="btn" id="xRecv">📥 コードで受け取る</button></div>
+      <div id="xCode" class="xcode hidden"></div>
+      <details style="margin-top:8px"><summary class="note" style="cursor:pointer">ネットがつながらないとき：ファイルで渡す</summary>
+        <div class="row"><button class="btn" id="xFileOut">💾 ファイルに書き出す</button><label class="btn fileb">📂 ファイルを読み込む<input type="file" id="xFileIn" accept=".json,application/json" hidden></label></div></details>`;
+    P("prep", "colA").append(chk, xc, cRoom, showC);
     P("prep", "colB").append(cRoster, att, cBank);
     // 名簿：Excel読み込み
     const rIn = cRoster.querySelector("#rIn");
@@ -5671,6 +5682,78 @@ function hostPage() {
   document.querySelectorAll("#vCtl [data-va]").forEach((x) => (x.onclick = () => act("vctl", { a: x.dataset.va })));
   vidLoadAll().then(() => render());
   $("#takeBtn").onclick = () => { if (!confirm("参加者をこの端末に集めます。\n別の司会端末に参加中の人も、自動でこちらに移ります（名前はそのまま）。\nよろしいですか？")) return; takeOver(); toast("参加者をこの端末に集めました"); };
+  // ---- 別の司会PCへ引き継ぎ ----
+  {
+    const SETUP = ["roster", "rstore", "rkana", "bank", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "snd", "pub", "exact"];
+    const PROG = ["points", "tsum", "scored", "ever", "period", "champs", "handed", "tie", "bankIdx"];
+    const b64e = (u8) => { let x = ""; for (let i = 0; i < u8.length; i += 0x8000) x += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(x); };
+    const b64d = (x) => Uint8Array.from(atob(x), (c) => c.charCodeAt(0));
+    const gz = async (u8, comp) => new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(comp ? new CompressionStream("gzip") : new DecompressionStream("gzip"))).arrayBuffer());
+    const xkey = async (code) => crypto.subtle.importKey("raw", await crypto.subtle.digest("SHA-256", new TextEncoder().encode("kq-xfer:" + SITE_ID + ":" + code)), "AES-GCM", false, ["encrypt", "decrypt"]);
+    const xroom = (code) => "_xfer_" + SITE_ID + "_" + code;
+    const buildPkg = (prog) => {
+      const p = { v: 1, at: Date.now(), from: H.room, setup: {}, imgs: {} };
+      SETUP.forEach((k) => { if (H[k] !== undefined) p.setup[k] = H[k]; });
+      if (prog) { p.prog = {}; PROG.forEach((k) => { if (H[k] !== undefined) p.prog[k] = H[k]; }); }
+      (H.bank || []).forEach((b) => { const im = b.img; if (!im) return; [im.q, ...(im.c || []), ...(im.qx || []), ...(im.cx || []).flat()].filter(Boolean).forEach((id) => { if (IMG[id]) p.imgs[id] = IMG[id]; }); });
+      return p;
+    };
+    const pkgSum = (p) => { const st = p.setup || {}; return `名簿 ${Object.keys(st.roster || {}).length}人・問題 ${(st.bank || []).length}問・写真 ${Object.keys(p.imgs || {}).length}枚${p.prog ? "・得点と進行" : ""}`; };
+    const applyPkg = (p) => {
+      if (!p || p.v !== 1 || typeof p.setup !== "object") return toast("引き継ぎデータの形が正しくありません");
+      if (!confirm(`次の内容をこのPCに読み込みます。\n\n${pkgSum(p)}\n\nこのPCの名簿・問題・賞・設定は置き換わります。よろしいですか？`)) return;
+      SETUP.forEach((k) => { if (p.setup[k] !== undefined) H[k] = p.setup[k]; });
+      if (p.prog) { PROG.forEach((k) => { if (p.prog[k] !== undefined) H[k] = p.prog[k]; }); H.answers = {}; H.S = { ...H.S, phase: "idle", stage: "", rid: null, view: "q", question: "", img: null, vid: null }; }
+      Object.keys(H.claims || {}).forEach((k) => { if (!H.roster[k]) delete H.claims[k]; });
+      Object.entries(p.imgs || {}).forEach(([id, d]) => { if (/^i[a-z0-9]{1,12}$/.test(id) && typeof d === "string" && /^data:image\//.test(d)) { window.__hostImgs[id] = d; IMG[id] = d; } });
+      saveImgs(); save(); pubRoster(); pubState(true); render();
+      toast("引き継ぎました：" + pkgSum(p));
+    };
+    $("#xSend").onclick = async () => {
+      if (!cli || !cli.connected) return toast("中継サーバーにつながっていません。少し待ってからもう一度押してください");
+      try {
+        const pkg = buildPkg($("#xProg").checked);
+        const code = String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const enc = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await xkey(code), await gz(new TextEncoder().encode(JSON.stringify(pkg)), true)));
+        const str = b64e(enc), CH = 48000, n = Math.ceil(str.length / CH), r = xroom(code);
+        for (let i = 0; i < n; i++) cli.sendTo(r, "c/" + i, { i, d: str.slice(i * CH, (i + 1) * CH) }, { qos: 1, retain: true });
+        cli.sendTo(r, "m", { v: 1, at: Date.now(), n, iv: b64e(iv) }, { qos: 1, retain: true });
+        const box = $("#xCode"); box.classList.remove("hidden");
+        box.innerHTML = `<div>引き継ぎコード</div><b>${code}</b><div class="note">もう1台の司会PCで「📥 コードで受け取る」を押して、この6桁を入れてください（30分有効）<br>送った内容：${pkgSum(pkg)}</div>`;
+        setTimeout(() => { for (let i = 0; i < n; i++) cli.sendTo(r, "c/" + i, { x: 1 }, { qos: 1, retain: true }); cli.sendTo(r, "m", { x: 1 }, { qos: 1, retain: true }); if (box.textContent.includes(code)) box.classList.add("hidden"); }, 30 * 60 * 1000);
+      } catch (e) { toast("送れませんでした（" + (e && e.message ? e.message : e) + "）"); }
+    };
+    $("#xRecv").onclick = () => {
+      const code = String(prompt("もう1台の司会PCに出ている6桁の引き継ぎコードを入れてください") || "").normalize("NFKC").replace(/\D/g, "");
+      if (!code) return; if (code.length !== 6) return toast("6桁の数字を入れてください");
+      toast("受け取っています…");
+      let man = null, done = false; const parts = {};
+      const fin = async () => {
+        done = true; try { c2.end(); } catch (e) {}
+        try {
+          if (Date.now() - man.at > 2 * 3600 * 1000) return toast("このコードは古くなっています。送る側でもう一度「送る」を押してください");
+          const str = Array.from({ length: man.n }, (_, i) => parts[i]).join("");
+          const dec = new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64d(man.iv) }, await xkey(code), b64d(str)));
+          applyPkg(JSON.parse(new TextDecoder().decode(await gz(dec, false))));
+        } catch (e) { toast("受け取れませんでした。コードを確かめてもう一度お試しください"); }
+      };
+      const c2 = connectAny(0, xroom(code), ["m", "c/+"], (t, d) => {
+        if (done) return;
+        if (t === "m") { if (d && d.v === 1 && d.n > 0) man = d; }
+        else if (t.startsWith("c/") && d && typeof d.d === "string" && Number.isInteger(d.i)) parts[d.i] = d.d;
+        if (man && Array.from({ length: man.n }, (_, i) => parts[i]).every((x) => typeof x === "string")) fin();
+      });
+      setTimeout(() => { if (!done) { done = true; try { c2.end(); } catch (e) {} toast("このコードのデータが見つかりませんでした。コードを確かめるか、送る側でもう一度「送る」を押してください"); } }, 25000);
+    };
+    $("#xFileOut").onclick = () => {
+      const pkg = buildPkg($("#xProg").checked);
+      const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(pkg)], { type: "application/json" }));
+      a.download = `感謝祭クイズ_引き継ぎ_${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); toast("書き出しました：" + pkgSum(pkg));
+    };
+    $("#xFileIn").onchange = async (e) => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; try { applyPkg(JSON.parse(await f.text())); } catch (x) { toast("このファイルは読み込めませんでした"); } };
+  }
   $("#oFree").onchange = (e) => { H.opt.freeJoin = e.target.checked; save(); pubRoster(); render(); toast(e.target.checked ? "名簿なしで参加できるようにしました" : "名簿の人だけ参加できるようにしました"); };
   // スマホで司会：画面を消さない・戻ったらすぐ再接続
   { let wl = null; const wake = async () => { try { if (navigator.wakeLock && document.visibilityState === "visible" && !wl) { wl = await navigator.wakeLock.request("screen"); wl.addEventListener("release", () => { wl = null; }); } } catch (e) { wl = null; } };
