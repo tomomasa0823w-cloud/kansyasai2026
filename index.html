@@ -871,6 +871,64 @@ body.v-player.offline #offBar{display:block}
 @keyframes rvPulse{50%{transform:translateX(-50%) scale(1.06)}}
 .tv-seat.rv{background:linear-gradient(180deg,#FF7A3C,#C8102E)!important;color:#fff!important;border-color:#FFD55A!important}
 .tv-seat.rv b{color:#FFE066!important}
+/* ===== ミニゲーム ===== */
+.g-wrap{flex:1;display:grid;grid-template-columns:1fr 620px;gap:26px;min-height:0}
+.g-left{position:relative;min-height:0;display:flex}
+.g-stage,.g-intro,.g-done{position:relative;flex:1;border-radius:26px;overflow:hidden;background:radial-gradient(ellipse at 50% 30%,#2A4BB8,#0B1748 70%);box-shadow:0 0 0 4px #E8B740,0 0 0 7px rgba(5,12,45,.6),0 14px 30px rgba(0,0,0,.45)}
+.gcam{position:absolute;inset:0;background:transparent}
+.gcam video{width:100%;height:100%;object-fit:cover;display:block;transform:scaleX(1)}
+.gcam .vmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#E8B740;font:700 40px var(--lux,serif)}
+.g-plate{position:absolute;left:0;right:0;bottom:0;padding:28px 40px 30px;display:flex;flex-direction:column;gap:4px;background:linear-gradient(180deg,transparent,rgba(5,10,40,.88) 35%)}
+.g-stage:not(.cam) .g-plate{top:0;justify-content:center;align-items:center;text-align:center;background:none}
+.g-plate .gk{font:800 34px var(--lux,serif);color:#E8B740;letter-spacing:.1em}
+.g-plate .gst{font:800 44px var(--lux,serif);color:#fff;opacity:.9}
+.g-plate .gnm{font:800 120px/1.1 var(--lux,serif);color:#fff;text-shadow:0 6px 0 rgba(0,0,0,.5)}
+.g-stage:not(.cam) .g-plate .gnm{font-size:170px}
+.g-plate .gsc{font:800 70px var(--disp,sans-serif);color:#FFD55A}
+.g-plate .gsc small{font-size:36px;margin-left:6px}
+.g-plate .gsc span{font-size:40px;color:#fff;opacity:.85}
+.g-pop{position:absolute;right:40px;top:40px;z-index:5;min-width:320px;padding:20px 34px;border-radius:28px;text-align:center;color:#fff;background:linear-gradient(180deg,#2E9A3B,#14652A);box-shadow:0 0 0 6px #fff,0 14px 30px rgba(0,0,0,.5);animation:gPop .6s cubic-bezier(.2,1.6,.4,1) both}
+.g-pop small{display:block;font:800 32px var(--lux,serif);opacity:.9}
+.g-pop b{display:block;font:800 140px/1 var(--disp,sans-serif)}
+.g-pop span{display:block;font:800 38px var(--lux,serif)}
+.g-pop.miss{background:linear-gradient(180deg,#6B7280,#374151)}
+.g-pop.over{background:linear-gradient(180deg,#E9A100,#B45309)}.g-pop.over b{font-size:100px}
+.g-pop.out{background:linear-gradient(180deg,#E60012,#8A0010)}.g-pop.out b{font-size:110px}
+.g-pop.win{left:50%;right:auto;top:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,#FFE066,#E39B12);color:#3A2600;animation:gWin .8s cubic-bezier(.2,1.6,.4,1) both}
+.g-pop.win b{font-size:150px}
+@keyframes gPop{from{opacity:0;transform:scale(.4) rotate(-8deg)}to{opacity:1;transform:none}}
+@keyframes gWin{from{opacity:0;transform:translate(-50%,-50%) scale(.3)}to{opacity:1;transform:translate(-50%,-50%)}}
+.noanim .g-pop{animation:none}
+.g-right{display:flex;flex-direction:column;gap:12px;min-height:0}
+.g-h{font:800 46px var(--lux,serif);color:#FFD55A;text-align:center;text-shadow:0 3px 0 rgba(0,0,0,.4)}
+.g-board{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;overflow:hidden}
+.g-board li{display:grid;grid-template-columns:70px 1fr auto;align-items:center;gap:14px;padding:12px 18px;border-radius:18px;background:linear-gradient(180deg,#fff,#E6EEFF);color:#0B2A5A;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.g-board li.now{box-shadow:0 0 0 6px #E8B740,0 0 28px rgba(255,214,90,.7);transform:scale(1.02)}
+.g-board li.out{opacity:.45}
+.g-board li.win{background:linear-gradient(180deg,#FFF3C4,#FFD55A)}
+.g-board .grk{font:800 44px var(--disp,sans-serif);color:#B07A00;text-align:center}
+.g-board .gnm{font:800 38px/1.15 var(--lux,serif);min-width:0;overflow:hidden}
+.g-board .gnm small{font-size:24px;opacity:.7;margin-left:10px}
+.g-board .gms{display:block;font-size:22px;color:#E60012;letter-spacing:3px}
+.g-board .gbar{display:block;height:10px;border-radius:99px;background:#CBD5F0;margin-top:4px;overflow:hidden}.g-board .gbar i{display:block;height:100%;background:linear-gradient(90deg,#2E9A3B,#E8B740)}
+.g-board .gar{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.g-board .gar i{font-style:normal;font:800 22px var(--disp,sans-serif);background:#0B2A5A;color:#fff;border-radius:8px;padding:0 8px}
+.g-board .gsc{font:800 64px var(--disp,sans-serif);text-align:right;line-height:1}
+.g-board .gsc small{display:block;font-size:20px;opacity:.7}
+.g-info{font:700 24px var(--lux,serif);color:#fff;opacity:.85;text-align:center}
+.g-intro .gi-plate{position:absolute;left:0;right:0;bottom:0;padding:34px 50px 40px;background:linear-gradient(180deg,transparent,rgba(5,10,40,.9) 40%);animation:giIn .9s cubic-bezier(.2,1.3,.4,1) both}
+.g-intro:not(.cam) .gi-plate{top:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:none}
+.gi-plate .gk{font:800 34px var(--lux,serif);color:#E8B740;letter-spacing:.12em}
+.gi-plate .gk b{font-size:44px}
+.gi-plate .gst{font:800 60px var(--lux,serif);color:#fff;opacity:.92;margin-top:6px}
+.gi-plate .gnm{font:800 170px/1.05 var(--lux,serif);background:linear-gradient(180deg,#FFF6CF,#FFD55A 50%,#E39B12);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 0 rgba(0,0,0,.5))}
+.g-intro:not(.cam) .gi-plate .gnm{font-size:230px}
+@keyframes giIn{from{opacity:0;transform:translateY(80px)}to{opacity:1;transform:none}}
+.noanim .gi-plate{animation:none}
+.g-done{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.g-done .gk{font:800 44px var(--lux,serif);color:#fff;opacity:.9}
+.g-done .gt{font:800 90px var(--lux,serif);color:#E8B740}
+.g-done .gw{font:800 130px/1.1 var(--lux,serif);color:#FFD55A;text-shadow:0 6px 0 rgba(0,0,0,.5)}
+.g-done .gw small{display:block;font-size:44px;color:#fff;opacity:.85}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -1052,6 +1110,37 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
 .xcode{margin-top:10px;padding:12px;border:2px solid var(--gold);border-radius:12px;text-align:center}
 .xcode b{display:block;font-family:var(--disp);font-size:2.6rem;letter-spacing:.2em;color:var(--gold)}
 .xcode.hidden{display:none}
+/* ===== ④ゲーム（司会） ===== */
+.gopts{display:flex;flex-wrap:wrap;gap:8px 14px;margin:8px 0}
+.gopts label{display:flex;align-items:center;gap:6px;font-weight:700;font-size:.9rem}
+.gopts input[type=number]{width:80px;padding:6px 8px}
+.gopts .w{flex:1 1 100%}.gopts .w input{flex:1}
+.gplist{list-style:none;margin:6px 0;padding:0;display:flex;flex-direction:column;gap:4px;counter-reset:gp}
+.gplist li{display:grid;grid-template-columns:2em 1fr auto;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;background:var(--stage)}
+.gplist li:not(.note)::before{counter-increment:gp;content:counter(gp);font-weight:900;color:var(--gold);text-align:center}
+.gplist li small{margin-left:8px;color:var(--dim)}
+.gplist li span{display:flex;gap:4px}
+.gnow{margin:10px 0;padding:12px;border-radius:14px;background:var(--stage);text-align:center}
+.gn-k{font-size:.85rem;color:var(--dim);font-weight:800}
+.gn-n{font-size:1.8rem;font-weight:900}.gn-n small{font-size:.9rem;margin-left:8px;color:var(--dim)}
+.gn-s{font-weight:800;color:var(--gold)}
+.gn-done{font-size:1.6rem;font-weight:900;color:var(--gold)}
+.gpad{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px;margin:8px 0}
+.gpad .btn{font-size:1.6rem;font-weight:900;padding:14px 4px;line-height:1.1}
+.gpad .btn small{display:block;font-size:.7rem;font-weight:700}
+.gpad .btn.miss{background:#4B5563;color:#fff}
+.gpad.dis{opacity:.4;pointer-events:none}
+.gtbl td{padding:4px 6px}.gtbl tr.now td{background:rgba(232,183,64,.18);font-weight:900}
+.camqr{display:flex;gap:10px;align-items:center}.camqr .qr{width:120px;height:120px;flex:none;background:#fff;padding:4px;border-radius:8px}.camqr input{flex:1}
+@media (max-width:700px){ .htabs{grid-template-columns:repeat(5,1fr)} .htabs button b{font-size:.8rem} }
+/* 参加者スマホ：ゲーム中 */
+.gmini{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.gmini li{display:grid;grid-template-columns:2em 1fr auto;gap:8px;align-items:center;padding:8px 12px;border-radius:12px;background:var(--stage2,#fff);font-weight:800}
+.gmini li i{font-style:normal;color:var(--gold,#B07A00)}
+.gmini li.me{outline:3px solid var(--gold,#B07A00)}
+/* カメラ係（iPhone） */
+#vCam{max-width:560px;margin:0 auto}
+#camPrev{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;margin-top:10px;object-fit:cover}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -1292,9 +1381,13 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
       <button class="ghost" id="rmSnd">🔊 音を有効にする</button>
       <button class="ghost" id="rmSfx">🎵 音の差し替え</button>
       <label class="ghost btn fileb" id="rmVid">🎬 動画を読み込む<input type="file" id="rmVidIn" accept="video/*" multiple hidden></label>
+      <button class="ghost" id="rmCam">📷 カメラ</button>
       <button class="ghost" id="rmFs">全画面（F）</button>
     </div>
     <div id="rmSfxBox" class="ctl hidden" style="margin-bottom:10px"></div>
+    <div id="rmCamBox" class="ctl hidden" style="margin-bottom:10px"><b>📷 ゲーム画面に映すカメラ（このPCで表示）</b>
+      <div class="seg" id="rmCamMode" style="margin-top:6px"><button data-cm="off">なし</button><button data-cm="local">このPCのカメラ</button><button data-cm="remote">iPhone（カメラ係）</button></div>
+      <select id="rmCamDev" class="hidden" style="margin-top:6px"></select><p class="note" id="rmCamStat"></p></div>
     <div class="remote">
       <div class="mon" id="rMon"></div>
       <div id="rCtl" class="hidden"></div>
@@ -4319,6 +4412,7 @@ function monHTML(S, list, joinURL) {
     tel = telopHTML("ようこそ", "まもなく開演です！　スマホの準備をお願いします");
     return { key, html: `<div class="tv-bg"></div>${body}${tel}` };
   }
+  if (view === "game") return gameMonHTML(S);
   if (view === "roll") {
     const R = S.roll || [], hide = S.rollHide || 0, N = R.length;
     const rows = R.map((r) => { const h = r.rank <= hide; return `<li class="${r.rank <= 3 ? "top" : ""}${h ? " hid" : ""}"><span class="no">${r.rank}<small>位</small></span><span class="tn">${h ? "？？？" : esc(r.n)}</span><span class="st">${h ? "" : esc(r.s)}</span><span class="pt">${h ? "" : r.p + "<small>pt</small>"}</span></li>`; }).join("");
@@ -4437,18 +4531,132 @@ function fitTV(el) {
 function renderMonitor(el, S, list, joinURL) {
   if (!el) return;
   const { key, html } = monHTML(S, list, joinURL);
-  if (el._html === html) return vidSync(el, S);
+  if (el._html === html) { camSync(el); return vidSync(el, S); }
   const same = el._key === key;
   el._key = key; el._html = html;
   el.classList.add("tvhost");
   el.classList.toggle("noanim", same);
   el.innerHTML = `<div class="tv deep">${html}</div>`;
   qrInto(el.querySelector(".js-qr"), joinURL);
-  vidSync(el, S);
+  vidSync(el, S); camSync(el);
   fitTV(el);
   if (!tvObs.has(el) && window.ResizeObserver) { const o = new ResizeObserver(() => fitTV(el)); o.observe(el); tvObs.set(el, o); }
 }
 
+// ================= ミニゲーム（モルック・アーチェリー）と選手紹介 =================
+function gameMonHTML(S) {
+  const G = S.game || { players: [] }, P = G.players || [];
+  const isM = G.type === "molkky", ttl = G.title || (isM ? "モルック対決" : "アーチェリー対決");
+  const camOn = !!(CAM && CAM.stream);
+  if (G.intro != null && P[G.intro]) {
+    const p = P[G.intro];
+    return { key: `gi-${G.intro}-${camOn ? 1 : 0}`, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="g-intro${camOn ? " cam" : ""}"><div class="gcam js-cam"></div><div class="gi-plate"><div class="gk">${esc(ttl)}　選手紹介　<b>${G.intro + 1}</b> / ${P.length}</div><div class="gst">${esc(p.s || "")}</div><div class="gnm">${esc(p.n)}</div></div></div></div>${telopHTML("選手紹介", `${esc(p.s ? p.s + "　" : "")}${esc(p.n)} 選手！`)}` };
+  }
+  const cur = P[G.cur], last = G.last;
+  const pop = last && last.seq ? (() => {
+    const lp = P[last.p] ? esc(P[last.p].n) : "";
+    if (last.msg === "win") return `<div class="g-pop win"><small>${lp}</small>${isM ? `${G.max}点ぴったり！` : ""}<b>優勝！</b></div>`;
+    if (last.msg === "over") return `<div class="g-pop over"><small>${lp}</small><b>オーバー！</b><span>${G.back}点に戻る</span></div>`;
+    if (last.msg === "out") return `<div class="g-pop out"><small>${lp}</small><b>失格…</b><span>${G.missOut}回連続ミス</span></div>`;
+    if (last.v === 0) return `<div class="g-pop miss"><small>${lp}</small><b>${isM ? "ミス" : "0点"}</b></div>`;
+    return `<div class="g-pop hit"><small>${lp}</small><b>+${last.v}</b><span>点</span></div>`;
+  })() : "";
+  const rows = P.map((p, i) => {
+    const sub = isM ? `<span class="gms">${"●".repeat(p.miss || 0)}${"○".repeat(Math.max(0, (G.missOut || 0) - (p.miss || 0)))}</span><span class="gbar"><i style="width:${Math.min(100, ((p.score || 0) / (G.max || 50)) * 100)}%"></i></span>`
+      : `<span class="gar">${(p.hist || []).map((v) => `<i>${v}</i>`).join("")}</span>`;
+    return `<li class="${i === G.cur && !G.done ? "now" : ""}${p.out ? " out" : ""}${p.win ? " win" : ""}"><span class="grk">${p.rank || "-"}</span><span class="gnm">${esc(p.n)}<small>${esc(p.s || "")}</small>${sub}</span><span class="gsc">${p.score || 0}${isM && !p.win && !p.out ? `<small>あと${(G.max || 50) - (p.score || 0)}</small>` : ""}</span></li>`;
+  }).join("");
+  const info = isM ? `${G.max}点ぴったりで上がり／オーバーは${G.back}点に戻る${G.missOut ? `／${G.missOut}回連続ミスで失格` : ""}` : `全${G.ends}エンド × ${G.arrows}本${G.done ? "" : `　いま 第${G.end}エンド ${G.arrowNo}本目`}`;
+  const stage = G.done
+    ? `<div class="g-done"><div class="gk">${esc(ttl)}</div><div class="gt">結果発表</div>${P.filter((p) => p.rank === 1).map((p) => `<div class="gw">🏆 ${esc(p.n)}<small>${esc(p.s || "")}</small></div>`).join("")}</div>`
+    : `<div class="g-stage${camOn ? " cam" : ""}"><div class="gcam js-cam"></div><div class="g-plate"><div class="gk">${isM ? "投げる人" : "射る人"}</div><div class="gst">${esc(cur ? cur.s || "" : "")}</div><div class="gnm">${esc(cur ? cur.n : "")}</div>${cur ? `<div class="gsc">${cur.score || 0}<small>点</small>${isM ? `　<span>あと ${(G.max || 50) - (cur.score || 0)}点</span>` : ""}</div>` : ""}</div>${pop}</div>`;
+  return { key: `g-${(G.log || []).length}-${G.done ? 1 : 0}-${camOn ? 1 : 0}`, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="g-wrap"><div class="g-left">${stage}</div><div class="g-right"><div class="g-h">${esc(ttl)}</div><ol class="g-board">${rows}</ol><div class="g-info">${esc(info)}</div></div></div></div>${G.done ? `<div class="late2">${confetti(110)}</div>` : ""}${telopHTML(isM ? "モルック" : "アーチェリー", G.done ? "結果発表！" : cur ? `${esc(cur.n)} 選手の番です` : esc(info))}` };
+}
+
+// ---- カメラ（モニターに顔を映す）：このPCのカメラ、またはiPhone（カメラ係）からの映像 ----
+const CAM = { id: rand(10, lower), mode: "off", stream: null, el: null, pc: null, camId: null, send: null, accept: () => false, refresh: null, wantAt: 0, seen: new Set(), status: "" };
+const ICE = [{ urls: "stun:stun.l.google.com:19302" }];
+const iceDone = (pc) => new Promise((r) => { if (pc.iceGatheringState === "complete") return r(); const t = setTimeout(r, 2500); pc.addEventListener("icegatheringstatechange", () => { if (pc.iceGatheringState === "complete") { clearTimeout(t); r(); } }); });
+function camSync(el) {
+  const slot = el.querySelector(".js-cam"); if (!slot) return;
+  if (!CAM.stream) { slot.replaceChildren(); return; }
+  if (el.id === "hMon" && document.querySelector("#fullMon:not(.hidden)")) { slot.innerHTML = '<div class="vmsg">📷 全画面モニターに表示中</div>'; return; }
+  if (!CAM.el) { CAM.el = document.createElement("video"); CAM.el.muted = true; CAM.el.playsInline = true; CAM.el.autoplay = true; }
+  if (CAM.el.srcObject !== CAM.stream) CAM.el.srcObject = CAM.stream;
+  if (CAM.el.parentNode !== slot) slot.replaceChildren(CAM.el);
+  const pr = CAM.el.play(); if (pr) pr.catch(() => {});
+}
+function camSetStream(s) { if (CAM.stream && CAM.stream !== s && CAM.mode !== "remote") CAM.stream.getTracks().forEach((t) => t.stop()); CAM.stream = s; CAM.refresh && CAM.refresh(); }
+async function camUseLocal(deviceId) {
+  camStopRemote(); CAM.mode = "local";
+  try { const s = await navigator.mediaDevices.getUserMedia({ video: deviceId ? { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 720 } } : { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false }); camSetStream(s); CAM.status = "このPCのカメラを表示中"; }
+  catch (e) { CAM.mode = "off"; CAM.status = "カメラを使えませんでした（許可されていないか、カメラがありません）"; CAM.refresh && CAM.refresh(); }
+}
+function camStopRemote() { if (CAM.pc) { try { CAM.pc.close(); } catch (e) {} CAM.pc = null; } }
+function camOff() { camStopRemote(); if (CAM.stream && CAM.mode === "local") CAM.stream.getTracks().forEach((t) => t.stop()); CAM.mode = "off"; CAM.stream = null; CAM.status = ""; CAM.refresh && CAM.refresh(); }
+function camUseRemote() { if (CAM.mode === "local" && CAM.stream) CAM.stream.getTracks().forEach((t) => t.stop()); CAM.stream = null; CAM.mode = "remote"; CAM.status = "iPhone（カメラ係）を待っています…"; CAM.refresh && CAM.refresh(); camWant(); }
+async function camDevices() { try { return (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === "videoinput"); } catch (e) { return []; } }
+function camWant() {
+  if (CAM.mode !== "remote" || !CAM.camId || !CAM.send) return;
+  const st = CAM.pc ? CAM.pc.connectionState : "none";
+  if (["connected", "connecting"].includes(st) && CAM.stream) return;
+  if (Date.now() - CAM.wantAt < 5000) return;
+  CAM.wantAt = Date.now(); CAM.send({ t: "want", from: CAM.id, to: CAM.camId });
+}
+setInterval(camWant, 2000);
+async function camMsg(d) {
+  if (!d || typeof d !== "object" || typeof d.mid !== "string") return;
+  if (CAM.seen.has(d.mid)) return; CAM.seen.add(d.mid); if (CAM.seen.size > 500) CAM.seen = new Set();
+  if (d.t === "hello") { if (CAM.accept(d)) { if (CAM.camId !== d.from) { CAM.camId = d.from; camStopRemote(); CAM.wantAt = 0; } camWant(); } return; }
+  if (d.t === "offer" && d.to === CAM.id && CAM.mode === "remote" && d.from === CAM.camId && typeof d.sdp === "string") {
+    camStopRemote();
+    const pc = new RTCPeerConnection({ iceServers: ICE }); CAM.pc = pc;
+    pc.ontrack = (ev) => { CAM.stream = ev.streams[0] || new MediaStream([ev.track]); CAM.status = "iPhoneの映像を表示中"; CAM.refresh && CAM.refresh(); };
+    pc.onconnectionstatechange = () => { if (["failed", "closed", "disconnected"].includes(pc.connectionState) && CAM.pc === pc) { CAM.status = "iPhoneとの接続が切れました。つなぎ直しています…"; CAM.wantAt = 0; CAM.refresh && CAM.refresh(); } };
+    try {
+      await pc.setRemoteDescription({ type: "offer", sdp: d.sdp });
+      await pc.setLocalDescription(await pc.createAnswer()); await iceDone(pc);
+      CAM.send({ t: "answer", from: CAM.id, to: d.from, sdp: pc.localDescription.sdp });
+    } catch (e) { CAM.status = "iPhoneの映像を受け取れませんでした"; }
+  }
+}
+// iPhoneなどで開く「カメラ係」の画面
+function camPage(room, bi) {
+  const ks = "hq-cam-" + room, saved = store.get(ks, {}); const me = saved.id || rand(10, lower); store.set(ks, { ...saved, id: me });
+  document.body.classList.add("v-cam");
+  const sec = document.createElement("section"); sec.id = "vCam";
+  sec.innerHTML = `<div class="ctl camctl"><h2>📷 カメラ係</h2><p class="note">この画面の映像が、会場のモニター（ミニゲームの画面）に映ります。</p>
+    <div class="field"><label>司会のPIN（4桁）</label><input type="text" id="camPin" inputmode="numeric" maxlength="4" placeholder="司会画面の「カメラ」欄に出ています" value="${esc(saved.pin || "")}"></div>
+    <div class="row"><button class="btn go big2" id="camStart">カメラを開始</button><button class="btn" id="camFlip">🔄 前／後ろを切り替え</button></div>
+    <video id="camPrev" playsinline muted autoplay></video><p class="note" id="camStat">まだ開始していません</p></div>`;
+  $("main").appendChild(sec); show("vLoading"); $("#vLoading").classList.add("hidden");
+  let stream = null, facing = saved.facing || "environment", pin = saved.pin || "", started = false; const pcs = {}; const seen = new Set();
+  const stat = () => { const n = Object.values(pcs).filter((p) => p.connectionState === "connected").length; $("#camStat").textContent = !started ? "まだ開始していません" : n ? `モニター ${n}台に映しています` : "モニターがつながるのを待っています…（司会画面でカメラを「iPhone」にしてください）"; };
+  const cli = connectAny(bi, room, ["cam"], async (t, d) => {
+    if (t !== "cam" || !d || typeof d.mid !== "string" || seen.has(d.mid)) return; seen.add(d.mid);
+    if (d.t === "want" && d.to === me && stream) {
+      if (pcs[d.from]) { try { pcs[d.from].close(); } catch (e) {} }
+      const pc = new RTCPeerConnection({ iceServers: ICE }); pcs[d.from] = pc;
+      stream.getTracks().forEach((tr) => pc.addTrack(tr, stream));
+      pc.onconnectionstatechange = () => { if (["failed", "closed"].includes(pc.connectionState) && pcs[d.from] === pc) delete pcs[d.from]; stat(); };
+      await pc.setLocalDescription(await pc.createOffer()); await iceDone(pc);
+      send({ t: "offer", from: me, to: d.from, sdp: pc.localDescription.sdp });
+    } else if (d.t === "answer" && d.to === me && pcs[d.from] && typeof d.sdp === "string") { try { await pcs[d.from].setRemoteDescription({ type: "answer", sdp: d.sdp }); } catch (e) {} }
+  });
+  const send = (o) => cli && cli.send("cam", { ...o, mid: rand(12, lower) }, { qos: 0 });
+  const open = async () => {
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+      if (stream) { const nt = s.getVideoTracks()[0]; Object.values(pcs).forEach((pc) => pc.getSenders().forEach((sd) => sd.track && sd.track.kind === "video" && sd.replaceTrack(nt))); stream.getTracks().forEach((t) => t.stop()); }
+      stream = s; $("#camPrev").srcObject = s; started = true; stat();
+      try { navigator.wakeLock && (await navigator.wakeLock.request("screen")); } catch (e) {}
+    } catch (e) { $("#camStat").textContent = "カメラを使えませんでした。カメラの使用を「許可」してください"; }
+  };
+  $("#camStart").onclick = () => { pin = $("#camPin").value.trim(); if (!/^\d{4}$/.test(pin)) return toast("司会のPIN（4桁）を入れてください"); store.set(ks, { id: me, pin, facing }); open(); };
+  $("#camFlip").onclick = () => { facing = facing === "user" ? "environment" : "user"; store.set(ks, { id: me, pin, facing }); if (started) open(); };
+  setInterval(() => { if (started && pin) send({ t: "hello", from: me, pin }); stat(); }, 3000);
+  sec.classList.remove("hidden");
+}
 // ================= 司会・サブ司会の操作パネル（共通） =================
 let hostMode = "choice", pickedCorrect = [], preCorrect = [], curS = { ...DEF };
 const STAGE_LABEL = { review: "写真のふりかえり", cutshow: "予選落ちの発表", read: "問題を表示中（選択肢はまだ）", open: "回答受付中", closed: "締め切り", dist: "回答分布", correct: "正解発表", fast: "最速正解者", list: "正解者一覧", champ: "ピリオドチャンピオン" };
@@ -4651,6 +4859,7 @@ function hostPage() {
     if (o.view === "att") { const by = {}; Object.keys(H.roster).forEach((k) => { const s = H.rstore[k] || "店舗なし"; by[s] = by[s] || { s, n: 0, on: 0 }; by[s].n++; if (H.claims[k]) by[s].on++; }); o.att = Object.values(by); }
     if (o.view === "roll") { o.roll = R.map((r) => ({ rank: r.rank, n: r.n, p: r.p, t: r.t, s: H.rstore[r.key] || "" })); o.rollHide = H.opt.rollHide === false ? 0 : 3; o.rollAt = H.rollAt || 0; }
     if (o.view === "prizes") o.prizeTable = prizeTable();
+    if (o.view === "game" && window.__gameView) o.game = window.__gameView();
     if (o.view === "champs") o.champList = H.champs.map((c) => ({ period: c.period, n: c.n, ms: c.ms }));
     return o;
   }
@@ -4663,12 +4872,13 @@ function hostPage() {
   const pubRoster = () => { if (!cli) return; const list = Object.keys(H.roster).map((k) => ({ n: H.roster[k], s: H.rstore[k] || "", k: (H.rkana || {})[k] || "" })); cli.send("roster", { list, free: !!H.opt.freeJoin }, { qos: 1, retain: true }); };
   let lobbyCur, annT = null;
   const takeOver = () => { announce(); lobbyCur = H.room; render(); };
-  const cli = connectAll(H.room, ["join", "ans", "cmd", "ping", "leave", "@" + LOBBY + "/cur"], onMsg, () => { pubState(true); pubRoster(); pubImgs(H.S.img);
+  const cli = connectAll(H.room, ["join", "ans", "cmd", "ping", "leave", "cam", "@" + LOBBY + "/cur"], onMsg, () => { pubState(true); pubRoster(); pubImgs(H.S.img);
     clearTimeout(annT); annT = setTimeout(() => { if (lobbyCur === undefined || !lobbyCur || lobbyCur === H.room) { announce(); lobbyCur = H.room; } render(); }, 1800); });
   if (!cli) return;
   const watchSfx = sfxWatcher(), watchCount = countWatcher();
 
   function onMsg(t, d) {
+    if (t === "cam") return camMsg(d);
     if (t === "@" + LOBBY + "/cur") { if (typeof d.room === "string") { const was = lobbyCur; lobbyCur = d.room; if (was !== lobbyCur) render(); } return; }
     if (t === "ping") return touch(d.tok);
     if (t === "leave") {
@@ -4904,7 +5114,7 @@ function hostPage() {
       if (a.restore && !(H.psnap && H.psnap[n])) { toast(`第${n}ピリオド開始時の記録がないため、得点は戻せませんでした（起立状態だけやり直します）`); }
       startPeriod(n, !!a.restore);
     } else if (cmd === "view") {
-      const v = ["q", "board", "prizes", "champs", "title", "att", "roll"].includes(a.v) ? a.v : "q";
+      const v = ["q", "board", "prizes", "champs", "title", "att", "roll", "game"].includes(a.v) ? a.v : "q";
       if (v === "roll") H.rollAt = Date.now();
       setS({ view: v, ...(v === "title" ? sfx("title") : v === "roll" ? sfx("roll") : v !== "q" ? sfx("chime") : {}) });
     } else if (cmd === "cereStart") {
@@ -5305,14 +5515,16 @@ function hostPage() {
         <button data-ht="prep"><b>① 準備</b><small>名簿・問題・QR</small></button>
         <button data-ht="live"><b>② 本番</b><small>出題・進行</small></button>
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
+        <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/13-1</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/16-1</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
       <div class="hpanel" data-hp="prep"><div class="hgrid2"><div class="colA"></div><div class="colB"></div></div></div>
       <div class="hpanel" data-hp="live"><div class="hlive"><div class="colA"></div><div class="colB"></div></div></div>
       <div class="hpanel" data-hp="cere"><div class="hgrid2"><div class="colA"></div><div class="colB"></div></div></div>
+      <div class="hpanel" data-hp="game"><div class="hlive"><div class="colA"></div><div class="colB"></div></div></div>
       <div class="hpanel" data-hp="set"><div class="hgrid2"><div class="colA"></div><div class="colB"></div></div></div>`;
     root.replaceWith(wrap);
     wrap.id = "hostV7";
@@ -5334,12 +5546,13 @@ function hostPage() {
       <div class="row"><button class="btn" data-view="att">モニターに参加状況を出す</button></div>`;
     const xc = document.createElement("div"); xc.className = "ctl"; xc.id = "xferCard";
     xc.innerHTML = `<h2>🔁 別の司会PCへ引き継ぐ</h2>
-      <p class="note" style="margin:0 0 8px">このPCの<b>名簿・問題・写真・賞・設定</b>を、もう1台の司会PCにそのままコピーできます。<br>（動画ファイルはコピーされません。受け取ったPCでも入れ直してください）</p>
+      <p class="note" style="margin:0 0 8px">このPCの<b>名簿・問題・写真・賞・設定</b>を、もう1台の司会PCにそのままコピーできます。<br>（コードで送るときは動画は移りません。動画も移すときは下の「ファイルで渡す」を使ってください）</p>
       <label class="chk2"><input type="checkbox" id="xProg"> 得点・ピリオドの進み具合も含める<span class="note">（本番中に司会PCを交代するとき）</span></label>
       <div class="row"><button class="btn go" id="xSend">📤 送る（引き継ぎコードを出す）</button><button class="btn" id="xRecv">📥 コードで受け取る</button></div>
       <div id="xCode" class="xcode hidden"></div>
-      <details style="margin-top:8px"><summary class="note" style="cursor:pointer">ネットがつながらないとき：ファイルで渡す</summary>
-        <div class="row"><button class="btn" id="xFileOut">💾 ファイルに書き出す</button><label class="btn fileb">📂 ファイルを読み込む<input type="file" id="xFileIn" accept=".json,application/json" hidden></label></div></details>`;
+      <details style="margin-top:8px"><summary class="note" style="cursor:pointer">動画も移したいとき・ネットがつながらないとき：ファイルで渡す</summary>
+        <label class="chk2" style="margin-top:6px"><input type="checkbox" id="xVid" checked> 🎬 動画も含める<span class="note">（動画があるとファイルが大きくなります。USBメモリで渡すのがおすすめ）</span></label>
+        <div class="row"><button class="btn" id="xFileOut">💾 ファイルに書き出す</button><label class="btn fileb">📂 ファイルを読み込む<input type="file" id="xFileIn" hidden></label></div></details>`;
     P("prep", "colA").append(chk, xc, cRoom, showC);
     P("prep", "colB").append(cRoster, att, cBank);
     // 名簿：Excel読み込み
@@ -5394,10 +5607,37 @@ function hostPage() {
     dat.innerHTML = `<h2>データ</h2><p class="note" style="margin:0 0 8px">名簿・問題・得点はこのPCのブラウザに自動保存されます。</p>`;
     dat.append(cP.querySelector(".host-only"));
     dat.insertAdjacentHTML("beforeend", `<div class="row"><button class="ghost" id="bClearDemo">名簿と問題を全部消す</button></div>`);
+    // ---- ④ ゲーム ----
+    const gs = document.createElement("div"); gs.className = "ctl"; gs.id = "gSetup";
+    gs.innerHTML = `<h2>ゲームの準備</h2>
+      <div class="seg" id="gType"><button data-gt="molkky">🪵 モルック</button><button data-gt="archery">🏹 アーチェリー</button></div>
+      <div class="field"><label>タイトル（モニターに出ます）</label><input type="text" id="gTitle" maxlength="30" placeholder="例：店長対抗 モルック対決"></div>
+      <div id="gOptM" class="gopts"><label>上がり <input type="number" id="gMax" min="10" max="200"> 点</label><label>オーバーしたら <input type="number" id="gBack" min="0" max="200"> 点に戻る</label><label>連続ミス <input type="number" id="gMiss" min="0" max="9"> 回で失格（0＝なし）</label></div>
+      <div id="gOptA" class="gopts"><label><input type="number" id="gEnds" min="1" max="20"> エンド</label><label>1エンド <input type="number" id="gArrows" min="1" max="12"> 本</label><label class="w">点数ボタン <input type="text" id="gPts" placeholder="10,9,8,7,6,5,4,3,2,1,0"></label></div>
+      <h3 style="margin:10px 0 4px">選手（投げる・射る順）</h3>
+      <div class="row" style="margin:0"><input type="text" id="gFind" list="gRoster" placeholder="名前で探して追加（名簿から）" style="flex:1"><datalist id="gRoster"></datalist><button class="btn" id="gAdd">追加</button></div>
+      <ol class="gplist" id="gPlayers"></ol>
+      <div class="row"><button class="btn" id="gShuffle">🔀 順番をシャッフル</button><button class="ghost" id="gClear">選手を全部外す</button></div>`;
+    const gp = document.createElement("div"); gp.className = "ctl"; gp.id = "gPlay";
+    gp.innerHTML = `<h2>進行 <span class="phase" id="gPhase"></span></h2>
+      <div class="row"><button class="btn go big2" id="gShow">📺 モニターにゲームを映す</button></div>
+      <div class="row"><button class="btn" id="gIntroBtn">🎤 選手紹介を始める</button><button class="btn" id="gIntroPrev">◀ 前の人</button><button class="btn" id="gIntroNext">次の人 ▶</button><button class="btn" id="gBoard">スコア画面へ</button></div>
+      <div class="gnow" id="gNow"></div>
+      <div class="gpad" id="gPad"></div>
+      <div class="row"><button class="btn" id="gUndo">↶ 1つ取り消す</button><button class="ghost" id="gReset">スコアを最初から</button><button class="btn" id="gBack2">クイズの画面に戻る</button></div>
+      <table class="gtbl"><tbody id="gTbl"></tbody></table>`;
+    const gc = document.createElement("div"); gc.className = "ctl"; gc.id = "gCam";
+    gc.innerHTML = `<h2>📷 カメラ（顔を映す）</h2>
+      <p class="note" style="margin:0 0 6px">ゲーム画面と選手紹介で、モニターにカメラの映像を出せます。</p>
+      <div class="seg" id="camMode"><button data-cm="off">なし</button><button data-cm="local">このPCのカメラ</button><button data-cm="remote">iPhone（カメラ係）</button></div>
+      <div id="camLocalBox" class="hidden"><select id="camDev"></select></div>
+      <div id="camRemoteBox" class="hidden"><p class="note" style="margin:6px 0">カメラ係のiPhoneで下のQRかURLを開き、PIN <b id="camPinShow" style="font-size:1.3em"></b> を入れて「カメラを開始」を押してください。<br>（PCとiPhoneは同じWi-Fiにつなぐと安定します）</p><div class="camqr"><div class="qr" id="camQR"></div><input type="text" id="camURL" readonly></div></div>
+      <p class="note" id="camStatus"></p>`;
+    P("game", "colB").append(gp, gs, gc);
     P("set", "colA").append(cRule, dat);
     P("set", "colB").append(cSnd);
   })();
-  const setTab = (k) => { H.tab = k; save(); document.querySelectorAll("#hTabs2 [data-ht]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.ht === k))); document.querySelectorAll("#hostV7 .hpanel").forEach((p) => p.classList.toggle("on", p.dataset.hp === k)); };
+  const setTab = (k) => { H.tab = k; save(); { const mc = $(".monCol"); const dst = document.querySelector(`#hostV7 .hpanel[data-hp="${k === "game" ? "game" : "live"}"] .colA`); if (mc && dst && mc.parentNode !== dst) dst.prepend(mc); } document.querySelectorAll("#hTabs2 [data-ht]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.ht === k))); document.querySelectorAll("#hostV7 .hpanel").forEach((p) => p.classList.toggle("on", p.dataset.hp === k)); };
   document.querySelectorAll("#hTabs2 [data-ht]").forEach((b) => (b.onclick = () => setTab(b.dataset.ht)));
   setTab(H.tab || (Object.keys(H.roster).length && H.bank.length ? "live" : "prep"));
   $("#bToLive").onclick = () => setTab("live");
@@ -5682,9 +5922,112 @@ function hostPage() {
   document.querySelectorAll("#vCtl [data-va]").forEach((x) => (x.onclick = () => act("vctl", { a: x.dataset.va })));
   vidLoadAll().then(() => render());
   $("#takeBtn").onclick = () => { if (!confirm("参加者をこの端末に集めます。\n別の司会端末に参加中の人も、自動でこちらに移ります（名前はそのまま）。\nよろしいですか？")) return; takeOver(); toast("参加者をこの端末に集めました"); };
+  // ---- ④ ゲーム（モルック・アーチェリー・選手紹介） ----
+  if (!H.game) H.game = { type: "molkky", title: "", players: [], log: [], intro: 0, introOn: false, opts: { max: 50, back: 25, missOut: 3, ends: 2, arrows: 3, pts: "10,9,8,7,6,5,4,3,2,1,0" } };
+  const G = () => H.game;
+  function gDerive() {
+    const g = G(), o = g.opts, P = g.players.map((p) => ({ n: p.n, s: p.s || "", hist: [], score: 0, miss: 0, out: false, win: false }));
+    let last = null, done = false, cur = -1, end = 1, arrowNo = 1;
+    if (g.type === "molkky") {
+      g.log.forEach((e, k) => { const p = P[e.p]; if (!p) return; p.hist.push(e.v); let msg = "";
+        if (e.v === 0) { p.miss++; if (o.missOut && p.miss >= o.missOut) { p.out = true; msg = "out"; } }
+        else { p.miss = 0; p.score += e.v; if (p.score > o.max) { p.score = o.back; msg = "over"; } else if (p.score === o.max) { p.win = true; msg = "win"; done = true; } }
+        last = { p: e.p, v: e.v, msg, seq: k + 1 }; });
+      if (!done && P.length > 1) { const alive = P.filter((p) => !p.out); if (alive.length === 1) { alive[0].win = true; done = true; } else if (!alive.length) done = true; }
+      if (!done && P.length) { const n = P.length, st = g.log.length ? (g.log[g.log.length - 1].p + 1) % n : 0; for (let k = 0; k < n; k++) { const j = (st + k) % n; if (!P[j].out) { cur = j; break; } } if (cur < 0) done = true; }
+    } else {
+      const A = Math.max(1, +o.arrows || 1), n = P.length;
+      g.log.forEach((e, k) => { const p = P[e.p]; if (!p) return; p.hist.push(e.v); p.score += e.v; last = { p: e.p, v: e.v, msg: "", seq: k + 1 }; });
+      const k = g.log.length; done = n > 0 && k >= A * Math.max(1, +o.ends || 1) * n;
+      if (!done && n) { cur = Math.floor((k % (A * n)) / A); end = Math.floor(k / (A * n)) + 1; arrowNo = (k % A) + 1; }
+      if (done && last && P.length) { const best = Math.max(...P.map((p) => p.score)); if (P[last.p] && P[last.p].score === best) last.msg = "win"; }
+    }
+    const val = (p) => (g.type === "molkky" ? (p.win ? 1e6 : 0) + (p.out ? -1e3 : 0) + p.score : p.score);
+    const sorted = P.map((p, i) => [i, val(p)]).sort((a, b) => b[1] - a[1]);
+    sorted.forEach(([i, v], k) => { P[i].rank = k > 0 && v === sorted[k - 1][1] ? P[sorted[k - 1][0]].rank : k + 1; });
+    return { P, last, done, cur, end, arrowNo };
+  }
+  window.__gameView = () => { const g = G(), d = gDerive(), o = g.opts; return { type: g.type, title: g.title, max: +o.max, back: +o.back, missOut: +o.missOut, ends: +o.ends, arrows: +o.arrows,
+    players: d.P.map((p) => ({ n: p.n, s: p.s, score: p.score, miss: p.miss, out: p.out, win: p.win, rank: p.rank, hist: g.type === "archery" ? p.hist : undefined })),
+    cur: d.cur, last: d.last, done: d.done, end: d.end, arrowNo: d.arrowNo, intro: g.introOn ? g.intro : null }; };
+  const gPts = () => { const g = G(); if (g.type === "molkky") return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0]; const a = String(g.opts.pts || "").split(/[,、\s]+/).map((x) => parseInt(x, 10)).filter((x) => Number.isInteger(x) && x >= 0 && x <= 1000); return a.length ? a : [1, 0]; };
+  const gPub = (extra) => { save(); setS({ view: "game", ...(extra || {}) }); };
+  function gScore(v) {
+    const g = G(), d = gDerive(); if (d.done || d.cur < 0) return toast("このゲームは終わりました。「スコアを最初から」でやり直せます");
+    g.log.push({ p: d.cur, v }); g.introOn = false;
+    const nd = gDerive(), m = nd.last ? nd.last.msg : "";
+    gPub(sfx(m === "win" || nd.done ? "fanfare" : m === "over" || m === "out" ? "wrong" : v === 0 ? "seat" : "chime"));
+  }
+  function gRenderSetup() {
+    const g = G();
+    document.querySelectorAll("#gType [data-gt]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.gt === g.type)));
+    $("#gOptM").classList.toggle("hidden", g.type !== "molkky"); $("#gOptA").classList.toggle("hidden", g.type !== "archery");
+    const sv = (id, v) => { const e = $(id); if (document.activeElement !== e) e.value = v; };
+    sv("#gTitle", g.title || ""); sv("#gMax", g.opts.max); sv("#gBack", g.opts.back); sv("#gMiss", g.opts.missOut); sv("#gEnds", g.opts.ends); sv("#gArrows", g.opts.arrows); sv("#gPts", g.opts.pts);
+    const dl = Object.keys(H.roster).map((k) => `<option value="${esc(H.roster[k])}">${esc(H.rstore[k] || "")}</option>`).join(""); if ($("#gRoster")._h !== dl) { $("#gRoster")._h = dl; $("#gRoster").innerHTML = dl; }
+    $("#gPlayers").innerHTML = g.players.map((p, i) => `<li><b>${esc(p.n)}</b><small>${esc(p.s || "")}</small><span><button class="mini" data-gu="${i}">▲</button><button class="mini" data-gd="${i}">▼</button><button class="mini" data-gx="${i}">×</button></span></li>`).join("") || '<li class="note">まだ選手がいません。上の欄で名前を探して追加してください</li>';
+    $("#gPlayers").querySelectorAll("[data-gu],[data-gd],[data-gx]").forEach((b) => (b.onclick = () => {
+      const i = +(b.dataset.gu ?? b.dataset.gd ?? b.dataset.gx), a = g.players;
+      if (g.log.length && !confirm("スコアの記録があります。選手を変えるとスコアは最初からになります。よろしいですか？")) return;
+      g.log = [];
+      if (b.dataset.gx != null) a.splice(i, 1); else { const j = b.dataset.gu != null ? i - 1 : i + 1; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; }
+      gPub();
+    }));
+  }
+  function gRenderPlay(S) {
+    const g = G(), d = gDerive(), cur = d.P[d.cur];
+    $("#gPhase").textContent = !g.players.length ? "選手を追加してください" : d.done ? "終了" : g.introOn ? `選手紹介 ${g.intro + 1}/${g.players.length}` : g.type === "molkky" ? "対戦中" : `第${d.end}エンド ${d.arrowNo}本目`;
+    $("#gNow").innerHTML = d.done ? `<div class="gn-done">🏆 ${d.P.filter((p) => p.rank === 1).map((p) => esc(p.n)).join("・")}</div>` : cur ? `<div class="gn-k">${g.type === "molkky" ? "いま投げる人" : "いま射る人"}</div><div class="gn-n">${esc(cur.n)}<small>${esc(cur.s)}</small></div><div class="gn-s">${cur.score}点${g.type === "molkky" ? `（あと${g.opts.max - cur.score}点・ミス${cur.miss}）` : ""}</div>` : "";
+    const pts = gPts(), padH = pts.map((v) => `<button class="btn${v === 0 ? " miss" : ""}" data-gv="${v}">${v === 0 ? (g.type === "molkky" ? "ミス<small>0本</small>" : "0<small>外れ</small>") : v}</button>`).join("");
+    if ($("#gPad")._h !== padH) { $("#gPad")._h = padH; $("#gPad").innerHTML = padH; $("#gPad").querySelectorAll("[data-gv]").forEach((b) => (b.onclick = () => gScore(+b.dataset.gv))); }
+    $("#gPad").classList.toggle("dis", d.done || d.cur < 0);
+    $("#gPad").dataset.kind = g.type;
+    $("#gTbl").innerHTML = d.P.map((p, i) => `<tr class="${i === d.cur && !d.done ? "now" : ""}"><td>${p.rank}位</td><td>${esc(p.n)}</td><td><b>${p.score}</b>点</td><td class="note">${g.type === "molkky" ? (p.win ? "上がり" : p.out ? "失格" : `ミス${p.miss}`) : p.hist.join(" ")}</td></tr>`).join("");
+    $("#gIntroPrev").disabled = !g.introOn || g.intro <= 0; $("#gIntroNext").disabled = !g.introOn || g.intro >= g.players.length - 1;
+    // カメラ
+    document.querySelectorAll("#camMode [data-cm]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.cm === CAM.mode)));
+    $("#camLocalBox").classList.toggle("hidden", CAM.mode !== "local"); $("#camRemoteBox").classList.toggle("hidden", CAM.mode !== "remote");
+    $("#camStatus").textContent = CAM.status || ""; $("#camPinShow").textContent = H.pin;
+    const cu = pubBase() + `#r=${H.room}&view=cam`; if ($("#camURL").value !== cu) { $("#camURL").value = cu; qrInto($("#camQR"), cu); }
+    void S;
+  }
+  document.querySelectorAll("#gType [data-gt]").forEach((b) => (b.onclick = () => { const g = G(); if (g.type === b.dataset.gt) return; if (g.log.length && !confirm("スコアの記録は消えます。よろしいですか？")) return; g.type = b.dataset.gt; g.log = []; gPub(); }));
+  const gOpt = (id, k, num) => ($(id).onchange = () => { const g = G(); g.opts[k] = num ? Math.max(0, parseInt($(id).value, 10) || 0) : $(id).value.trim(); gPub(); });
+  gOpt("#gMax", "max", 1); gOpt("#gBack", "back", 1); gOpt("#gMiss", "missOut", 1); gOpt("#gEnds", "ends", 1); gOpt("#gArrows", "arrows", 1); gOpt("#gPts", "pts", 0);
+  $("#gTitle").onchange = () => { G().title = $("#gTitle").value.trim(); gPub(); };
+  const gAddName = () => {
+    const v = $("#gFind").value.trim(); if (!v) return;
+    const key = Object.keys(H.roster).find((k) => H.roster[k] === v) || Object.keys(H.roster).find((k) => foldName(H.roster[k]) === foldName(v));
+    const g = G(); const n = key ? H.roster[key] : v, st = key ? H.rstore[key] || "" : "";
+    if (g.players.some((p) => p.n === n)) return toast("もう追加されています");
+    if (g.log.length && !confirm("スコアの記録があります。選手を追加するとスコアは最初からになります。よろしいですか？")) return;
+    g.log = []; g.players.push({ n, s: st }); $("#gFind").value = ""; gPub(); if (!key) toast("名簿にない名前なので、自由入力で追加しました");
+  };
+  $("#gAdd").onclick = gAddName; $("#gFind").addEventListener("keydown", (e) => { if (e.key === "Enter") gAddName(); });
+  $("#gShuffle").onclick = () => { const g = G(); if (g.log.length && !confirm("スコアは最初からになります。よろしいですか？")) return; g.log = []; for (let i = g.players.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [g.players[i], g.players[j]] = [g.players[j], g.players[i]]; } gPub(); };
+  $("#gClear").onclick = () => { if (!confirm("選手を全部外します。よろしいですか？")) return; const g = G(); g.players = []; g.log = []; gPub(); };
+  $("#gShow").onclick = () => { G().introOn = false; gPub(sfx("chime")); };
+  $("#gIntroBtn").onclick = () => { const g = G(); if (!g.players.length) return toast("先に選手を追加してください"); g.intro = 0; g.introOn = true; gPub(sfx("drumReveal")); };
+  $("#gIntroNext").onclick = () => { const g = G(); if (g.intro < g.players.length - 1) { g.intro++; g.introOn = true; gPub(sfx("drumReveal")); } };
+  $("#gIntroPrev").onclick = () => { const g = G(); if (g.intro > 0) { g.intro--; g.introOn = true; gPub(); } };
+  $("#gBoard").onclick = () => { G().introOn = false; gPub(); };
+  $("#gUndo").onclick = () => { const g = G(); if (!g.log.length) return; g.log.pop(); gPub(); };
+  $("#gReset").onclick = () => { if (!confirm("このゲームのスコアを全部消して、最初からにします。よろしいですか？")) return; G().log = []; G().introOn = false; gPub(); };
+  $("#gBack2").onclick = () => setS({ view: "q" });
+  // カメラ（このPCで表示する映像）
+  CAM.send = (o) => cli && cli.send("cam", { ...o, mid: rand(12, lower) }, { qos: 0 });
+  CAM.accept = (d) => String(d.pin) === H.pin;
+  CAM.refresh = () => { if (CAM.camId && H.S.camId !== CAM.camId) setS({ camId: CAM.camId }); else render(); };
+  document.querySelectorAll("#camMode [data-cm]").forEach((b) => (b.onclick = async () => {
+    const m = b.dataset.cm;
+    if (m === "off") camOff(); else if (m === "remote") camUseRemote();
+    else { await camUseLocal($("#camDev").value || undefined); const ds = await camDevices(); $("#camDev").innerHTML = ds.map((x, i) => `<option value="${esc(x.deviceId)}">${esc(x.label || "カメラ " + (i + 1))}</option>`).join(""); }
+    render();
+  }));
+  $("#camDev").onchange = () => camUseLocal($("#camDev").value);
   // ---- 別の司会PCへ引き継ぎ ----
   {
-    const SETUP = ["roster", "rstore", "rkana", "bank", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "snd", "pub", "exact"];
+    const SETUP = ["roster", "rstore", "rkana", "bank", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "snd", "pub", "exact", "game"];
     const PROG = ["points", "tsum", "scored", "ever", "period", "champs", "handed", "tie", "bankIdx"];
     const b64e = (u8) => { let x = ""; for (let i = 0; i < u8.length; i += 0x8000) x += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(x); };
     const b64d = (x) => Uint8Array.from(atob(x), (c) => c.charCodeAt(0));
@@ -5701,13 +6044,14 @@ function hostPage() {
     const pkgSum = (p) => { const st = p.setup || {}; return `名簿 ${Object.keys(st.roster || {}).length}人・問題 ${(st.bank || []).length}問・写真 ${Object.keys(p.imgs || {}).length}枚${p.prog ? "・得点と進行" : ""}`; };
     const applyPkg = (p) => {
       if (!p || p.v !== 1 || typeof p.setup !== "object") return toast("引き継ぎデータの形が正しくありません");
-      if (!confirm(`次の内容をこのPCに読み込みます。\n\n${pkgSum(p)}\n\nこのPCの名簿・問題・賞・設定は置き換わります。よろしいですか？`)) return;
+      if (!confirm(`次の内容をこのPCに読み込みます。\n\n${pkgSum(p)}${p.vids && p.vids.length ? `・動画 ${p.vids.length}本` : ""}\n\nこのPCの名簿・問題・賞・設定は置き換わります。よろしいですか？`)) return false;
       SETUP.forEach((k) => { if (p.setup[k] !== undefined) H[k] = p.setup[k]; });
       if (p.prog) { PROG.forEach((k) => { if (p.prog[k] !== undefined) H[k] = p.prog[k]; }); H.answers = {}; H.S = { ...H.S, phase: "idle", stage: "", rid: null, view: "q", question: "", img: null, vid: null }; }
       Object.keys(H.claims || {}).forEach((k) => { if (!H.roster[k]) delete H.claims[k]; });
       Object.entries(p.imgs || {}).forEach(([id, d]) => { if (/^i[a-z0-9]{1,12}$/.test(id) && typeof d === "string" && /^data:image\//.test(d)) { window.__hostImgs[id] = d; IMG[id] = d; } });
       saveImgs(); save(); pubRoster(); pubState(true); render();
       toast("引き継ぎました：" + pkgSum(p));
+      return true;
     };
     $("#xSend").onclick = async () => {
       if (!cli || !cli.connected) return toast("中継サーバーにつながっていません。少し待ってからもう一度押してください");
@@ -5746,13 +6090,40 @@ function hostPage() {
       });
       setTimeout(() => { if (!done) { done = true; try { c2.end(); } catch (e) {} toast("このコードのデータが見つかりませんでした。コードを確かめるか、送る側でもう一度「送る」を押してください"); } }, 25000);
     };
-    $("#xFileOut").onclick = () => {
-      const pkg = buildPkg($("#xProg").checked);
-      const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(pkg)], { type: "application/json" }));
-      a.download = `感謝祭クイズ_引き継ぎ_${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(a); a.click();
-      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); toast("書き出しました：" + pkgSum(pkg));
+    // ファイル形式：「KQX1」＋ヘッダの長さ(4バイト)＋ヘッダ(JSON)＋動画データを順につなげたもの
+    $("#xFileOut").onclick = async () => {
+      const pkg = buildPkg($("#xProg").checked), parts = [], vids = [];
+      if ($("#xVid").checked) {
+        const seen = new Set();
+        for (const b of H.bank || []) {
+          if (!b.vid || seen.has(b.vid.id)) continue; seen.add(b.vid.id);
+          const v = VID[b.vid.id]; if (!v) continue;
+          try { const blob = await (await fetch(v.url)).blob(); vids.push({ id: b.vid.id, name: b.vid.name, size: blob.size, type: blob.type }); parts.push(blob); } catch (x) {}
+        }
+      }
+      pkg.vids = vids;
+      const head = new TextEncoder().encode(JSON.stringify(pkg)), len = new Uint8Array(4); new DataView(len.buffer).setUint32(0, head.length);
+      const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([new TextEncoder().encode("KQX1"), len, head, ...parts], { type: "application/octet-stream" }));
+      a.download = `kansyasai_hikitsugi_${new Date().toISOString().slice(0, 10)}.kqx`; document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); toast("書き出しました：" + pkgSum(pkg) + (vids.length ? `・動画 ${vids.length}本` : ""));
     };
-    $("#xFileIn").onchange = async (e) => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; try { applyPkg(JSON.parse(await f.text())); } catch (x) { toast("このファイルは読み込めませんでした"); } };
+    $("#xFileIn").onchange = async (e) => {
+      const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+      try {
+        const mg = new TextDecoder().decode(await f.slice(0, 4).arrayBuffer());
+        if (mg !== "KQX1") return applyPkg(JSON.parse(await f.text()));
+        const n = new DataView(await f.slice(4, 8).arrayBuffer()).getUint32(0);
+        const pkg = JSON.parse(new TextDecoder().decode(await f.slice(8, 8 + n).arrayBuffer()));
+        if (!applyPkg(pkg)) return;
+        let off = 8 + n, ok = 0;
+        for (const v of Array.isArray(pkg.vids) ? pkg.vids : []) {
+          const size = +v.size || 0, blob = f.slice(off, off + size, v.type || "video/mp4"); off += size;
+          if (!/^v[a-z0-9]{1,12}$/.test(v.id)) continue;
+          try { await VDB.put(v.id, { name: v.name, blob }); vidAdd(v.id, v.name, blob); ok++; } catch (x) {}
+        }
+        if (ok) { render(); toast(`動画 ${ok}本も読み込みました`); }
+      } catch (x) { toast("このファイルは読み込めませんでした"); }
+    };
   }
   $("#oFree").onchange = (e) => { H.opt.freeJoin = e.target.checked; save(); pubRoster(); render(); toast(e.target.checked ? "名簿なしで参加できるようにしました" : "名簿の人だけ参加できるようにしました"); };
   // スマホで司会：画面を消さない・戻ったらすぐ再接続
@@ -5777,6 +6148,7 @@ function hostPage() {
       + item(H.rule === "kanshasai", "感謝祭ルール", H.rule === "kanshasai" ? "ON（起立・着席・ピリオド制）" : "OFF（設定タブで切り替え）")
       + item(H.prizes.length > 0, "賞・景品", `${H.prizes.length}件（表彰タブで景品名を入れられます）`);
     $("#oFree").checked = !!H.opt.freeJoin;
+    gRenderSetup(); gRenderPlay(S);
     { const other = !!lobbyCur && lobbyCur !== H.room; $("#takeBar").classList.toggle("hidden", !other);
       if (other) $("#takeTxt").textContent = `（この端末のルーム ${H.room} ／ 参加者のいるルーム ${lobbyCur}）このままでは、ここで出題しても参加者には届きません。`; }
     // 次の問題
@@ -5861,7 +6233,8 @@ function remotePage(room, bi) {
   let pin = store.get("hq-pin-" + room, "");
   const pURL = baseOf(BASE);
   const watchSfx = sfxWatcher(), watchCount = countWatcher();
-  const cli = connectAny(bi, room, ["state", "live", "img/+"], (t, d) => {
+  const cli = connectAny(bi, room, ["state", "live", "img/+", "cam"], (t, d) => {
+    if (t === "cam") return camMsg(d);
     if (t.startsWith("img/")) { if (typeof d.id === "string" && typeof d.d === "string" && /^data:image\//.test(d.d)) { IMG[d.id] = d.d; render(); } return; }
     if (t === "state") {
       if (d.rid !== S.rid) pickedCorrect = [];
@@ -5885,6 +6258,17 @@ function remotePage(room, bi) {
   $("#rmFs").onclick = () => { fullscreen(!document.fullscreenElement); if (!SFX.unlocked) SFX.unlock(); render(); };
   $("#rmSnd").onclick = () => { if (SFX.unlock()) { SFX.play("chime"); render(); } };
   $("#rmSfx").onclick = () => $("#rmSfxBox").classList.toggle("hidden");
+  $("#rmCam").onclick = () => $("#rmCamBox").classList.toggle("hidden");
+  CAM.send = (o) => cli && cli.send("cam", { ...o, mid: rand(12, lower) }, { qos: 0 });
+  CAM.accept = (d) => !!S.camId && d.from === S.camId;
+  CAM.refresh = () => render();
+  document.querySelectorAll("#rmCamMode [data-cm]").forEach((b) => (b.onclick = async () => {
+    const m = b.dataset.cm;
+    if (m === "off") camOff(); else if (m === "remote") camUseRemote();
+    else { await camUseLocal($("#rmCamDev").value || undefined); const ds = await camDevices(); $("#rmCamDev").innerHTML = ds.map((x, i) => `<option value="${esc(x.deviceId)}">${esc(x.label || "カメラ " + (i + 1))}</option>`).join(""); }
+    render();
+  }));
+  $("#rmCamDev").onchange = () => camUseLocal($("#rmCamDev").value);
   vidLoadAll().then(() => { const n = Object.keys(VID).length; if (n) $("#rmVid").firstChild.textContent = `🎬 動画を読み込む（${n}本 保存済み）`; render(); });
   $("#rmVidIn").onchange = async (e) => {
     const fs = [...e.target.files]; e.target.value = ""; let n = 0;
@@ -5904,6 +6288,8 @@ function remotePage(room, bi) {
   function render() {
     const list = live.rid === S.rid ? live.list || [] : [];
     renderMonitor($("#rMon"), S, list, S.join || pURL);
+    document.querySelectorAll("#rmCamMode [data-cm]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.cm === CAM.mode)));
+    $("#rmCamDev").classList.toggle("hidden", CAM.mode !== "local"); $("#rmCamStat").textContent = CAM.status || "";
     $("#rmSnd").textContent = SFX.unlocked ? "🔊 音 有効" : "🔊 音を有効にする";
     $("#rmSnd").classList.toggle("on", SFX.unlocked);
     if (pin) renderControls(S, list.length);
@@ -6091,6 +6477,11 @@ function playerPage(room, bi) {
     if (reviveFx && Date.now() - reviveFx < 3500) { setTimeout(() => { if (Date.now() - reviveFx >= 3500) { reviveFx = 0; render(); } }, 3600); }
     let fx = reviveFx && Date.now() - reviveFx < 3500 ? `<div class="seatfx revfx"><div>🔥 復活！<small style="display:block;font-size:clamp(15px,4.6vw,22px);line-height:1.5;margin-top:14px;font-weight:800">起立に戻りました！<br>ピリオドチャンピオンを狙えます</small></div></div>` : seatFx && Date.now() - seatFx < 3000 ? `<div class="seatfx"><div>着席…<small style="display:block;font-size:clamp(15px,4.6vw,22px);line-height:1.5;margin-top:14px;font-weight:800">でも回答はこのまま続けられます！<br>正解すれば得点が入ります</small></div></div>` : "";
     if (fx) setTimeout(() => { if (Date.now() - seatFx >= 3000) { seatFx = 0; render(); } }, 3100);
+    if (S.view === "game" && S.game) {
+      const g = S.game, cp = (g.players || [])[g.cur];
+      el.innerHTML = `<div class="status"><div class="h">${g.type === "molkky" ? "🪵" : "🏹"} ${esc(g.title || (g.type === "molkky" ? "モルック対決" : "アーチェリー対決"))}</div><div class="s">${g.intro != null && g.players[g.intro] ? `選手紹介：${esc(g.players[g.intro].n)} 選手` : g.done ? "結果発表！" : cp ? `いま：${esc(cp.n)} 選手` : "まもなく開始"}</div></div><ol class="gmini">${(g.players || []).slice().sort((a, b) => a.rank - b.rank).map((p) => `<li class="${p.n === P.name ? "me" : ""}"><i>${p.rank}</i><b>${esc(p.n)}</b><span>${p.score}点</span></li>`).join("")}</ol>`;
+      return;
+    }
     if (S.view === "cere") {
       const c = S.cere || {}, it = c.item || {};
       const mine = c.step === "name" && it.name === P.name;
@@ -6189,6 +6580,7 @@ window.__appStarted = true;
   const isHost = store.get("hq-is-host", false) || ((Q.has("host") || HP.has("host")) && hostPass());
   if (isHost && !room) return hostPage();
   if (room && get("view") === "sub") return remotePage(room, bi);
+  if (room && get("view") === "cam") return camPage(room, bi);
   if (room) return playerPage(room, bi);
   lobby();
 })();
