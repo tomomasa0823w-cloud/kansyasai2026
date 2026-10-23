@@ -1027,7 +1027,7 @@ body.v-player.offline #offBar{display:block}
 @keyframes lotIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
 .lot-drum{height:0;overflow:visible;opacity:0;font:900 64px/1 var(--lux,serif);color:#FFE7A0;text-shadow:0 4px 0 rgba(0,0,0,.4);pointer-events:none}
 .lot-wrap.tame .lot-drum{opacity:1;animation:drumShake .12s linear infinite}
-.lot-wrap.tame .lot-box{animation:tameBox .35s ease-in-out infinite alternate}
+.lot-wrap.tame .lot-box{animation:tameBox .5s ease-in-out infinite alternate}
 .lot-v.tame{color:#9aa6cf;animation:tameQ .5s ease-in-out infinite alternate}
 @keyframes tameBox{from{transform:scale(1)}to{transform:scale(1.04)}}
 @keyframes tameQ{from{opacity:.55}to{opacity:1}}
@@ -4862,11 +4862,11 @@ function lotRun(root) {
   let pool = []; try { pool = JSON.parse(e.dataset.pool || "[]"); } catch (x) {}
   const mn = +e.dataset.min, mx = +e.dataset.max;
   const pick = () => pool.length ? pool[Math.floor(Math.random() * pool.length)] : String(mn + Math.floor(Math.random() * (mx - mn + 1)));
-  const T = 5200, t0 = performance.now(), isP = !!pool.length;
-  // ため：最後はゆっくり → いったん「？」で止めてドキドキ → ドン！
-  const tame = () => { if (!document.body.contains(e)) return; e.textContent = isP ? "？？？" : "？"; e.classList.add("tame"); wrap && wrap.classList.add("tame");
-    setTimeout(() => { if (!document.body.contains(e)) return; e.classList.remove("tame"); wrap && wrap.classList.remove("tame"); done(); wrap && wrap.classList.add("boom"); }, 1800); };
-  const step = () => { if (!document.body.contains(e)) return; const k = (performance.now() - t0) / T; if (k >= 1) return tame(); e.textContent = pick(); setTimeout(step, 45 + 420 * k * k * k); };
+  // 回っている間ずっと「ドゥルルル…」→ ゆっくりになって → ドン！で結果
+  const T = 6500, t0 = performance.now();
+  wrap && wrap.classList.add("tame");
+  const fin = () => { if (!document.body.contains(e)) return; wrap && wrap.classList.remove("tame"); done(); wrap && wrap.classList.add("boom"); };
+  const step = () => { if (!document.body.contains(e)) return; const k = (performance.now() - t0) / T; if (k >= 1) return fin(); let v = pick(); if (pool.length > 1 || mx > mn) { let g = 0; while (v === res && g++ < 5) v = pick(); } e.textContent = v; setTimeout(step, 45 + 380 * k * k * k); };
   step();
 }
 // ================= 司会・サブ司会の操作パネル（共通） =================
@@ -6519,7 +6519,7 @@ function hostPage() {
       H.lotLast = { title, res, name: w ? w.n : "" };
       const at = Date.now(); setS({ view: "lot", lot: { kind: "num", title, min: mn, max: mx, res, name: w ? w.n : "", at }, ...sfx("drum") }); lotBoom(at);
     };
-    const lotBoom = (at) => setTimeout(() => { if (H.S.view === "lot" && H.S.lot && H.S.lot.at === at) setS(sfx("correct")); }, 7000);
+    const lotBoom = (at) => setTimeout(() => { if (H.S.view === "lot" && H.S.lot && H.S.lot.at === at) setS(sfx("correct")); }, 6500);
     window.__lotAddPrize = () => { const l = H.lotLast; if (!l) return; H.prizes.push({ id: "m" + Date.now().toString(36), type: "manual", label: l.title, memo: "", winner: l.name || `${l.res}位`, pos: "after" }); save(); render(); toast(`「${l.title}」を賞に追加しました（表彰式の最後に発表）`); };
     $("#pairAddB").onclick = () => { const k = $("#pairAdd").value; if (!k || H.pairs.some((x) => x.k === k)) return; H.pairs.push({ k, partner: null }); save(); render(); };
     window.__pairDraw = (k) => {
