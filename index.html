@@ -1244,6 +1244,7 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
 .bedit select{width:auto}.bedit textarea{display:block;margin-top:4px;resize:vertical}
 .bedit .bk{display:inline-flex;align-items:center;gap:4px;margin-right:12px;font-weight:700}
 .bedit .bch{display:flex;align-items:center;gap:8px;margin-top:6px}.bedit .bch .bk{min-width:48px;margin:0}
+#przList .mv{padding:2px 7px;min-width:0}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5435,14 +5436,14 @@ function hostPage() {
       if (p.type === "manual") return `<tr class="manual"><td><select data-f="pos" data-i="${i}"><option value="before"${p.pos === "before" ? " selected" : ""}>クイズの前</option><option value="after"${p.pos !== "before" ? " selected" : ""}>最後</option></select></td>
         <td><input type="text" value="${esc(p.label)}" data-f="label" data-i="${i}" maxlength="30" placeholder="賞の名前"><input type="text" value="${esc(p.winner || "")}" data-f="winner" data-i="${i}" maxlength="40" placeholder="受賞者（チーム名・個人名）" style="margin-top:4px"></td>
         <td><input type="text" value="${esc(p.memo)}" data-f="memo" data-i="${i}" maxlength="40" placeholder="景品メモ"></td>
-        <td><span class="note">手動の賞</span> <button class="mini" data-pdel="${i}">削除</button></td></tr>`;
+        <td style="white-space:nowrap"><span class="note">手動の賞</span> <button class="mini mv" data-pmv="${i}:-1" ${i ? "" : "disabled"}>▲</button><button class="mini mv" data-pmv="${i}:1" ${i < H.prizes.length - 1 ? "" : "disabled"}>▼</button> <button class="mini" data-pdel="${i}">削除</button></td></tr>`;
       const rk = p.type === "champ" ? '<span class="note">各ピリオド</span>' : p.type === "booby" ? '<span class="note">ブービー</span>' : p.type === "last" ? '<span class="note">最下位</span>'
         : `<input type="number" min="1" max="999" value="${esc(p.rank)}" data-f="rank" data-i="${i}" style="width:70px">`;
       const r = p.type === "booby" ? N - 1 : p.type === "last" ? N : +p.rank;
       const skip = p.type !== "champ" && N && !(r >= 1 && r <= N);
       return `<tr class="${skip ? "skip" : ""}"><td>${rk}</td><td><input type="text" value="${esc(p.label)}" data-f="label" data-i="${i}" maxlength="30"></td>
         <td><input type="text" value="${esc(p.memo)}" data-f="memo" data-i="${i}" maxlength="40" placeholder="景品メモ"></td>
-        <td>${skip ? '<span class="note">人数不足で飛ばす</span>' : ""}<button class="mini" data-pdel="${i}">削除</button></td></tr>`;
+        <td style="white-space:nowrap">${skip ? '<span class="note">人数不足で飛ばす</span>' : ""}<button class="mini mv" data-pmv="${i}:-1" ${i ? "" : "disabled"}>▲</button><button class="mini mv" data-pmv="${i}:1" ${i < H.prizes.length - 1 ? "" : "disabled"}>▼</button> <button class="mini" data-pdel="${i}">削除</button></td></tr>`;
     }).join("");
     $("#przList").querySelectorAll("input[data-f],select[data-f]").forEach((x) => (x.onchange = () => {
       const p = H.prizes[+x.dataset.i]; if (!p) return;
@@ -5450,6 +5451,9 @@ function hostPage() {
       save(); render();
     }));
     $("#przList").querySelectorAll("[data-pdel]").forEach((x) => (x.onclick = () => { H.prizes.splice(+x.dataset.pdel, 1); save(); render(); }));
+    $("#przList").querySelectorAll("[data-pmv]").forEach((x) => (x.onclick = () => { const [i, d] = x.dataset.pmv.split(":").map(Number), j = i + d; if (j < 0 || j >= H.prizes.length) return; const [it] = H.prizes.splice(i, 1); H.prizes.splice(j, 0, it); save(); render(); }));
+    if (!$("#przSort") && $("#przList").closest("table")) { const bt = document.createElement("button"); bt.className = "btn"; bt.id = "przSort"; bt.textContent = "↕ 順位の順に並べる"; bt.style.margin = "8px 0"; $("#przList").closest("table").parentNode.insertAdjacentElement("afterend", bt);
+      bt.onclick = () => { const N = Object.keys(H.ever).filter((k) => H.roster[k]).length || 999, key = (p) => p.type === "manual" ? (p.pos === "before" ? -1 : 1e6) : p.type === "champ" ? 1e5 : p.type === "booby" ? N - 1 + 0.5 : p.type === "last" ? N + 0.5 : +p.rank; H.prizes.sort((a, b) => key(a) - key(b)); save(); render(); toast("順位の順に並べ直しました"); }; }
     const manualCount = H.prizes.filter((p) => p.type === "manual").length;
     const rankCount = H.prizes.filter((p) => p.type !== "champ" && p.type !== "manual").filter((p) => { const r = p.type === "booby" ? N - 1 : p.type === "last" ? N : +p.rank; return !N || (r >= 1 && r <= N); }).length;
     const hasChamp = H.prizes.some((p) => p.type === "champ");
@@ -6274,7 +6278,7 @@ function hostPage() {
       (H.bank || []).forEach((b) => { const im = b.img; if (!im) return; [im.q, ...(im.c || []), ...(im.qx || []), ...(im.cx || []).flat()].filter(Boolean).forEach((id) => { if (IMG[id]) p.imgs[id] = IMG[id]; }); });
       return p;
     };
-    const pkgSum = (p) => { const st = p.setup || {}; return `名簿 ${Object.keys(st.roster || {}).length}人・問題 ${(st.bank || []).length}問・写真 ${Object.keys(p.imgs || {}).length}枚${p.prog ? "・得点と進行" : ""}`; };
+    const pkgSum = (p) => { const st = p.setup || {}; return `名簿 ${Object.keys(st.roster || {}).length}人・問題 ${(st.bank || []).length}問・写真 ${Object.keys(p.imgs || {}).length}枚・賞 ${(st.prizes || []).length}個${p.prog ? "・得点と進行" : ""}`; };
     const applyPkg = (p) => {
       if (!p || p.v !== 1 || typeof p.setup !== "object") return toast("引き継ぎデータの形が正しくありません");
       if (!confirm(`次の内容をこのPCに読み込みます。\n\n${pkgSum(p)}${p.vids && p.vids.length ? `・動画 ${p.vids.length}本` : ""}\n\nこのPCの名簿・問題・賞・設定は置き換わります。よろしいですか？`)) return false;
