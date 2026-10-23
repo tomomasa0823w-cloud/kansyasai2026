@@ -1005,6 +1005,14 @@ body.v-player.offline #offBar{display:block}
 .tv-bars .lab .T .cnm{display:inline-block;font:900 44px/1.1 var(--lux,serif);color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.4);animation:cnIn .5s ease .3s both}
 .tv-bars.cn .col.lose{opacity:.55}
 @keyframes cnIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+/* 写真の選択肢：縦横混在でも大きく見やすく（ぼかし背景＋全体表示） */
+.tv-qa .qc .pbg{position:absolute;inset:0;background:center/cover no-repeat;filter:blur(22px) brightness(.75) saturate(1.1);transform:scale(1.15);z-index:0}
+.tv-qa .qc .pic{z-index:0;background-position:center!important;background-size:contain!important}
+.tv-qa .qc.ph .pic{inset:0 0 96px 0}
+.tv-qa .qc.notxt .pic{inset:6px}
+.tv-qa .qc.notxt .cn{display:none}
+.tv-qa .qc .num{z-index:2}
+.tv-qa .qc.ph .cn{z-index:2}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -4427,6 +4435,7 @@ function frameTick(S, t0) {
     if (e.dataset.fk === String(k)) return; e.dataset.fk = String(k);
     const u = IMG[ids[k]]; if (!u) return;
     if (e.tagName === "IMG") e.src = u; else e.style.backgroundImage = `url('${u}')`;
+    { const bg = e.previousElementSibling; if (bg && bg.classList.contains("pbg")) bg.style.backgroundImage = `url('${u}')`; }
     e.classList.remove("frx"); void e.offsetWidth; if (k > 0) e.classList.add("frx");
     const b = e.parentNode && e.parentNode.querySelector(":scope > .frn"); if (b) b.textContent = `ヒント ${k + 1}/${ids.length}`;
   });
@@ -4480,7 +4489,8 @@ function qaLayout(S, mode) {
   const n = nchOf(S), hide = mode === "read";
   const cards = S.mode === "choice" ? IDX(n).map((i) => {
     const ph = hide ? "" : cImg(S, i);
-    return `<div class="qc c${i}${ph ? " ph" : ""}${hide ? " hide" : ""}${mode === "closed" ? " faded" : ""}"><span class="num">${L[i]}</span>${ph ? `<div class="pic"${mode === "open" ? frAttr(S, i) : ""} style="background-image:url('${ph}')"></div>${mode === "open" && frIds(S, i).length > 1 ? `<i class="frn">ヒント 1/${frIds(S, i).length}</i>` : ""}` : ""}<div class="cn">${hide ? "？" : esc(S.choices[i])}</div></div>`;
+    const notxt = !!ph && !String(S.choices[i] || "").replace(/[\u200b\s]/g, "");
+    return `<div class="qc c${i}${ph ? " ph" : ""}${notxt ? " notxt" : ""}${hide ? " hide" : ""}${mode === "closed" ? " faded" : ""}"><span class="num">${L[i]}</span>${ph ? `<div class="pbg" style="background-image:url('${ph}')"></div><div class="pic"${mode === "open" ? frAttr(S, i) : ""} style="background-image:url('${ph}')"></div>${mode === "open" && frIds(S, i).length > 1 ? `<i class="frn">ヒント 1/${frIds(S, i).length}</i>` : ""}` : ""}<div class="cn">${hide ? "？" : esc(S.choices[i])}</div></div>`;
   }).join("") : `<div class="qbuzz">${mode === "open" ? "早押し！" : "早押し問題"}</div>`;
   const hv = !!(S.vid && S.vid.id), vf = hv && mode === "read";
   const qi = qImg(S), qt = S.question || "", vert = !qi && !hv && qt.length <= 8;
