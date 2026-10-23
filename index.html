@@ -1218,6 +1218,7 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
 .rlp ol{text-align:left;margin:8px 0 0;padding-left:1.4em;font-size:16px;line-height:1.6;font-weight:700}
 .ansnote{margin:8px 0;padding:10px 12px;border-radius:12px;background:#FFF4C9;border:2px solid #E8B740;color:#1A1400;font-size:15px;text-align:center}.ansnote b{font-size:22px;font-weight:900}
 .ansin{display:block;margin:0 0 10px;font-weight:700}.ansin input{display:block;width:100%;margin-top:4px;padding:8px 10px;font-size:16px}
+.pzt.miss{background:#FDECEC!important;outline:2px dashed #E53945}.pzt.miss em{display:flex;align-items:center;justify-content:center;height:100%;font-style:normal;font-size:11px;font-weight:800;color:#B3121F;text-align:center;line-height:1.2}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5936,7 +5937,7 @@ function hostPage() {
       const n = b.mode === "choice" ? b.nch || 4 : 0;
       const zone = (slot, label) => { const fr = getFr(slot), id = fr[0];
         return `<div class="pzw"><div class="pz${sel === slot && !selAdd ? " sel" : ""}" data-slot="${slot}" tabindex="0">${id && IMG[id] ? `<img src="${IMG[id]}" alt=""><button class="mini px" data-x="${slot}">×</button>` : `<span class="pzh">ここに写真を<br>ドラッグ／貼り付け<br><small>（クリックで選ぶ・複数まとめてOK）</small></span>`}<b>${label}${fr.length > 1 ? `　<span class="pzn">ヒント${fr.length}枚</span>` : ""}</b></div>
-        ${fr.length ? `<div class="pzst">${fr.map((x, k) => `<span class="pzt">${IMG[x] ? `<img src="${IMG[x]}" alt="">` : ""}<i>${k + 1}</i><button class="mini" data-xf="${slot}:${k}">×</button></span>`).join("")}${fr.length < 6 ? `<button class="pzadd${sel === slot && selAdd ? " sel" : ""}" data-add="${slot}">＋ヒント写真</button>` : ""}</div>` : ""}</div>`; };
+        ${fr.length ? `<div class="pzst">${fr.map((x, k) => `<span class="pzt${IMG[x] ? "" : " miss"}">${IMG[x] ? `<img src="${IMG[x]}" alt="">` : `<em>写真が<br>未読込</em>`}<i>${k + 1}</i><button class="mini" data-xf="${slot}:${k}">×</button></span>`).join("")}${fr.length < 6 ? `<button class="pzadd${sel === slot && selAdd ? " sel" : ""}" data-add="${slot}">＋ヒント写真</button>` : ""}</div>` : ""}</div>`; };
       d.innerHTML = `<div><h3>写真・動画をつける：第${i + 1}問</h3><p class="note" style="margin:0 0 8px">${esc(b.q)}</p>
         <label class="ansin">🏷 正解発表で出す名前・ひとこと（例：浅川さん）<input id="pzAns" maxlength="80" placeholder="空欄なら出しません" value="${esc(b.ans || "")}"></label>
         <div class="pzs">${vzone()}${zone("q", "問題の写真")}${IDX(n).map((j) => zone("c" + j, `${L[j]}：${esc((b.ch[j] || "").replace(/\u200b/g, "")) || "（文字なし）"}`)).join("")}</div>
