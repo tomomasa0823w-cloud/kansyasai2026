@@ -1227,6 +1227,7 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
 .pzc{display:flex;flex-direction:column;gap:6px}.cansin{width:100%;padding:7px 9px;font-size:15px;border-radius:8px;border:2px solid #E8B740}
 .cansin,.ansin input{background:#fff!important;color:#0B1748!important;-webkit-text-fill-color:#0B1748;caret-color:#0B1748;font-weight:700}
 .cansin::placeholder,.ansin input::placeholder{color:#8a93b5!important;-webkit-text-fill-color:#8a93b5}
+#bankList .mv{padding:2px 7px;min-width:0}#bankList tr.drg{cursor:grab}#bankList tr.dragging{opacity:.4}#bankList tr.dropto td{border-top:3px solid #E8B740}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5390,8 +5391,18 @@ function hostPage() {
   $("#bankNext").onclick = () => loadBank(H.bankIdx || 0);
   function renderBank() {
     $("#bankCount").textContent = H.bank.length ? `${H.bank.length}問（次は ${Math.min((H.bankIdx || 0) + 1, H.bank.length + 1)}問目）` : "未登録";
-    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td>${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td>${b.predict ? `予想${b.pts || 1}点` : ""}${b.last ? "最終" : ""}${b.revive ? ' <b style="color:#E9542C">🔥復活</b>' : ""}</td><td style="white-space:nowrap"><button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
+    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td>${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td>${b.predict ? `予想${b.pts || 1}点` : ""}${b.last ? "最終" : ""}${b.revive ? ' <b style="color:#E9542C">🔥復活</b>' : ""}</td><td style="white-space:nowrap"><button class="mini mv" data-mv="${i}:-1" ${i ? "" : "disabled"} title="上へ">▲</button><button class="mini mv" data-mv="${i}:1" ${i < H.bank.length - 1 ? "" : "disabled"} title="下へ">▼</button> <button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
     $("#bankList").querySelectorAll("[data-load]").forEach((x) => (x.onclick = () => loadBank(+x.dataset.load)));
+    const bankMove = (i, j) => { if (i === j || i < 0 || j < 0 || i >= H.bank.length || j >= H.bank.length) return; const [it] = H.bank.splice(i, 1); H.bank.splice(j, 0, it); save(); render(); };
+    $("#bankList").querySelectorAll("[data-mv]").forEach((x) => (x.onclick = () => { const [i, d] = x.dataset.mv.split(":").map(Number); bankMove(i, i + d); }));
+    $("#bankList").querySelectorAll("tr").forEach((tr, i) => {
+      if (!H.bank[i]) return; tr.draggable = true; tr.classList.add("drg");
+      tr.ondragstart = (e) => { e.dataTransfer.setData("text/bank", String(i)); e.dataTransfer.effectAllowed = "move"; tr.classList.add("dragging"); };
+      tr.ondragend = () => tr.classList.remove("dragging");
+      tr.ondragover = (e) => { if ([...e.dataTransfer.types].includes("text/bank")) { e.preventDefault(); tr.classList.add("dropto"); } };
+      tr.ondragleave = () => tr.classList.remove("dropto");
+      tr.ondrop = (e) => { e.preventDefault(); tr.classList.remove("dropto"); const from = +e.dataTransfer.getData("text/bank"); if (!isNaN(from)) bankMove(from, i); };
+    });
     $("#bankList").querySelectorAll("[data-photo]").forEach((x) => (x.onclick = () => window.__photoEditor && window.__photoEditor(+x.dataset.photo)));
   }
 
