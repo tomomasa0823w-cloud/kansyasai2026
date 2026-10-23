@@ -1037,6 +1037,11 @@ body.v-player.offline #offBar{display:block}
 @keyframes boomBox{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
 @keyframes boomFlash{from{opacity:1}to{opacity:0}}
 .lot-wrap.done .lot-nm,.lot-wrap.done .lot-after{animation:lotIn .8s ease 1.6s both}
+.tv-qa .qc .cn.js-fit{min-height:0;overflow:hidden}
+.js-fit>.ft{display:block;max-width:100%}
+.tv-qa .qt.v>.ft{display:inline-block;max-width:none;max-height:100%}
+.tv-qs.js-fit{white-space:normal;height:150px;display:flex;align-items:center;justify-content:center;line-height:1.3;flex:none}
+.tv-bars .lab .T.js-fit{max-height:100px;overflow:hidden;flex:1;min-width:0}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -4517,12 +4522,12 @@ function qaLayout(S, mode) {
   const cards = S.mode === "choice" ? IDX(n).map((i) => {
     const ph = hide ? "" : cImg(S, i);
     const notxt = !!ph && !String(S.choices[i] || "").replace(/[\u200b\s]/g, "");
-    return `<div class="qc c${i}${ph ? " ph" : ""}${notxt ? " notxt" : ""}${hide ? " hide" : ""}${mode === "closed" ? " faded" : ""}"><span class="num">${L[i]}</span>${ph ? `<div class="pbg" style="background-image:url('${ph}')"></div><div class="pic"${mode === "open" ? frAttr(S, i) : ""} style="background-image:url('${ph}')"></div>${mode === "open" && frIds(S, i).length > 1 ? `<i class="frn">ヒント 1/${frIds(S, i).length}</i>` : ""}` : ""}<div class="cn">${hide ? "？" : esc(S.choices[i])}</div></div>`;
+    return `<div class="qc c${i}${ph ? " ph" : ""}${notxt ? " notxt" : ""}${hide ? " hide" : ""}${mode === "closed" ? " faded" : ""}"><span class="num">${L[i]}</span>${ph ? `<div class="pbg" style="background-image:url('${ph}')"></div><div class="pic"${mode === "open" ? frAttr(S, i) : ""} style="background-image:url('${ph}')"></div>${mode === "open" && frIds(S, i).length > 1 ? `<i class="frn">ヒント 1/${frIds(S, i).length}</i>` : ""}` : ""}<div class="cn js-fit"><span class="ft">${hide ? "？" : esc(S.choices[i])}</span></div></div>`;
   }).join("") : `<div class="qbuzz">${mode === "open" ? "早押し！" : "早押し問題"}</div>`;
   const hv = !!(S.vid && S.vid.id), vf = hv && mode === "read";
   const qi = qImg(S), qt = S.question || "", vert = !qi && !hv && qt.length <= 8;
   return `<div class="tv-qa n${n}${S.mode === "choice" ? "" : " bz"}${qi || hv ? " qi" : ""}${vf ? " vf" : ""}"><div class="left">${hv ? '<div class="bigimg vid js-vid"></div>' : qi ? `<div class="bigimg"${mode === "open" ? frAttr(S, -1) : ""} style="background-image:url('${qi}')"></div>` : ""}<div class="grid">${cards}</div></div>
-    <div class="qside">${S.revive ? '<div class="rvbadge">🔥 敗者復活問題</div>' : ""}<div class="qh">Q<small>${S.no}</small></div><div class="qt${vert ? " v" : ""}${qt.length > 60 ? " s" : ""}">${esc(qt)}</div>
+    <div class="qside">${S.revive ? '<div class="rvbadge">🔥 敗者復活問題</div>' : ""}<div class="qh">Q<small>${S.no}</small></div><div class="qt js-fit${vert ? " v" : ""}${qt.length > 60 ? " s" : ""}"><span class="ft">${esc(qt)}</span></div>
       <div class="qtimer${mode === "open" ? "" : " off"}">${mode === "open" ? '<span class="js-timer"></span>' : mode === "read" ? "READY" : "締切"}</div>${mode === "open" ? '<div class="qbar"><i class="js-bar"></i></div>' : ""}</div></div>`;
 }
 function choiceGrid(S, cls) {
@@ -4614,7 +4619,7 @@ function monHTML(S, list, joinURL) {
       tel = telopHTML(per, `${kind}　正解は ${corrText(S)}${S.ansNote ? "（" + esc(S.ansNote) + "）" : ""}　📷 写真をふりかえり`);
     } else if (S.mode === "choice" && (st === "dist" || st === "correct")) {
       const n = nchOf(S), cnt = S.counts || IDX(n).map(() => 0), mx = Math.max(1, ...cnt), showC = st === "correct" && corrSet(S).length > 0;
-      body = `<div class="tv-qs">${esc(S.question)}</div><div class="tv-bars n${n}${showC && S.cans && S.cans.some(Boolean) ? " cn" : ""}">${IDX(n).map((i) => `<div class="col${showC ? (isHit(S, i) ? " win" : " lose") : ""}"><div class="num">${cnt[i] || 0}<small>人</small></div><div class="trk"><div class="bar c${i}" style="--h:${Math.round(((cnt[i] || 0) / mx) * 100)}%"></div></div><div class="lab c${i}">${cImg(S, i) ? `<span class="th" style="background-image:url('${cImg(S, i)}')"></span>` : ""}<span class="L">${L[i]}</span><span class="T">${showC && S.cans && S.cans[i] ? `<b class="cnm">${esc(S.cans[i])}</b>` : esc(S.choices[i])}</span></div>${showC && isHit(S, i) ? '<div class="ok">正解</div>' : ""}</div>`).join("")}</div>`;
+      body = `<div class="tv-qs js-fit"><span class="ft">${esc(S.question)}</span></div><div class="tv-bars n${n}${showC && S.cans && S.cans.some(Boolean) ? " cn" : ""}">${IDX(n).map((i) => `<div class="col${showC ? (isHit(S, i) ? " win" : " lose") : ""}"><div class="num">${cnt[i] || 0}<small>人</small></div><div class="trk"><div class="bar c${i}" style="--h:${Math.round(((cnt[i] || 0) / mx) * 100)}%"></div></div><div class="lab c${i}">${cImg(S, i) ? `<span class="th" style="background-image:url('${cImg(S, i)}')"></span>` : ""}<span class="L">${L[i]}</span><span class="T js-fit"><span class="ft">${showC && S.cans && S.cans[i] ? `<b class="cnm">${esc(S.cans[i])}</b>` : esc(S.choices[i])}</span></span></div>${showC && isHit(S, i) ? '<div class="ok">正解</div>' : ""}</div>`).join("")}</div>`;
       let ex = "";
       if (showC && S.predict) body += `<div class="tv-seat">的中 <b>${cnt.reduce((s, v, i) => s + (isHit(S, i) ? v : 0), 0)}</b>人</div>`;
       else if (showC && kanAct) {
@@ -4663,6 +4668,18 @@ function fitTV(el) {
   const k = el.classList.contains("full") ? Math.min(w / 1920, h / 1080) : w / 1920;
   tv.style.transform = `translate(${Math.max(0, (w - 1920 * k) / 2)}px,${el.classList.contains("full") ? Math.max(0, (h - 1080 * k) / 2) : 0}px) scale(${k})`;
 }
+// 枠に文字が収まるまで自動で小さくする
+function fitTexts(root) {
+  (root || document).querySelectorAll(".js-fit").forEach((box) => {
+    const inner = box.querySelector(":scope > .ft"); if (!inner || !box.clientHeight) return;
+    box.style.fontSize = ""; const cs = getComputedStyle(box);
+    let fs = parseFloat(cs.fontSize) || 40; const v = /vertical/.test(cs.writingMode);
+    const avH = () => box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    const avW = () => box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const over = () => v ? inner.offsetWidth > avW() + 1 || inner.offsetHeight > avH() + 1 : inner.offsetHeight > avH() + 1 || inner.scrollWidth > avW() + 1;
+    let g = 0; while (over() && fs > 16 && g++ < 40) { fs = Math.max(16, Math.floor(fs * 0.93)); box.style.fontSize = fs + "px"; }
+  });
+}
 function renderMonitor(el, S, list, joinURL) {
   if (!el) return;
   const { key, html } = monHTML(S, list, joinURL);
@@ -4674,8 +4691,8 @@ function renderMonitor(el, S, list, joinURL) {
   el.innerHTML = `<div class="tv deep">${html}</div>`;
   qrInto(el.querySelector(".js-qr"), joinURL);
   vidSync(el, S); camSync(el); lotRun(el);
-  fitTV(el);
-  if (!tvObs.has(el) && window.ResizeObserver) { const o = new ResizeObserver(() => fitTV(el)); o.observe(el); tvObs.set(el, o); }
+  fitTV(el); fitTexts(el); if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitTexts(el)); setTimeout(() => fitTexts(el), 400);
+  if (!tvObs.has(el) && window.ResizeObserver) { const o = new ResizeObserver(() => { fitTV(el); fitTexts(el); }); o.observe(el); tvObs.set(el, o); }
 }
 
 // ================= ミニゲーム（モルック・アーチェリー）と選手紹介 =================
