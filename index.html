@@ -1002,6 +1002,9 @@ body.v-player.offline #offBar{display:block}
 .tv-ansnote.sm{top:auto;bottom:150px;padding:14px 40px;animation-delay:.2s}.tv-ansnote.sm b{font-size:64px}.tv-ansnote.sm span{font-size:28px}
 @keyframes ansPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 .tv-ansnote.sm{animation-name:ansPop2}@keyframes ansPop2{0%{opacity:0;transform:translate(-50%,40px)}100%{opacity:1;transform:translate(-50%,0)}}
+.tv-bars .lab .T .cnm{display:inline-block;font:900 44px/1.1 var(--lux,serif);color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.4);animation:cnIn .5s ease .3s both}
+.tv-bars.cn .col.lose{opacity:.55}
+@keyframes cnIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -1219,6 +1222,9 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
 .ansnote{margin:8px 0;padding:10px 12px;border-radius:12px;background:#FFF4C9;border:2px solid #E8B740;color:#1A1400;font-size:15px;text-align:center}.ansnote b{font-size:22px;font-weight:900}
 .ansin{display:block;margin:0 0 10px;font-weight:700}.ansin input{display:block;width:100%;margin-top:4px;padding:8px 10px;font-size:16px}
 .pzt.miss{background:#FDECEC!important;outline:2px dashed #E53945}.pzt.miss em{display:flex;align-items:center;justify-content:center;height:100%;font-style:normal;font-size:11px;font-weight:800;color:#B3121F;text-align:center;line-height:1.2}
+.ch .cnm{position:absolute;left:8px;right:8px;bottom:8px;z-index:3;padding:4px 6px;border-radius:8px;background:rgba(255,255,255,.92);color:#0B1748;font-weight:900;font-size:17px;text-align:center}
+.ch.dim .cnm{opacity:1}
+.pzc{display:flex;flex-direction:column;gap:6px}.cansin{width:100%;padding:7px 9px;font-size:15px;border-radius:8px;border:2px solid #E8B740}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -4448,7 +4454,7 @@ function rvItems(S) {
   const out = [];
   const no = (ids, k) => (ids.length > 1 ? " " + "①②③④⑤⑥"[k] : "");
   { const ids = frIds(S, -1); ids.forEach((id, k) => out.push({ i: k ? -1 - k * 10 : -1, src: IMG[id], lab: "問題の写真" + no(ids, k), hit: false })); }
-  IDX(nchOf(S)).forEach((i) => { const ids = frIds(S, i); ids.forEach((id, k) => out.push({ i: i + k * 10, src: IMG[id], lab: `${L[i]}${no(ids, k)}　${(S.choices[i] || "").replace(/\u200b/g, "")}`, hit: isHit(S, i) })); });
+  IDX(nchOf(S)).forEach((i) => { const ids = frIds(S, i); ids.forEach((id, k) => out.push({ i: i + k * 10, src: IMG[id], lab: `${L[i]}${no(ids, k)}　${(S.cans && S.cans[i]) || (S.choices[i] || "").replace(/\u200b/g, "")}`, hit: isHit(S, i) })); });
   return out;
 }
 function reviewHTML(S) {
@@ -4559,7 +4565,7 @@ function monHTML(S, list, joinURL) {
       tel = telopHTML(per, `${kind}　正解は ${corrText(S)}${S.ansNote ? "（" + esc(S.ansNote) + "）" : ""}　📷 写真をふりかえり`);
     } else if (S.mode === "choice" && (st === "dist" || st === "correct")) {
       const n = nchOf(S), cnt = S.counts || IDX(n).map(() => 0), mx = Math.max(1, ...cnt), showC = st === "correct" && corrSet(S).length > 0;
-      body = `<div class="tv-qs">${esc(S.question)}</div><div class="tv-bars n${n}">${IDX(n).map((i) => `<div class="col${showC ? (isHit(S, i) ? " win" : " lose") : ""}"><div class="num">${cnt[i] || 0}<small>人</small></div><div class="trk"><div class="bar c${i}" style="--h:${Math.round(((cnt[i] || 0) / mx) * 100)}%"></div></div><div class="lab c${i}">${cImg(S, i) ? `<span class="th" style="background-image:url('${cImg(S, i)}')"></span>` : ""}<span class="L">${L[i]}</span><span class="T">${esc(S.choices[i])}</span></div>${showC && isHit(S, i) ? '<div class="ok">正解</div>' : ""}</div>`).join("")}</div>`;
+      body = `<div class="tv-qs">${esc(S.question)}</div><div class="tv-bars n${n}${showC && S.cans && S.cans.some(Boolean) ? " cn" : ""}">${IDX(n).map((i) => `<div class="col${showC ? (isHit(S, i) ? " win" : " lose") : ""}"><div class="num">${cnt[i] || 0}<small>人</small></div><div class="trk"><div class="bar c${i}" style="--h:${Math.round(((cnt[i] || 0) / mx) * 100)}%"></div></div><div class="lab c${i}">${cImg(S, i) ? `<span class="th" style="background-image:url('${cImg(S, i)}')"></span>` : ""}<span class="L">${L[i]}</span><span class="T">${showC && S.cans && S.cans[i] ? `<b class="cnm">${esc(S.cans[i])}</b>` : esc(S.choices[i])}</span></div>${showC && isHit(S, i) ? '<div class="ok">正解</div>' : ""}</div>`).join("")}</div>`;
       let ex = "";
       if (showC && S.predict) body += `<div class="tv-seat">的中 <b>${cnt.reduce((s, v, i) => s + (isHit(S, i) ? v : 0), 0)}</b>人</div>`;
       else if (showC && kanAct) {
@@ -4835,8 +4841,8 @@ function wireControls(act) {
     if (hostMode === "buzzer" && curS.rule === "kanshasai" && curS.period && curS.period.active) return toast("感謝祭ルールのピリオド中は4択（5択）で出題してください");
     pickedCorrect = preCorrect.filter((c) => c < n);
     act("open", { question, choices, mode: hostMode === "buzzer" ? "buzzer" : "choice", nch: n, limit: +$("#hLimit").value,
-      last: $("#hLast").checked && !predict, correct: pickedCorrect, predict, pts: +$("#hPts").value, img: window.__pendImg || null, vid: window.__pendVid || null, revive: !!window.__pendRevive && !predict, ans: window.__pendAns || "" });
-    window.__pendImg = null; window.__pendVid = null; window.__pendRevive = false; window.__pendAns = "";
+      last: $("#hLast").checked && !predict, correct: pickedCorrect, predict, pts: +$("#hPts").value, img: window.__pendImg || null, vid: window.__pendVid || null, revive: !!window.__pendRevive && !predict, ans: window.__pendAns || "", cans: window.__pendCans || null });
+    window.__pendImg = null; window.__pendVid = null; window.__pendRevive = false; window.__pendAns = ""; window.__pendCans = null;
     $("#hLast").checked = false;
     preCorrect = []; applyFormMode(); // 次の問題のために、事前の正解指定を解除
   };
@@ -5113,7 +5119,7 @@ function hostPage() {
       H.secret.judged = true; H.secret.champ = champ;
     }
     const counts = IDX(nchOf(S)).map(() => 0); l.forEach((x) => { if (x.c >= 0 && x.c < counts.length) counts[x.c]++; });
-    setS({ phase: "reveal", stage: "correct", correct, counts, total: l.length, seatedNow, revivedNow, cut, winners: null, ansNote: (H.secret && H.secret.ans) || "", ...sfx(seatedNow.length ? "correct+seat" : "correct") });
+    setS({ phase: "reveal", stage: "correct", correct, counts, total: l.length, seatedNow, revivedNow, cut, winners: null, ansNote: (H.secret && H.secret.ans) || "", cans: (H.secret && H.secret.cans) || null, ...sfx(seatedNow.length ? "correct+seat" : "correct") });
     sendMe();
   }
   // 各参加者に、自分の得点と総合順位を個別に送る（31位以下の人も自分の順位が分かる）
@@ -5158,12 +5164,12 @@ function hostPage() {
       H.hist = []; H.redo = [];
       pubImgs(cleanImg(a.img));
       H.answers = {};
-      H.secret = { last: !!a.last && !predict, correct: cleanC(a.correct, nch), judged: false, champ: null, ans: String(a.ans || "").slice(0, 80) };
+      H.secret = { last: !!a.last && !predict, correct: cleanC(a.correct, nch), judged: false, champ: null, ans: String(a.ans || "").slice(0, 80), cans: Array.isArray(a.cans) && a.cans.some(Boolean) ? a.cans.slice(0, 5).map((x) => String(x || "").slice(0, 40)) : null };
       if (kan() && H.period.active && !predict) H.period.q++;
       const rf = H.opt.readFirst !== false;
       setS({ rid, no: (S.no || 0) + 1, phase: rf ? "read" : "open", stage: rf ? "read" : "open", mode, nch, predict, pts: predict ? Math.max(1, Math.min(10, +a.pts || 1)) : 1, question: String(a.question || "").slice(0, 300), choices,
         limit: [5, 10, 15, 20, 30, 60].includes(+a.limit) ? +a.limit : 10, correct: null, view: "q", openedAt: Date.now(),
-        counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], revivedNow: [], revive: !!a.revive && !predict && mode === "choice", cut: null, champ: null, rvZoom: null, ansNote: "", img: cleanImg(a.img), vid: cleanVid(a.vid), vctl: null, ...sfx("open") });
+        counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], revivedNow: [], revive: !!a.revive && !predict && mode === "choice", cut: null, champ: null, rvZoom: null, ansNote: "", cans: null, img: cleanImg(a.img), vid: cleanVid(a.vid), vctl: null, ...sfx("open") });
       if (!rf) { t0 = performance.now(); t0rid = rid; scheduleClose(); pubLive(); }
     } else if (cmd === "endHere") {
       if (!kan() || !H.period.active || !S.rid || S.predict || H.secret.last) return;
@@ -5371,7 +5377,7 @@ function hostPage() {
   $("#bankClear").onclick = () => { if (!confirm("登録した問題をすべて消しますか？")) return; H.bank = []; H.bankIdx = 0; save(); render(); };
   function loadBank(i) {
     const b = H.bank[i]; if (!b) return toast("登録された問題はもうありません");
-    H.bankIdx = i + 1; save(); window.__pendImg = b.img || null; window.__pendVid = b.vid || null; window.__pendRevive = !!b.revive; window.__pendAns = b.ans || "";
+    H.bankIdx = i + 1; save(); window.__pendImg = b.img || null; window.__pendVid = b.vid || null; window.__pendRevive = !!b.revive; window.__pendAns = b.ans || ""; window.__pendCans = Array.isArray(b.cans) ? b.cans.slice() : null;
     hostMode = b.mode === "buzzer" ? "buzzer" : b.nch === 5 ? "choice5" : b.nch === 3 ? "choice3" : "choice";
     preCorrect = Array.isArray(b.correct) ? b.correct.slice() : b.correct == null ? [] : [b.correct];
     $("#hPredict").checked = !!b.predict; $("#hPts").value = String(b.pts || 1);
@@ -5382,7 +5388,7 @@ function hostPage() {
   $("#bankNext").onclick = () => loadBank(H.bankIdx || 0);
   function renderBank() {
     $("#bankCount").textContent = H.bank.length ? `${H.bank.length}問（次は ${Math.min((H.bankIdx || 0) + 1, H.bank.length + 1)}問目）` : "未登録";
-    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td>${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td>${b.predict ? `予想${b.pts || 1}点` : ""}${b.last ? "最終" : ""}${b.revive ? ' <b style="color:#E9542C">🔥復活</b>' : ""}</td><td style="white-space:nowrap"><button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
+    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td>${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td>${b.predict ? `予想${b.pts || 1}点` : ""}${b.last ? "最終" : ""}${b.revive ? ' <b style="color:#E9542C">🔥復活</b>' : ""}</td><td style="white-space:nowrap"><button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
     $("#bankList").querySelectorAll("[data-load]").forEach((x) => (x.onclick = () => loadBank(+x.dataset.load)));
     $("#bankList").querySelectorAll("[data-photo]").forEach((x) => (x.onclick = () => window.__photoEditor && window.__photoEditor(+x.dataset.photo)));
   }
@@ -5879,13 +5885,13 @@ function hostPage() {
       let rows;
       if (/\.(csv|txt)$/i.test(f.name)) { let t = await f.text(); if (/\uFFFD/.test(t)) t = new TextDecoder("shift_jis").decode(await f.arrayBuffer()); rows = t.split(/\r?\n/).map((l) => l.split(/\t|,/).map((x) => x.replace(/^"|"$/g, ""))); }
       else rows = await readXlsx(await f.arrayBuffer());
-      rows = rows.map((r) => Array.from({ length: 16 }, (_, i) => String((r || [])[i] ?? "").replace(/[\t\r\n]+/g, " ").trim()));
+      rows = rows.map((r) => Array.from({ length: 21 }, (_, i) => String((r || [])[i] ?? "").replace(/[\t\r\n]+/g, " ").trim()));
       rows = rows.filter((r) => r[0] && !/^(問題|問題文|質問|No\.?)$/.test(r[0]) && !/^【例】/.test(r[0]));
       rows.forEach((r) => { for (let i = 0; i < 5; i++) if (!r[1 + i] && r[10 + i]) r[1 + i] = "\u200b"; });
       const items = parseBank(rows.map((r) => r.slice(0, 9).join("\t")).join("\n"));
       items.forEach((it, k) => { const r = rows[k]; if (!r) return; const sp = (v) => String(v || "").split(/[,、，→>＞\/／]+/).map((x) => imgId(x)).filter(Boolean); const qs = sp(r[9]), cs = [10, 11, 12, 13, 14].map((j) => sp(r[j]));
         const im = { q: qs[0] || null, c: cs.map((x) => x[0] || null) }; if (qs.length > 1) im.qx = qs.slice(1); if (cs.some((x) => x.length > 1)) im.cx = cs.map((x) => x.slice(1));
-        if (im.q || im.c.some(Boolean)) it.img = im; if (r[15]) it.ans = r[15].slice(0, 80); });
+        if (im.q || im.c.some(Boolean)) it.img = im; if (r[15]) it.ans = r[15].slice(0, 80); { const cn = [16, 17, 18, 19, 20].map((j) => r[j].slice(0, 40)); if (cn.some(Boolean)) it.cans = cn; } });
       if (!items.length) return toast("問題が見つかりませんでした。A列に問題、B〜F列に選択肢を入れてください");
       const replace = H.bank.length > 0 && confirm(`${items.length}問を読み込みます。\n\n今の登録問題を入れ替えますか？\n［OK］入れ替える\n［キャンセル］後ろに追加する`);
       if (replace) { H.bank = []; H.bankIdx = 0; }
@@ -5940,7 +5946,7 @@ function hostPage() {
         ${fr.length ? `<div class="pzst">${fr.map((x, k) => `<span class="pzt${IMG[x] ? "" : " miss"}">${IMG[x] ? `<img src="${IMG[x]}" alt="">` : `<em>写真が<br>未読込</em>`}<i>${k + 1}</i><button class="mini" data-xf="${slot}:${k}">×</button></span>`).join("")}${fr.length < 6 ? `<button class="pzadd${sel === slot && selAdd ? " sel" : ""}" data-add="${slot}">＋ヒント写真</button>` : ""}</div>` : ""}</div>`; };
       d.innerHTML = `<div><h3>写真・動画をつける：第${i + 1}問</h3><p class="note" style="margin:0 0 8px">${esc(b.q)}</p>
         <label class="ansin">🏷 正解発表で出す名前・ひとこと（例：浅川さん）<input id="pzAns" maxlength="80" placeholder="空欄なら出しません" value="${esc(b.ans || "")}"></label>
-        <div class="pzs">${vzone()}${zone("q", "問題の写真")}${IDX(n).map((j) => zone("c" + j, `${L[j]}：${esc((b.ch[j] || "").replace(/\u200b/g, "")) || "（文字なし）"}`)).join("")}</div>
+        <div class="pzs">${vzone()}${zone("q", "問題の写真")}${IDX(n).map((j) => `<div class="pzc">${zone("c" + j, `${L[j]}：${esc((b.ch[j] || "").replace(/\u200b/g, "")) || "（文字なし）"}`)}<input class="cansin" data-cans="${j}" maxlength="40" placeholder="🏷 ${L[j]}の名前（正解発表で表示）" value="${esc((b.cans || [])[j] || "")}"></div>`).join("")}</div>
         <p class="note">写真ファイルを枠にドラッグするか、枠を選んでから <b>Ctrl+V</b>（コピーした画像の貼り付け）でもOK。クリックするとファイルを選べます。<br>
         <b>ヒント写真</b>：「＋ヒント写真」で2枚目・3枚目を足すと、回答時間のあいだに 1→2→3 の順で写真が切り替わります（例：式場 → 後ろ姿 → 正面）。複数の写真をまとめて枠にドラッグしても、名前順に並びます。<br>動画は一番上の枠へ（スマホで撮った動画もそのまま使えます）。</p>
         <div class="row"><button class="btn go" id="pzOk">閉じる</button></div><input type="file" id="pzFile" accept="image/*,video/*" multiple hidden></div>`;
@@ -5963,6 +5969,7 @@ function hostPage() {
       d.querySelectorAll("[data-xf]").forEach((x) => (x.onclick = () => { const [sl, k] = x.dataset.xf.split(":"); const fr = getFr(sl); fr.splice(+k, 1); setFr(sl, fr); save(); render(); draw(); }));
       d.querySelector("#pzFile").onchange = (e) => { const fs = [...e.target.files]; e.target.value = ""; if (!fs.length) return; const fv = fs.find((x) => /^video\//.test(x.type)); if (fv) return putVid(fv); if (sel === "v") return toast("動画ファイルを選んでください"); putMany(sel, pickImgs(fs), selAdd); };
       d.querySelector("#pzOk").onclick = close;
+      d.querySelectorAll("[data-cans]").forEach((x) => (x.oninput = () => { const j = +x.dataset.cans; b.cans = b.cans || []; b.cans[j] = x.value.trim(); if (!b.cans.some(Boolean)) delete b.cans; save(); }));
       d.querySelector("#pzAns").oninput = (e) => { const v = e.target.value.trim(); if (v) b.ans = v; else delete b.ans; save(); render(); };
     };
     async function putMany(slot, files, append) {
@@ -6673,7 +6680,7 @@ function playerPage(room, bi) {
         let c = "ch c" + i;
         if (showC) { if (!isHit(S, i)) c += " dim"; } else if (mine && mine.c !== i) c += " dim";
         if (mine && mine.c === i) c += " pick";
-        return `<button class="${c}" data-c="${i}" ${locked ? "disabled" : ""}>${cnts ? `<span class="pcnt" style="--w:${Math.round(((cnts[i] || 0) / cMax) * 100)}%"><b>${cnts[i] || 0}</b>人</span>` : ""}<span class="L">${L[i]}<span class="kbd">${L[i]} / ${i + 1}</span></span>${S.phase !== "read" && cImg(S, i) ? `<span class="ph"${frAttr(S, i)} style="background-image:url('${cImg(S, i)}')"></span>` : ""}<span class="T">${S.phase === "read" ? "？" : esc(S.choices[i])}</span></button>`;
+        return `<button class="${c}" data-c="${i}" ${locked ? "disabled" : ""}>${cnts ? `<span class="pcnt" style="--w:${Math.round(((cnts[i] || 0) / cMax) * 100)}%"><b>${cnts[i] || 0}</b>人</span>` : ""}<span class="L">${L[i]}<span class="kbd">${L[i]} / ${i + 1}</span></span>${showC && S.cans && S.cans[i] ? `<span class="cnm">${esc(S.cans[i])}</span>` : ""}${S.phase !== "read" && cImg(S, i) ? `<span class="ph"${frAttr(S, i)} style="background-image:url('${cImg(S, i)}')"></span>` : ""}<span class="T">${S.phase === "read" ? "？" : esc(S.choices[i])}</span></button>`;
       }).join("") + `</div>`;
     } else h += `<button class="buzz" data-c="-1" ${locked ? "disabled" : ""}>押す！<br><span class="kbd" style="border-color:#fff">スペース</span></button>`;
     const cTxt = corrSet(S).length ? `<div>正解は ${corrText(S)}</div>` : "";
