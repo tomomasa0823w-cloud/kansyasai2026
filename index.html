@@ -4866,6 +4866,9 @@ function lotRun(root) {
   const T = 6500, t0 = performance.now();
   wrap && wrap.classList.add("tame");
   const fin = () => { if (!document.body.contains(e)) return; wrap && wrap.classList.remove("tame"); done(); wrap && wrap.classList.add("boom"); };
+  // 候補が少ない（3つ以下）と回しても答えが見えてしまうので「？」のまま溜める
+  const few = pool.length ? new Set(pool).size <= 3 : mx - mn + 1 <= 3;
+  if (few) { e.textContent = pool.length ? "？？？" : "？"; e.classList.add("tame"); setTimeout(() => { e.classList.remove("tame"); fin(); }, T); return; }
   const step = () => { if (!document.body.contains(e)) return; const k = (performance.now() - t0) / T; if (k >= 1) return fin(); let v = pick(); if (pool.length > 1 || mx > mn) { let g = 0; while (v === res && g++ < 5) v = pick(); } e.textContent = v; setTimeout(step, 45 + 380 * k * k * k); };
   step();
 }
