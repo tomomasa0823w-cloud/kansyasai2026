@@ -1025,6 +1025,18 @@ body.v-player.offline #offBar{display:block}
 .lot-nm small{font-size:52px;margin:0 12px;color:#FFE7A0}.lot-after{font-size:54px;color:#FFE7A0}
 .lot-wrap.done .lot-nm,.lot-wrap.done .lot-after{animation:lotIn .7s ease 1.1s both}
 @keyframes lotIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+.lot-drum{height:0;overflow:visible;opacity:0;font:900 64px/1 var(--lux,serif);color:#FFE7A0;text-shadow:0 4px 0 rgba(0,0,0,.4);pointer-events:none}
+.lot-wrap.tame .lot-drum{opacity:1;animation:drumShake .12s linear infinite}
+.lot-wrap.tame .lot-box{animation:tameBox .35s ease-in-out infinite alternate}
+.lot-v.tame{color:#9aa6cf;animation:tameQ .5s ease-in-out infinite alternate}
+@keyframes tameBox{from{transform:scale(1)}to{transform:scale(1.04)}}
+@keyframes tameQ{from{opacity:.55}to{opacity:1}}
+@keyframes drumShake{0%{transform:translateX(-3px)}50%{transform:translateX(3px)}100%{transform:translateX(-3px)}}
+.lot-wrap.boom .lot-box{animation:boomBox .7s cubic-bezier(.2,1.8,.4,1)}
+.lot-wrap.boom::after{content:"";position:absolute;inset:-200px;background:radial-gradient(circle,rgba(255,240,180,.85),rgba(255,240,180,0) 55%);animation:boomFlash .9s ease-out forwards;pointer-events:none}
+@keyframes boomBox{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes boomFlash{from{opacity:1}to{opacity:0}}
+.lot-wrap.done .lot-nm,.lot-wrap.done .lot-after{animation:lotIn .8s ease 1.6s both}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -4839,7 +4851,7 @@ function lotMonHTML(S) {
   const sub = isP ? "" : t.name ? `<div class="lot-nm"><small>${esc(String(t.res))}位</small>${esc(t.name)}<small>さん</small></div>` : "";
   return { key: "lot-" + (t.at || 0), html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="lot-wrap${isP ? " pair" : ""}">
     <div class="lot-t">${esc(t.title || "抽選")}</div>
-    <div class="lot-box"><div class="lot-v js-lot" data-at="${t.at || 0}" data-res="${esc(fin)}" data-min="${+t.min || 1}" data-max="${+t.max || 1}" data-pool="${esc(JSON.stringify(pool))}">${isP ? "？？？" : "？"}</div>${isP ? "" : '<div class="lot-u">位</div>'}</div>
+    <div class="lot-box"><div class="lot-v js-lot" data-at="${t.at || 0}" data-res="${esc(fin)}" data-min="${+t.min || 1}" data-max="${+t.max || 1}" data-pool="${esc(JSON.stringify(pool))}">${isP ? "？？？" : "？"}</div>${isP ? "" : '<div class="lot-u">位</div>'}</div><div class="lot-drum">♪ ドゥルルルル…</div>
     ${isP && t.res ? `<div class="lot-after">＋1秒で順位に入ります</div>` : ""}${sub}</div></div>${telopHTML("抽選", esc(t.title || "抽選"))}` };
 }
 function lotRun(root) {
@@ -4850,8 +4862,11 @@ function lotRun(root) {
   let pool = []; try { pool = JSON.parse(e.dataset.pool || "[]"); } catch (x) {}
   const mn = +e.dataset.min, mx = +e.dataset.max;
   const pick = () => pool.length ? pool[Math.floor(Math.random() * pool.length)] : String(mn + Math.floor(Math.random() * (mx - mn + 1)));
-  const T = 3600, t0 = performance.now();
-  const step = () => { if (!document.body.contains(e)) return; const k = (performance.now() - t0) / T; if (k >= 1) return done(); e.textContent = pick(); setTimeout(step, 50 + 260 * k * k); };
+  const T = 5200, t0 = performance.now(), isP = !!pool.length;
+  // ため：最後はゆっくり → いったん「？」で止めてドキドキ → ドン！
+  const tame = () => { if (!document.body.contains(e)) return; e.textContent = isP ? "？？？" : "？"; e.classList.add("tame"); wrap && wrap.classList.add("tame");
+    setTimeout(() => { if (!document.body.contains(e)) return; e.classList.remove("tame"); wrap && wrap.classList.remove("tame"); done(); wrap && wrap.classList.add("boom"); }, 1800); };
+  const step = () => { if (!document.body.contains(e)) return; const k = (performance.now() - t0) / T; if (k >= 1) return tame(); e.textContent = pick(); setTimeout(step, 45 + 420 * k * k * k); };
   step();
 }
 // ================= 司会・サブ司会の操作パネル（共通） =================
@@ -6502,8 +6517,9 @@ function hostPage() {
       const w = $("#lotName").checked ? R().find((r) => r.rank === res) : null;
       const title = $("#lotTitle").value.trim() || "抽選";
       H.lotLast = { title, res, name: w ? w.n : "" };
-      setS({ view: "lot", lot: { kind: "num", title, min: mn, max: mx, res, name: w ? w.n : "", at: Date.now() }, ...sfx("drum") });
+      const at = Date.now(); setS({ view: "lot", lot: { kind: "num", title, min: mn, max: mx, res, name: w ? w.n : "", at }, ...sfx("drum") }); lotBoom(at);
     };
+    const lotBoom = (at) => setTimeout(() => { if (H.S.view === "lot" && H.S.lot && H.S.lot.at === at) setS(sfx("correct")); }, 7000);
     window.__lotAddPrize = () => { const l = H.lotLast; if (!l) return; H.prizes.push({ id: "m" + Date.now().toString(36), type: "manual", label: l.title, memo: "", winner: l.name || `${l.res}位`, pos: "after" }); save(); render(); toast(`「${l.title}」を賞に追加しました（表彰式の最後に発表）`); };
     $("#pairAddB").onclick = () => { const k = $("#pairAdd").value; if (!k || H.pairs.some((x) => x.k === k)) return; H.pairs.push({ k, partner: null }); save(); render(); };
     window.__pairDraw = (k) => {
@@ -6513,7 +6529,7 @@ function hostPage() {
       if (!cand.length) return toast("抽選できる参加者がいません（参加者がスマホで参加してから抽選してください）");
       pr.partner = cand[Math.floor(Math.random() * cand.length)]; save();
       const pool = cand.map((x) => H.roster[x]).sort(() => Math.random() - 0.5).slice(0, 80);
-      setS({ view: "lot", lot: { kind: "pair", title: `${H.roster[k]}さんのペアは…`, pool, res: H.roster[pr.partner], at: Date.now() }, ...sfx("drum") });
+      const at = Date.now(); setS({ view: "lot", lot: { kind: "pair", title: `${H.roster[k]}さんのペアは…`, pool, res: H.roster[pr.partner], at }, ...sfx("drum") }); lotBoom(at);
     };
     window.__lotReset = () => { H.lotUsed = []; save(); render(); toast("出た数字をリセットしました"); };
     window.__pairDel = (k) => { H.pairs = H.pairs.filter((x) => x.k !== k); save(); render(); };
