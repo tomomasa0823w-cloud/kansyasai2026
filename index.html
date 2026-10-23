@@ -1013,6 +1013,18 @@ body.v-player.offline #offBar{display:block}
 .tv-qa .qc.notxt .cn{display:none}
 .tv-qa .qc .num{z-index:2}
 .tv-qa .qc.ph .cn{z-index:2}
+.lot-wrap{position:absolute;inset:150px 80px 130px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;text-align:center}
+.lot-t{font:900 76px/1.2 var(--lux,serif);color:#FFE7A0;text-shadow:0 5px 0 rgba(0,0,0,.45)}
+.lot-box{display:flex;align-items:flex-end;justify-content:center;gap:10px;min-width:640px;padding:30px 70px;border-radius:40px;background:linear-gradient(180deg,#fff,#E8EEFF);box-shadow:0 0 0 8px #E8B740,0 0 0 13px rgba(5,12,45,.6),0 26px 60px rgba(0,0,0,.5)}
+.lot-v{font:900 260px/1 var(--disp,sans-serif);color:#0B1748;min-width:2ch;font-variant-numeric:tabular-nums}
+.lot-wrap.pair .lot-v{font:900 150px/1.15 var(--lux,serif);min-width:0;white-space:nowrap}
+.lot-u{font:900 90px/1.4 var(--lux,serif);color:#0B1748}
+.lot-v.hit{color:#C8102E;animation:lotHit .6s cubic-bezier(.2,1.8,.4,1)}
+@keyframes lotHit{0%{transform:scale(.6)}100%{transform:scale(1)}}
+.lot-nm,.lot-after{opacity:0;font:900 96px/1.2 var(--lux,serif);color:#fff;text-shadow:0 5px 0 rgba(0,0,0,.45)}
+.lot-nm small{font-size:52px;margin:0 12px;color:#FFE7A0}.lot-after{font-size:54px;color:#FFE7A0}
+.lot-wrap.done .lot-nm,.lot-wrap.done .lot-after{animation:lotIn .7s ease 1.1s both}
+@keyframes lotIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -1245,6 +1257,8 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
 .bedit .bk{display:inline-flex;align-items:center;gap:4px;margin-right:12px;font-weight:700}
 .bedit .bch{display:flex;align-items:center;gap:8px;margin-top:6px}.bedit .bch .bk{min-width:48px;margin:0}
 #przList .mv{padding:2px 7px;min-width:0}
+#lotCard .prow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid rgba(128,140,180,.25)}#lotCard .pp{color:#C8102E}
+#lotCard input:not([type=checkbox]),#lotCard select{padding:6px 8px;font-size:15px;border-radius:8px}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -4520,6 +4534,7 @@ function monHTML(S, list, joinURL) {
   }
   if (view === "game") return gameMonHTML(S);
   if (view === "rules") return rulesMonHTML(S);
+  if (view === "lot") return lotMonHTML(S);
   if (view === "roll") {
     const R = S.roll || [], hide = S.rollHide || 0, N = R.length;
     const rows = R.map((r) => { const h = r.rank <= hide; return `<li class="${r.rank <= 3 ? "top" : ""}${h ? " hid" : ""}"><span class="no">${r.rank}<small>位</small></span><span class="tn">${h ? "？？？" : esc(r.n)}</span><span class="st">${h ? "" : esc(r.s)}</span><span class="pt">${h ? "" : r.p + "<small>pt</small>"}</span></li>`; }).join("");
@@ -4646,7 +4661,7 @@ function renderMonitor(el, S, list, joinURL) {
   el.classList.toggle("noanim", same);
   el.innerHTML = `<div class="tv deep">${html}</div>`;
   qrInto(el.querySelector(".js-qr"), joinURL);
-  vidSync(el, S); camSync(el);
+  vidSync(el, S); camSync(el); lotRun(el);
   fitTV(el);
   if (!tvObs.has(el) && window.ResizeObserver) { const o = new ResizeObserver(() => fitTV(el)); o.observe(el); tvObs.set(el, o); }
 }
@@ -4814,6 +4829,31 @@ function rulesMonHTML(S) {
   const join = r.k === "join" ? `<div class="rl-qr"><div class="qr js-qr"></div><div class="u">${esc(S.join || "")}</div></div>` : "";
   return { key: "rules-" + i, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="rl-wrap"><div class="rl-art">${RULE_ART[r.k] || ""}</div><div class="rl-txt"><div class="rl-no">ルール説明　<b>${i + 1}</b> / ${L.length}</div><div class="rl-t${r.t.length > 8 ? " sm" : ""}">${esc(r.t)}</div><ol class="rl-d">${r.d.map((x, k) => `<li style="animation-delay:${0.25 + k * 0.25}s">${esc(x)}</li>`).join("")}</ol>${join}</div></div><div class="rl-dots">${L.map((_, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("")}</div></div>${telopHTML("ルール説明", esc(r.t))}` };
 }
+
+// ================= 抽選（数字・ペア） =================
+const LOTDONE = {};
+function lotMonHTML(S) {
+  const t = S.lot || {}, isP = t.kind === "pair";
+  const pool = isP ? (t.pool || []) : [];
+  const fin = t.res != null ? String(t.res) : "";
+  const sub = isP ? "" : t.name ? `<div class="lot-nm"><small>${esc(String(t.res))}位</small>${esc(t.name)}<small>さん</small></div>` : "";
+  return { key: "lot-" + (t.at || 0), html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="lot-wrap${isP ? " pair" : ""}">
+    <div class="lot-t">${esc(t.title || "抽選")}</div>
+    <div class="lot-box"><div class="lot-v js-lot" data-at="${t.at || 0}" data-res="${esc(fin)}" data-min="${+t.min || 1}" data-max="${+t.max || 1}" data-pool="${esc(JSON.stringify(pool))}">${isP ? "？？？" : "？"}</div>${isP ? "" : '<div class="lot-u">位</div>'}</div>
+    ${isP && t.res ? `<div class="lot-after">＋1秒で順位に入ります</div>` : ""}${sub}</div></div>${telopHTML("抽選", esc(t.title || "抽選"))}` };
+}
+function lotRun(root) {
+  const e = root && root.querySelector(".js-lot"); if (!e || e._run) return; e._run = 1;
+  const at = e.dataset.at, res = e.dataset.res, wrap = e.closest(".lot-wrap");
+  const done = () => { e.textContent = res; e.classList.add("hit"); wrap && wrap.classList.add("done"); LOTDONE[at] = 1; };
+  if (LOTDONE[at] || !res) { if (res) done(); return; }
+  let pool = []; try { pool = JSON.parse(e.dataset.pool || "[]"); } catch (x) {}
+  const mn = +e.dataset.min, mx = +e.dataset.max;
+  const pick = () => pool.length ? pool[Math.floor(Math.random() * pool.length)] : String(mn + Math.floor(Math.random() * (mx - mn + 1)));
+  const T = 3600, t0 = performance.now();
+  const step = () => { if (!document.body.contains(e)) return; const k = (performance.now() - t0) / T; if (k >= 1) return done(); e.textContent = pick(); setTimeout(step, 50 + 260 * k * k); };
+  step();
+}
 // ================= 司会・サブ司会の操作パネル（共通） =================
 let hostMode = "choice", pickedCorrect = [], preCorrect = [], curS = { ...DEF };
 const STAGE_LABEL = { review: "写真のふりかえり", cutshow: "予選落ちの発表", read: "問題を表示中（選択肢はまだ）", open: "回答受付中", closed: "締め切り", dist: "回答分布", correct: "正解発表", fast: "最速正解者", list: "正解者一覧", champ: "ピリオドチャンピオン" };
@@ -4969,9 +5009,11 @@ function hostPage() {
   const joinedKeys = () => Object.keys(H.claims).filter((k) => H.roster[k]);
   const playersCount = () => joinedKeys().length;
   const standKeys = () => Object.keys(H.period.stand).filter((k) => H.period.stand[k] && H.claims[k] && H.roster[k]);
-  const ranking = () => Object.keys(H.ever).filter((k) => H.roster[k])
+  const ranking = () => { const pr = (H.pairs || []).filter((x) => x.partner && H.roster[x.k] && H.roster[x.partner] && H.ever[x.partner]), gh = new Set(pr.map((x) => x.k));
+    return Object.keys(H.ever).filter((k) => H.roster[k] && !gh.has(k))
     .map((k) => ({ key: k, n: H.roster[k], p: H.points[k] || 0, t: H.tsum[k] || 0, z: H.tie[k] ?? hashNum(k) }))
-    .sort((a, b) => b.p - a.p || a.t - b.t || a.z - b.z).map((x, i) => ({ ...x, rank: i + 1 }));
+    .concat(pr.map((x) => ({ key: x.k, n: `${H.roster[x.k]}（🤝${H.roster[x.partner]}）`, pair: H.roster[x.partner], p: H.points[x.partner] || 0, t: (H.tsum[x.partner] || 0) + 1000, z: H.tie[x.k] ?? hashNum(x.k) })))
+    .sort((a, b) => b.p - a.p || a.t - b.t || a.z - b.z).map((x, i) => ({ ...x, rank: i + 1 })); };
   const tieGroups = () => { const g = {}; ranking().forEach((r) => { const k = r.p + "|" + r.t; (g[k] = g[k] || []).push(r); }); return Object.values(g).filter((x) => x.length > 1); };
   function awards() {
     const R = ranking(), N = R.length, out = [];
@@ -5696,7 +5738,7 @@ function hostPage() {
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/23-1</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/25-1</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -6265,7 +6307,7 @@ function hostPage() {
   // ---- 別の司会PCへ引き継ぎ ----
   {
     const SETUP = ["roster", "rstore", "rkana", "bank", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "snd", "pub", "exact", "game"];
-    const PROG = ["points", "tsum", "scored", "ever", "period", "champs", "handed", "tie", "bankIdx"];
+    const PROG = ["points", "tsum", "scored", "ever", "period", "champs", "handed", "tie", "bankIdx", "pairs", "lotUsed"];
     const b64e = (u8) => { let x = ""; for (let i = 0; i < u8.length; i += 0x8000) x += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(x); };
     const b64d = (x) => Uint8Array.from(atob(x), (c) => c.charCodeAt(0));
     const gz = async (u8, comp) => new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(comp ? new CompressionStream("gzip") : new DecompressionStream("gzip"))).arrayBuffer());
@@ -6374,6 +6416,7 @@ function hostPage() {
   const STEPS_C = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["review", "写真"], ["cutshow", "予選落ち"], ["fast", "最速"], ["list", "正解者"]];
   const STEPS_B = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["fast", "一番乗り"], ["list", "押した順"]];
   function renderExtra(S) {
+    try { renderLot(); } catch (x) {}
     // 準備チェック
     const why = H.exact && !localReason(H.exact) ? "" : localReason(pubBase());
     const nR = Object.keys(H.roster).length, nS = new Set(Object.values(H.rstore)).size, nB = H.bank.length;
@@ -6425,6 +6468,71 @@ function hostPage() {
     const ci = S.rid ? list.findIndex((x) => x[0] === st) : -1;
     $("#stepBar").innerHTML = S.view === "cere" ? `<span class="on">表彰式</span>` : S.rid ? list.map((x, j) => `<span class="${j === ci ? "on" : j < ci ? "done" : ""}">${x[1]}</span>`).join("") + (st === "champ" ? '<span class="on">チャンピオン</span>' : "") : `<span class="on">${S.stage === "period" ? "ピリオド開始" : "待機中"}</span><span>→ 次の問題を出題</span>`;
     renderAtt();
+  }
+
+  // ---- 🎲 抽選（数字・ペア） ----
+  if (!H.pairs) H.pairs = [];
+  if (!H.lotUsed) H.lotUsed = [];
+  {
+    const lc = document.createElement("div"); lc.className = "ctl"; lc.id = "lotCard";
+    lc.innerHTML = `<h2>🎲 抽選</h2>
+      <h3 style="margin:4px 0">数字の抽選（社長賞など）</h3>
+      <div class="row"><input id="lotTitle" maxlength="30" placeholder="賞の名前（例：社長賞）" style="flex:1;min-width:160px">
+        <span>範囲</span><input id="lotMin" type="number" min="1" value="1" style="width:70px">〜<input id="lotMax" type="number" min="1" style="width:70px" placeholder="人数"></div>
+      <div class="row"><label class="chk2"><input type="checkbox" id="lotName" checked> その順位の人を発表する</label><label class="chk2"><input type="checkbox" id="lotNoDup" checked> 一度出た数字は除く</label></div>
+      <div class="row"><button class="btn go" id="lotGo">🎲 抽選スタート（モニターに表示）</button></div>
+      <div id="lotRes" class="note"></div>
+      <h3 style="margin:14px 0 4px">🤝 ペア抽選（当日参加できない人）</h3>
+      <p class="note" style="margin:0 0 6px">参加者から1人をランダムに選んでペアにします。ペアの人の得点・タイム<b>＋1秒</b>で総合順位に入ります。</p>
+      <div id="pairList"></div>
+      <div class="row"><select id="pairAdd" style="flex:1"></select><button class="btn" id="pairAddB">＋ 追加</button></div>`;
+    const dst = document.querySelector('#hostV7 [data-hp="cere"] .colB') || document.querySelector('#hostV7 [data-hp="cere"]');
+    dst && dst.prepend(lc);
+    const joined = () => Object.keys(H.ever).filter((k) => H.roster[k]);
+    const R = () => (typeof ranking === "function" ? ranking() : []);
+    $("#lotGo").onclick = () => {
+      const N = R().length;
+      const mn = Math.max(1, parseInt($("#lotMin").value, 10) || 1), mx = parseInt($("#lotMax").value, 10) || N;
+      if (!mx || mx < mn) return toast(N ? "範囲を確認してください" : "まだ順位がありません。範囲を入れてください");
+      let cand = []; for (let i = mn; i <= mx; i++) cand.push(i);
+      if ($("#lotNoDup").checked) cand = cand.filter((x) => !H.lotUsed.includes(x));
+      if (!cand.length) return toast("抽選できる数字が残っていません");
+      const res = cand[Math.floor(Math.random() * cand.length)];
+      if ($("#lotNoDup").checked) H.lotUsed.push(res);
+      const w = $("#lotName").checked ? R().find((r) => r.rank === res) : null;
+      const title = $("#lotTitle").value.trim() || "抽選";
+      H.lotLast = { title, res, name: w ? w.n : "" };
+      setS({ view: "lot", lot: { kind: "num", title, min: mn, max: mx, res, name: w ? w.n : "", at: Date.now() }, ...sfx("drum") });
+    };
+    window.__lotAddPrize = () => { const l = H.lotLast; if (!l) return; H.prizes.push({ id: "m" + Date.now().toString(36), type: "manual", label: l.title, memo: "", winner: l.name || `${l.res}位`, pos: "after" }); save(); render(); toast(`「${l.title}」を賞に追加しました（表彰式の最後に発表）`); };
+    $("#pairAddB").onclick = () => { const k = $("#pairAdd").value; if (!k || H.pairs.some((x) => x.k === k)) return; H.pairs.push({ k, partner: null }); save(); render(); };
+    window.__pairDraw = (k) => {
+      const pr = H.pairs.find((x) => x.k === k); if (!pr) return;
+      const ghosts = new Set(H.pairs.map((x) => x.k)), taken = new Set(H.pairs.filter((x) => x.k !== k).map((x) => x.partner));
+      const cand = joined().filter((x) => !ghosts.has(x) && !taken.has(x));
+      if (!cand.length) return toast("抽選できる参加者がいません（参加者がスマホで参加してから抽選してください）");
+      pr.partner = cand[Math.floor(Math.random() * cand.length)]; save();
+      const pool = cand.map((x) => H.roster[x]).sort(() => Math.random() - 0.5).slice(0, 80);
+      setS({ view: "lot", lot: { kind: "pair", title: `${H.roster[k]}さんのペアは…`, pool, res: H.roster[pr.partner], at: Date.now() }, ...sfx("drum") });
+    };
+    window.__lotReset = () => { H.lotUsed = []; save(); render(); toast("出た数字をリセットしました"); };
+    window.__pairDel = (k) => { H.pairs = H.pairs.filter((x) => x.k !== k); save(); render(); };
+    window.__pairClr = (k) => { const pr = H.pairs.find((x) => x.k === k); if (pr) pr.partner = null; save(); render(); };
+    // 初期：楢原・川口を候補に
+    window.__pairAuto = () => { if (H.pairsInit) return; const ks = Object.keys(H.roster).filter((k) => /^(楢原|川口)/.test(H.roster[k])); if (!ks.length) return; H.pairsInit = 1; ks.forEach((k) => { if (!H.pairs.some((x) => x.k === k)) H.pairs.push({ k, partner: null }); }); save(); };
+  }
+  function renderLot() {
+    const pl = $("#pairList"); if (!pl) return; window.__pairAuto && window.__pairAuto();
+    H.pairs = (H.pairs || []).filter((x) => H.roster[x.k]);
+    pl.innerHTML = H.pairs.length ? H.pairs.map((x) => `<div class="prow"><b>${esc(H.roster[x.k])}</b>　${x.partner && H.roster[x.partner] ? `🤝 <b class="pp">${esc(H.roster[x.partner])}</b>＋1秒` : '<span class="note">ペア未定</span>'}
+      <span style="flex:1"></span><button class="mini" onclick="__pairDraw('${x.k}')">🎲 ${x.partner ? "引き直す" : "ペアを抽選"}</button>${x.partner ? `<button class="mini" onclick="__pairClr('${x.k}')">ペア解除</button>` : ""}<button class="mini" onclick="__pairDel('${x.k}')">削除</button></div>`).join("") : '<p class="note">ペアを作る人を下から追加してください。</p>';
+    const sel = $("#pairAdd"), cur = sel.value;
+    const opts = Object.keys(H.roster).filter((k) => !H.pairs.some((x) => x.k === k)).sort((a, b) => (H.rstore[a] || "").localeCompare(H.rstore[b] || "") || H.roster[a].localeCompare(H.roster[b]));
+    const html = '<option value="">ペアを作る人を選ぶ（名簿から）</option>' + opts.map((k) => `<option value="${k}">${esc((H.rstore[k] ? H.rstore[k] + "　" : "") + H.roster[k])}</option>`).join("");
+    if (sel._h !== html) { sel.innerHTML = html; sel._h = html; sel.value = cur; }
+    const l = H.lotLast;
+    $("#lotRes").innerHTML = l ? `前回の結果：<b>${esc(l.title)}</b> → <b>${l.res}位</b>${l.name ? `（${esc(l.name)}さん）` : ""}　<button class="mini" onclick="__lotAddPrize()">＋ この結果を賞に追加</button>${H.lotUsed.length ? `　<button class="mini" onclick="__lotReset()">出た数字をリセット</button>` : ""}` : "";
+    if (!$("#lotMax").value) $("#lotMax").placeholder = String(Object.keys(H.ever).filter((k) => H.roster[k]).length || "人数");
   }
   document.querySelectorAll("#hostV7 [data-view]").forEach((b) => (b.onclick = () => act("view", { v: b.dataset.view })));
   function render() {
