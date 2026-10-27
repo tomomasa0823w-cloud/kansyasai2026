@@ -1064,6 +1064,10 @@ body.v-player.offline #offBar{display:block}
 .tv .g-intro.cam .gi-plate .gnm{font-size:118px;line-height:1.12;max-width:100%;overflow-wrap:anywhere}
 .tv .g-intro.cam .gi-plate .gnm.long{font-size:92px}
 .tv .g-stage.cam{grid-template-columns:52% minmax(0,1fr)}
+/* カメラ映像の実サイズで枠が縦に伸びて名前が見えなくなるのを防ぐ */
+.tv .g-intro.cam,.tv .g-stage.cam{grid-template-rows:minmax(0,1fr)}
+.tv .g-intro.cam .gcam,.tv .g-stage.cam .gcam{position:relative;overflow:hidden;min-height:0}
+.tv .gcam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -4799,7 +4803,7 @@ function gameMonHTML(S) {
 
 // ---- カメラ（モニターに顔を映す）：このPCのカメラ、またはiPhone（カメラ係）からの映像 ----
 const CAM = { id: rand(10, lower), mode: "off", stream: null, el: null, pc: null, camId: null, send: null, accept: () => false, refresh: null, wantAt: 0, seen: new Set(), status: "" };
-const ICE = [{ urls: "stun:stun.l.google.com:19302" }];
+const ICE = [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }, { urls: "stun:stun.cloudflare.com:3478" }];
 const iceDone = (pc) => new Promise((r) => { if (pc.iceGatheringState === "complete") return r(); const t = setTimeout(r, 2500); pc.addEventListener("icegatheringstatechange", () => { if (pc.iceGatheringState === "complete") { clearTimeout(t); r(); } }); });
 function camSync(el) {
   const slot = el.querySelector(".js-cam"); if (!slot) return;
@@ -4835,8 +4839,14 @@ async function camMsg(d) {
   if (d.t === "offer" && d.to === CAM.id && CAM.mode === "remote" && d.from === CAM.camId && typeof d.sdp === "string") {
     camStopRemote();
     const pc = new RTCPeerConnection({ iceServers: ICE }); CAM.pc = pc;
-    pc.ontrack = (ev) => { CAM.stream = ev.streams[0] || new MediaStream([ev.track]); CAM.status = "iPhoneの映像を表示中"; CAM.refresh && CAM.refresh(); };
-    pc.onconnectionstatechange = () => { if (["failed", "closed", "disconnected"].includes(pc.connectionState) && CAM.pc === pc) { CAM.status = "iPhoneとの接続が切れました。つなぎ直しています…"; CAM.wantAt = 0; CAM.refresh && CAM.refresh(); } };
+    pc.ontrack = (ev) => { CAM.stream = ev.streams[0] || new MediaStream([ev.track]); if (pc.connectionState !== "connected") CAM.status = "iPhoneとつないでいます…"; CAM.refresh && CAM.refresh(); };
+    const tmo = setTimeout(() => { if (CAM.pc === pc && pc.connectionState !== "connected") { CAM.status = "⚠ iPhoneの映像が届きません。PCとiPhoneを同じWi-Fiにしてください（ゲスト用Wi-Fiは端末どうしが通信できないことがあります。そのときはスマホのテザリングに両方つなぐと確実です）"; CAM.wantAt = 0; CAM.refresh && CAM.refresh(); } }, 12000);
+    pc.onconnectionstatechange = () => {
+      if (CAM.pc !== pc) return;
+      if (pc.connectionState === "connected") { clearTimeout(tmo); CAM.status = "iPhoneの映像を表示中"; CAM.refresh && CAM.refresh(); }
+      else if (pc.connectionState === "failed") { clearTimeout(tmo); CAM.status = "⚠ iPhoneとつながりませんでした。PCとiPhoneを同じWi-Fi（またはテザリング）にして、iPhone側でもう一度「カメラを始める」を押してください"; CAM.wantAt = 0; CAM.refresh && CAM.refresh(); }
+      else if (["closed", "disconnected"].includes(pc.connectionState)) { CAM.status = "iPhoneとの接続が切れました。つなぎ直しています…"; CAM.wantAt = 0; CAM.refresh && CAM.refresh(); }
+    };
     try {
       await pc.setRemoteDescription({ type: "offer", sdp: d.sdp });
       await pc.setLocalDescription(await pc.createAnswer()); await iceDone(pc);
