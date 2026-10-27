@@ -1293,6 +1293,12 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
 .gpsh{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}.gpsh b{font-size:15px}
 .gpsl{display:flex;flex-wrap:wrap;gap:6px}
 .gpsl .gpc{flex:0 0 auto;padding:5px 6px 5px 8px}.gpsl .gpc span{white-space:nowrap}
+.gstage{margin:4px 0 6px;padding:8px;border-radius:12px;background:rgba(232,183,64,.12);border:1.5px solid rgba(232,183,64,.5)}
+.gstage .seg{margin-top:4px}
+.gpc.st{gap:4px}.gfl{display:inline-flex;align-items:center;gap:2px;font-size:12px;padding:2px 4px;border-radius:6px;border:1px solid rgba(128,140,180,.35);cursor:pointer}
+.gfl input{width:15px;height:15px;margin:0}.gfl.cur{border-color:#E8B740;background:rgba(232,183,64,.2);font-weight:900}
+.gfin{border:2px dashed #E8B740;background:transparent;color:inherit;border-radius:10px;padding:4px 10px;font-weight:800;cursor:pointer}.gfin.on{background:#E8B740;color:#1A1400;border-style:solid}
+.gwin{font-style:normal;font-size:11px;color:#B7791F;font-weight:900}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5887,6 +5893,7 @@ function hostPage() {
     const gs = document.createElement("div"); gs.className = "ctl"; gs.id = "gSetup";
     gs.innerHTML = `<h2>ゲームの準備</h2>
       <div class="seg" id="gType"><button data-gt="molkky">🪵 モルック</button><button data-gt="archery">🏹 アーチェリー</button></div>
+      <div class="gstage"><b>進行</b><div class="seg" id="gStage"><button data-gs="A">① 予選A</button><button data-gs="B">② 予選B</button><button data-gs="F">③ 決勝</button><button data-gs="free">自由</button></div><p class="note" id="gStageNote" style="margin:4px 0 0"></p></div>
       <div class="seg" id="gMode" style="margin-top:6px"><button data-gm="normal">通常の試合</button><button data-gm="qual">予選（1人1投）</button></div>
       <label class="chk2" id="gTeamL" style="margin-top:6px"><input type="checkbox" id="gTeam"> 2人1組（同じ店舗の2人で交互に投げる）</label>
       <p class="note" id="gModeNote" style="margin:4px 0 0"></p>
@@ -5908,6 +5915,7 @@ function hostPage() {
       <div class="row"><button class="btn" id="gIntroBtn">🎤 選手紹介を始める</button><button class="btn" id="gIntroPrev">◀ 前の人</button><button class="btn" id="gIntroNext">次の人 ▶</button><button class="btn" id="gBoard">スコア画面へ</button></div>
       <div class="gnow" id="gNow"></div>
       <div class="gpad" id="gPad"></div>
+      <div id="gAward" class="gaward hidden"></div>
       <div class="row"><button class="btn" id="gUndo">↶ 1つ取り消す</button><button class="ghost" id="gReset">スコアを最初から</button><button class="btn" id="gBack2">クイズの画面に戻る</button></div>
       <table class="gtbl"><tbody id="gTbl"></tbody></table>`;
     const gc = document.createElement("div"); gc.className = "ctl"; gc.id = "gCam";
@@ -6299,7 +6307,7 @@ function hostPage() {
     document.querySelectorAll("#gType [data-gt]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.gt === g.type)));
     const qm = g.mode === "qual";
     document.querySelectorAll("#gMode [data-gm]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.gm === (g.mode || "normal"))));
-    $("#gTeamL").classList.toggle("hidden", qm); $("#gTeam").checked = !!g.team;
+    $("#gTeamL").classList.toggle("hidden", qm || !!(g.stage && g.stage !== "free")); $("#gTeam").checked = !!g.team;
     $("#gModeNote").textContent = qm ? `順番に1人1${g.type === "molkky" ? "投" : "本"}ずつ。いちばん点数が高い人が勝ち。同点なら、同点の人だけでもう1巡します。` : "";
     $("#gOptM").classList.toggle("hidden", g.type !== "molkky" || qm); $("#gOptA").classList.toggle("hidden", g.type !== "archery");
     document.querySelectorAll("#gOptA label").forEach((l, k) => l.classList.toggle("hidden", qm && k < 2));
@@ -6311,7 +6319,7 @@ function hostPage() {
       const i = +(b.dataset.gu ?? b.dataset.gd ?? b.dataset.gx), a = g.players;
       if (g.log.length && !confirm("スコアの記録があります。選手を変えるとスコアは最初からになります。よろしいですか？")) return;
       g.log = [];
-      if (b.dataset.gx != null) a.splice(i, 1); else { const j = b.dataset.gu != null ? i - 1 : i + 1; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; }
+      if (b.dataset.gx != null) { const rm = a.splice(i, 1)[0]; if (g.stage && g.stage !== "free" && rm) (g.pool || []).forEach((p) => { if ((p.n === rm.n || p.n === rm.n2) && p.g) p.g[g.stage] = false; }); } else { const j = b.dataset.gu != null ? i - 1 : i + 1; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; }
       gPub();
     }));
   }
@@ -6322,6 +6330,19 @@ function hostPage() {
     const pts = gPts(), padH = pts.map((v) => `<button class="btn${v === 0 ? " miss" : ""}" data-gv="${v}">${v === 0 ? (g.type === "molkky" ? "ミス<small>0本</small>" : "0<small>外れ</small>") : v}</button>`).join("");
     if ($("#gPad")._h !== padH) { $("#gPad")._h = padH; $("#gPad").innerHTML = padH; $("#gPad").querySelectorAll("[data-gv]").forEach((b) => (b.onclick = () => gScore(+b.dataset.gv))); }
     $("#gPad").classList.toggle("dis", d.done || d.cur < 0);
+    { const box = $("#gAward"); box.classList.toggle("hidden", !d.done);
+      if (d.done) { const ttl = g.title || (g.mode === "qual" ? (g.type === "molkky" ? "モルック予選" : "アーチェリー予選") : g.type === "molkky" ? "モルック" : "アーチェリー");
+        const nm = (p) => `${p.n}${p.n2 ? "・" + p.n2 : ""}${p.s ? "（" + p.s + "）" : ""}`;
+        const ranks = [1, 2, 3].filter((r) => d.P.some((p) => p.rank === r));
+        const h = `<b>🏆 この結果を表彰式に追加</b><p class="note" style="margin:2px 0 6px">賞の一覧（③表彰）に「手動の賞」として入り、表彰式で発表されます。景品メモは③表彰で入れられます。</p><div class="row">${ranks.map((r) => { const ws = d.P.filter((p) => p.rank === r), lab = `${ttl} ${r === 1 ? (g.mode === "qual" ? "勝ち抜け" : "優勝") : r + "位"}`, has = H.prizes.some((x) => x.gid === lab);
+          return `<button class="btn${r === 1 ? " go" : ""}" data-gaw="${r}">${has ? "✓ " : "＋ "}${esc(lab)}：${esc(ws.map(nm).join("、"))}</button>`; }).join("")}</div>`;
+        if (box._h !== h) { box._h = h; box.innerHTML = h; box.querySelectorAll("[data-gaw]").forEach((b) => (b.onclick = () => {
+          const r = +b.dataset.gaw, ws = gDerive().P.filter((p) => p.rank === r), lab = `${ttl} ${r === 1 ? (G().mode === "qual" ? "勝ち抜け" : "優勝") : r + "位"}`;
+          const ex = H.prizes.find((x) => x.gid === lab), winner = ws.map(nm).join("、");
+          if (ex) { if (!confirm(`「${lab}」はもう追加されています。受賞者を「${winner}」に更新しますか？`)) return; ex.winner = winner; }
+          else H.prizes.push({ id: "g" + Date.now().toString(36), gid: lab, type: "manual", label: lab, memo: "", winner, pos: "after" });
+          save(); render(); toast(`「${lab}」を表彰式に追加しました（景品メモは③表彰で）`);
+        })); } } }
     $("#gPad").dataset.kind = g.type;
     $("#gTbl").innerHTML = d.P.map((p, i) => `<tr class="${i === d.cur && !d.done ? "now" : ""}"><td>${p.rank}位</td><td>${esc(p.n)}</td><td><b>${p.score}</b>点</td><td class="note">${g.mode === "qual" ? (p.win ? "勝ち抜け " : p.out ? "敗退 " : "") + p.hist.map((v, k) => `${k + 1}巡:${v}`).join(" ") : g.type === "molkky" ? (p.win ? "上がり" : p.out ? "失格" : `ミス${p.miss}`) : p.hist.join(" ")}</td></tr>`).join("");
     $("#gIntroPrev").disabled = !g.introOn || g.intro <= 0; $("#gIntroNext").disabled = !g.introOn || g.intro >= g.players.length - 1;
@@ -6362,8 +6383,9 @@ function hostPage() {
     const key = Object.keys(H.roster).find((k) => H.roster[k] === v) || Object.keys(H.roster).find((k) => foldName(H.roster[k]) === foldName(v));
     const g = G(); const n = key ? H.roster[key] : v, st = key ? H.rstore[key] || "" : "";
     if (!g.pool) g.pool = [];
-    if (!g.pool.some((p) => p.n === n)) g.pool.push({ n, s: st });
-    gJoin(n, st); $("#gFind").value = ""; gPub(); if (!key) toast("名簿にない名前なので、自由入力で追加しました");
+    if (!g.pool.some((p) => p.n === n)) g.pool.push({ n, s: st, g: g.stage && g.stage !== "free" ? { [g.stage]: true } : {} });
+    else if (g.stage && g.stage !== "free") { const p = g.pool.find((p) => p.n === n); p.g = p.g || {}; p.g[g.stage] = true; }
+    if (g.stage && g.stage !== "free") { if (g.log.length && !confirm("スコアの記録は消えます。よろしいですか？")) return; g.log = []; gSync(g); } else gJoin(n, st); $("#gFind").value = ""; gPub(); if (!key) toast("名簿にない名前なので、自由入力で追加しました");
   };
   $("#gAdd").onclick = gAddName; $("#gFind").addEventListener("keydown", (e) => { if (e.key === "Enter") gAddName(); });
   $("#gShuffle").onclick = () => { const g = G(); if (g.log.length && !confirm("スコアは最初からになります。よろしいですか？")) return; g.log = []; for (let i = g.players.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [g.players[i], g.players[j]] = [g.players[j], g.players[i]]; }
@@ -6374,6 +6396,12 @@ function hostPage() {
   $("#gPoolClr").onclick = () => { if (!confirm("選手候補を全部消します（出場メンバーも外れます）。よろしいですか？")) return; const g = G(); g.pool = []; g.players = []; g.log = []; gPub(); };
   window.__gPoolRender = () => {
     const g = G(); if (!g.pool) g.pool = [];
+    document.querySelectorAll("#gStage [data-gs]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.gs === (g.stage || "free"))));
+    const stg = g.stage && g.stage !== "free";
+    $("#gStageNote").textContent = !stg ? "チェックした人がそのまま出場します（予選A・B・決勝を使うときは上で切り替え）" : g.stage === "F" ? "決勝：店舗名をクリックすると、その店舗の2人を決勝チームにします（もう一度で外す）。2人1組で交互に投げます。" : `予選${g.stage}：名前の横の「${g.stage}」にチェックした人が1人1投で対戦します。`;
+    document.querySelectorAll("#gMode,#gTeamL").forEach((e) => e.classList.toggle("hidden", !!stg));
+    ["#gPoolAll", "#gPoolNone"].forEach((id) => $(id).classList.toggle("hidden", !!stg)); { const nt = $("#gPool").parentNode.querySelector(".gph .note"); if (nt) nt.textContent = stg ? "A・B・決 のチェックで、どの試合に出るか決めます" : "チェックした人が出場します"; }
+    if (stg) return gPoolStageRender(g);
     g.players.forEach((p) => [p.n, p.n2].filter(Boolean).forEach((n) => { if (!g.pool.some((x) => x.n === n)) g.pool.push({ n, s: p.s || "" }); }));
     const on = (n) => g.players.some((p) => p.n === n || p.n2 === n);
     const stores = []; g.pool.forEach((p) => { const k = p.s || "店舗なし"; if (!stores.includes(k)) stores.push(k); });
@@ -6652,7 +6680,7 @@ function hostPage() {
       const h = H.gameSets.length ? H.gameSets.map((x, i) => `<div class="gsrow"><div class="gsi"><b>${esc(x.name)}</b> <span class="note">${tl(x)}・${x.players.length}${x.team && x.mode !== "qual" ? "組" : "人"}</span><div class="note gsp">${esc(pl(x))}</div></div><button class="btn go mini2" onclick="__gSetLoad(${i})">呼び出す</button><button class="mini" onclick="__gSetUp(${i})">上書き</button><button class="mini" onclick="__gSetDel(${i})">削除</button></div>`).join("") : '<p class="note">まだありません。選手を追加してから、名前をつけて保存してください。</p>';
       if (el._h !== h) { el._h = h; el.innerHTML = h; }
     };
-    const snap = (name) => { const g = G(); return { name, type: g.type, mode: g.mode || "normal", team: !!g.team, title: g.title || "", players: g.players.map((p) => ({ n: p.n, s: p.s || "", ...(p.n2 ? { n2: p.n2 } : {}) })), pool: (g.pool || []).map((p) => ({ n: p.n, s: p.s || "" })) }; };
+    const snap = (name) => { const g = G(); return { name, type: g.type, mode: g.mode || "normal", team: !!g.team, title: g.title || "", players: g.players.map((p) => ({ n: p.n, s: p.s || "", ...(p.n2 ? { n2: p.n2 } : {}) })), pool: (g.pool || []).map((p) => ({ n: p.n, s: p.s || "", g: { ...(p.g || {}) } })), stage: g.stage || "free" }; };
     $("#gSetSave").onclick = () => {
       const g = G(); if (!g.players.length) return toast("先に選手を追加してください");
       const name = $("#gSetName").value.trim() || `${g.type === "archery" ? "アーチェリー" : "モルック"}${g.mode === "qual" ? "予選" : "本戦"}${H.gameSets.length + 1}`;
@@ -6663,11 +6691,63 @@ function hostPage() {
     window.__gSetLoad = (i) => {
       const x = H.gameSets[i], g = G(); if (!x) return;
       if (g.log.length && !confirm("いまのスコアは消えます。呼び出しますか？")) return;
-      g.type = x.type; g.mode = x.mode; g.team = x.team; if (x.title) g.title = x.title; g.players = x.players.map((p) => ({ ...p })); if (x.pool) g.pool = x.pool.map((p) => ({ ...p })); g.log = []; g.introOn = false; g.shufOn = false;
+      g.type = x.type; g.mode = x.mode; g.team = x.team; if (x.title) g.title = x.title; g.players = x.players.map((p) => ({ ...p })); if (x.pool) g.pool = x.pool.map((p) => ({ ...p, g: { ...(p.g || {}) } })); g.sd = {}; g.stage = x.stage || "free"; g.log = []; g.introOn = false; g.shufOn = false;
       gPub(); toast(`「${x.name}」を呼び出しました`);
     };
     window.__gSetUp = (i) => { const x = H.gameSets[i]; if (!x || !G().players.length) return; if (!confirm(`「${x.name}」を、いまの選手で上書きしますか？`)) return; H.gameSets[i] = snap(x.name); save(); render(); toast("上書きしました"); };
     window.__gSetDel = (i) => { const x = H.gameSets[i]; if (!x || !confirm(`「${x.name}」を削除しますか？`)) return; H.gameSets.splice(i, 1); save(); render(); };
+  }
+
+  if (H.opt && H.opt.dup === "one" && !H.dupMig) { H.opt.dup = "both"; H.dupMig = 1; save(); }
+
+  // ---- 予選A → 予選B → 決勝 ----
+  const STG = { A: { mode: "qual", team: false, t: "予選A" }, B: { mode: "qual", team: false, t: "予選B" }, F: { mode: "normal", team: true, t: "決勝" } };
+  const gBase = (g) => (g.type === "archery" ? "アーチェリー" : "モルック");
+  // フラグから出場メンバーを作る（決勝は同じ店舗の2人で1組）
+  const gBuild = (g, st) => {
+    const ms = (g.pool || []).filter((p) => p.g && p.g[st]);
+    if (st !== "F") return ms.map((p) => ({ n: p.n, s: p.s || "" }));
+    const out = []; ms.forEach((p) => { const tm = p.s && out.find((x) => x.s === p.s && !x.n2); if (tm) tm.n2 = p.n; else out.push({ n: p.n, s: p.s || "" }); }); return out;
+  };
+  const gSync = (g) => { // 並び順はできるだけ保つ
+    const nb = gBuild(g, g.stage), key = (p) => p.n + "|" + (p.n2 || "");
+    const keep = g.players.filter((p) => nb.some((x) => key(x) === key(p))), add = nb.filter((x) => !g.players.some((p) => key(x) === key(p)));
+    g.players = keep.concat(add);
+  };
+  const gStash = (g) => { g.sd = g.sd || {}; g.sd[g.stage || "free"] = { log: g.log, players: g.players, mode: g.mode, team: g.team, title: g.title }; };
+  document.querySelectorAll("#gStage [data-gs]").forEach((b) => (b.onclick = () => {
+    const g = G(), to = b.dataset.gs; if ((g.stage || "free") === to) return;
+    gStash(g); g.stage = to; const sd = (g.sd || {})[to];
+    g.log = sd ? sd.log || [] : []; g.players = sd ? sd.players || [] : []; g.introOn = false; g.shufOn = false;
+    if (to === "free") { if (sd) { g.mode = sd.mode; g.team = sd.team; g.title = sd.title; } }
+    else { g.mode = STG[to].mode; g.team = STG[to].team; g.title = `${gBase(g)}${STG[to].t}`; if (!g.log.length) gSync(g); }
+    gPub(); toast(to === "free" ? "自由モードにしました" : `${g.title} に切り替えました${g.log.length ? "（途中の記録から再開）" : ""}`);
+  }));
+  const gFlag = (g, i, st, v) => {
+    const p = g.pool[i]; if (!p) return false;
+    if (g.stage === st && g.log.length && !confirm("この試合のスコアの記録は消えます。メンバーを変えますか？")) return false;
+    p.g = p.g || {}; p.g[st] = v; if (g.stage === st) { g.log = []; gSync(g); } else if (g.sd && g.sd[st]) { g.sd[st].log = []; g.sd[st].players = gBuild(g, st); }
+    return true;
+  };
+  function gPoolStageRender(g) {
+    const stores = []; g.pool.forEach((p) => { const k = p.s || "店舗なし"; if (!stores.includes(k)) stores.push(k); });
+    const ord = Object.values(H.rstore || {}).filter((v, i, a) => a.indexOf(v) === i); stores.sort((a, b) => (ord.indexOf(a) < 0 ? 999 : ord.indexOf(a)) - (ord.indexOf(b) < 0 ? 999 : ord.indexOf(b)));
+    const win = {}; ["A", "B"].forEach((st) => { const sd = st === g.stage ? { log: g.log, players: g.players } : (g.sd || {})[st]; if (!sd || !sd.log || !sd.log.length) return;
+      try { const save = [g.log, g.players, g.mode]; g.log = sd.log; g.players = sd.players; g.mode = "qual"; const d = gDerive(); [g.log, g.players, g.mode] = save; d.P.forEach((p) => { if (p.win) win[p.n] = st; }); } catch (e) {} });
+    const cnt = (st) => g.pool.filter((p) => p.g && p.g[st]).length;
+    const h = (g.pool.length ? `<div class="note" style="margin-bottom:4px">予選A ${cnt("A")}人／予選B ${cnt("B")}人／決勝 ${cnt("F")}人</div>` : "") + (g.pool.length ? stores.map((st) => {
+      const its = g.pool.map((p, i) => [p, i]).filter(([p]) => (p.s || "店舗なし") === st), inF = its.filter(([p]) => p.g && p.g.F).length;
+      return `<div class="gps${inF ? " has" : ""}"><div class="gpsh">${g.stage === "F" ? `<button class="gfin${inF ? " on" : ""}" data-gfs="${esc(st)}">${inF ? "✓ 決勝" : "＋ 決勝へ"}　<b>${esc(st)}</b></button>` : `<b>${esc(st)}</b>`}${inF ? `<span class="note">決勝 ${inF}人</span>` : ""}</div><div class="gpsl">${its.map(([p, i]) => { const f = p.g || {};
+        return `<div class="gpc st${(f[g.stage]) ? " on" : ""}"><span>${esc(p.n)}${win[p.n] ? ` <i class="gwin">🏆予選${win[p.n]}</i>` : ""}</span>${["A", "B", "F"].map((k) => `<label class="gfl${k === g.stage ? " cur" : ""}"><input type="checkbox" data-gfi="${i}" data-gfk="${k}" ${f[k] ? "checked" : ""}>${k === "F" ? "決" : k}</label>`).join("")}<button class="mini" data-gpx="${i}" title="候補から消す">×</button></div>`; }).join("")}</div></div>`; }).join("") : '<p class="note">上の欄から名前を追加すると、ここに候補として並びます。</p>');
+    const el = $("#gPool"); if (el._h === h) return; el._h = h; el.innerHTML = h;
+    el.querySelectorAll("[data-gfi]").forEach((x) => (x.onchange = () => { if (!gFlag(g, +x.dataset.gfi, x.dataset.gfk, x.checked)) x.checked = !x.checked; gPub(); }));
+    el.querySelectorAll("[data-gfs]").forEach((x) => (x.onclick = () => {
+      const st = x.dataset.gfs, its = g.pool.map((p, i) => [p, i]).filter(([p]) => (p.s || "店舗なし") === st), on = its.some(([p]) => p.g && p.g.F);
+      if (g.log.length && !confirm("決勝のスコアの記録は消えます。チームを変えますか？")) return;
+      its.forEach(([p]) => { p.g = p.g || {}; p.g.F = !on; }); g.log = []; gSync(g); gPub();
+      if (!on && its.length > 2) toast(`${st}は候補が${its.length}人います。決勝に出す2人以外は「決」のチェックを外してください`);
+    }));
+    el.querySelectorAll("[data-gpx]").forEach((x) => (x.onclick = () => { const i = +x.dataset.gpx; if (!confirm(`${g.pool[i].n} さんを候補から消しますか？`)) return; g.pool.splice(i, 1); g.log = []; gSync(g); gPub(); }));
   }
   document.querySelectorAll("#hostV7 [data-view]").forEach((b) => (b.onclick = () => act("view", { v: b.dataset.view })));
   function render() {
