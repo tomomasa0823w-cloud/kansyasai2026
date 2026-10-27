@@ -1042,6 +1042,7 @@ body.v-player.offline #offBar{display:block}
 .tv-qa .qt.v>.ft{display:inline-block;max-width:none;max-height:100%}
 .tv-qs.js-fit{white-space:normal;height:150px;display:flex;align-items:center;justify-content:center;line-height:1.3;flex:none}
 .tv-bars .lab .T.js-fit{max-height:100px;overflow:hidden;flex:1;min-width:0}
+.g-plate .gtm{font-size:.8em;opacity:.9}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -1276,6 +1277,11 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
 #przList .mv{padding:2px 7px;min-width:0}
 #lotCard .prow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid rgba(128,140,180,.25)}#lotCard .pp{color:#C8102E}
 #lotCard input:not([type=checkbox]),#lotCard select{padding:6px 8px;font-size:15px;border-radius:8px}
+.pwarn{color:#C2410C;font-weight:800;font-size:12px}.pwarnbox{margin-top:6px;padding:8px 10px;border-radius:10px;background:#FFF1E6;border:2px solid #F59E0B;color:#7C2D12;font-weight:800}
+.gsets{margin-top:12px;padding-top:10px;border-top:1px dashed rgba(128,140,180,.4)}
+.gsrow{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(128,140,180,.2)}.gsi{flex:1;min-width:0}.gsp{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsrow .mini2{padding:6px 12px;font-size:14px}
+#gSetName{padding:6px 8px;font-size:15px;border-radius:8px}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -4715,7 +4721,7 @@ function gameMonHTML(S) {
   }
   const cur = P[G.cur], last = G.last;
   const pop = last && last.seq ? (() => {
-    const lp = P[last.p] ? esc(P[last.p].n) : "";
+    const lp = last.who ? esc(last.who) : P[last.p] ? esc(P[last.p].n) : "";
     if (last.msg === "win") return `<div class="g-pop win"><small>${lp}</small>${isQ ? `${last.v}点で` : isM ? `${G.max}点ぴったり！` : ""}<b>${isQ ? "勝ち抜け！" : "優勝！"}</b></div>`;
     if (last.msg === "tie") return `<div class="g-pop over tie"><small>${(last.tie || []).map(esc).join("・")}</small><b>同点！</b><span>同点の${(last.tie || []).length}人で 第${G.round}巡へ</span></div>`;
     if (last.msg === "over") return `<div class="g-pop over"><small>${lp}</small><b>オーバー！</b><span>${G.back}点に戻る</span></div>`;
@@ -4731,8 +4737,8 @@ function gameMonHTML(S) {
   const info = isQ ? `予選：1人1${isM ? "投" : "本"}・いちばん高い点の人が勝ち（同点なら同点者だけで次の巡）${G.done ? "" : `　いま 第${G.round}巡（${(G.inRound || []).length}人）`}` : isM ? `${G.max}点ぴったりで上がり／オーバーは${G.back}点に戻る${G.missOut ? `／${G.missOut}回連続ミスで失格` : ""}` : `全${G.ends}エンド × ${G.arrows}本${G.done ? "" : `　いま 第${G.end}エンド ${G.arrowNo}本目`}`;
   const stage = G.done
     ? `<div class="g-done"><div class="gk">${esc(ttl)}</div><div class="gt">${isQ ? "予選 勝ち抜け" : "結果発表"}</div>${P.filter((p) => p.rank === 1).map((p) => `<div class="gw">🏆 ${esc(p.n)}<small>${esc(p.s || "")}</small></div>`).join("")}</div>`
-    : `<div class="g-stage${camOn ? " cam" : ""}"><div class="gcam js-cam"></div><div class="g-plate"><div class="gk">${isQ ? `予選 第${G.round}巡　` : ""}${isM ? "投げる人" : "射る人"}</div><div class="gst">${esc(cur ? cur.s || "" : "")}</div><div class="gnm">${esc(cur ? cur.n : "")}</div>${cur && !isQ ? `<div class="gsc">${cur.score || 0}<small>点</small>${isM ? `　<span>あと ${(G.max || 50) - (cur.score || 0)}点</span>` : ""}</div>` : ""}</div>${pop}</div>`;
-  return { key: `g-${(G.log || []).length}-${G.done ? 1 : 0}-${camOn ? 1 : 0}`, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="g-wrap"><div class="g-left">${stage}</div><div class="g-right"><div class="g-h">${esc(ttl)}</div><ol class="g-board${P.length > 5 ? " many" : ""}${P.length > 8 ? " lots" : ""}">${rows}</ol><div class="g-info">${esc(info)}</div></div></div></div>${G.done ? `<div class="late2">${confetti(110)}</div>` : ""}${telopHTML(isM ? "モルック" : "アーチェリー", G.done ? "結果発表！" : cur ? `${esc(cur.n)} 選手の番です` : esc(info))}` };
+    : `<div class="g-stage${camOn ? " cam" : ""}"><div class="gcam js-cam"></div><div class="g-plate"><div class="gk">${isQ ? `予選 第${G.round}巡　` : ""}${isM ? "投げる人" : "射る人"}</div><div class="gst">${esc(cur ? cur.s || "" : "")}${G.team && cur ? `　<span class="gtm">チーム：${esc(cur.n)}</span>` : ""}</div><div class="gnm">${esc(cur ? G.thr || cur.n : "")}</div>${cur && !isQ ? `<div class="gsc">${cur.score || 0}<small>点</small>${isM ? `　<span>あと ${(G.max || 50) - (cur.score || 0)}点</span>` : ""}</div>` : ""}</div>${pop}</div>`;
+  return { key: `g-${(G.log || []).length}-${G.done ? 1 : 0}-${camOn ? 1 : 0}`, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="g-wrap"><div class="g-left">${stage}</div><div class="g-right"><div class="g-h">${esc(ttl)}</div><ol class="g-board${P.length > 5 ? " many" : ""}${P.length > 8 ? " lots" : ""}">${rows}</ol><div class="g-info">${esc(info)}</div></div></div></div>${G.done ? `<div class="late2">${confetti(110)}</div>` : ""}${telopHTML(isM ? "モルック" : "アーチェリー", G.done ? "結果発表！" : cur ? `${esc(G.thr || cur.n)} 選手の番です` : esc(info))}` };
 }
 
 // ---- カメラ（モニターに顔を映す）：このPCのカメラ、またはiPhone（カメラ係）からの映像 ----
@@ -5357,6 +5363,7 @@ function hostPage() {
       if (v === "roll") H.rollAt = Date.now();
       setS({ view: v, ...(v === "title" ? sfx("title") : v === "roll" ? sfx("roll") : v !== "q" ? sfx("chime") : {}) });
     } else if (cmd === "cereStart") {
+      { const NA = ranking().length, sk = H.prizes.filter((p) => p.type === "rank" && +p.rank > NA).length; if (sk) toast(`⚠ 参加 ${NA}人のため、${NA + 1}位以下の賞 ${sk}個は飛ばして発表します`); }
       const list = awards();
       const before = list.filter((x) => x.kind === "manual" && x.pos === "before");
       const after = list.filter((x) => x.kind === "manual" && x.pos !== "before");
@@ -5508,7 +5515,7 @@ function hostPage() {
 
   // ---- 賞の設定 ----
   function renderPrizes() {
-    const N = Object.keys(H.ever).filter((k) => H.roster[k]).length;
+    const N = Object.keys(H.roster).length, NA = ranking().length;
     $("#przList").innerHTML = H.prizes.map((p, i) => {
       if (p.type === "manual") return `<tr class="manual"><td><select data-f="pos" data-i="${i}"><option value="before"${p.pos === "before" ? " selected" : ""}>クイズの前</option><option value="after"${p.pos !== "before" ? " selected" : ""}>最後</option></select></td>
         <td><input type="text" value="${esc(p.label)}" data-f="label" data-i="${i}" maxlength="30" placeholder="賞の名前"><input type="text" value="${esc(p.winner || "")}" data-f="winner" data-i="${i}" maxlength="40" placeholder="受賞者（チーム名・個人名）" style="margin-top:4px"></td>
@@ -5520,7 +5527,7 @@ function hostPage() {
       const skip = p.type !== "champ" && N && !(r >= 1 && r <= N);
       return `<tr class="${skip ? "skip" : ""}"><td>${rk}</td><td><input type="text" value="${esc(p.label)}" data-f="label" data-i="${i}" maxlength="30"></td>
         <td><input type="text" value="${esc(p.memo)}" data-f="memo" data-i="${i}" maxlength="40" placeholder="景品メモ"></td>
-        <td style="white-space:nowrap">${skip ? '<span class="note">人数不足で飛ばす</span>' : ""}<button class="mini mv" data-pmv="${i}:-1" ${i ? "" : "disabled"}>▲</button><button class="mini mv" data-pmv="${i}:1" ${i < H.prizes.length - 1 ? "" : "disabled"}>▼</button> <button class="mini" data-pdel="${i}">削除</button></td></tr>`;
+        <td style="white-space:nowrap">${skip ? `<span class="note">名簿${N}人では対象外</span> ` : NA && p.type !== "champ" && (p.type === "booby" || p.type === "last" ? false : r > NA) ? `<span class="pwarn">⚠ いまの参加${NA}人では飛ばす</span> ` : ""}<button class="mini mv" data-pmv="${i}:-1" ${i ? "" : "disabled"}>▲</button><button class="mini mv" data-pmv="${i}:1" ${i < H.prizes.length - 1 ? "" : "disabled"}>▼</button> <button class="mini" data-pdel="${i}">削除</button></td></tr>`;
     }).join("");
     $("#przList").querySelectorAll("input[data-f],select[data-f]").forEach((x) => (x.onchange = () => {
       const p = H.prizes[+x.dataset.i]; if (!p) return;
@@ -5534,7 +5541,9 @@ function hostPage() {
     const manualCount = H.prizes.filter((p) => p.type === "manual").length;
     const rankCount = H.prizes.filter((p) => p.type !== "champ" && p.type !== "manual").filter((p) => { const r = p.type === "booby" ? N - 1 : p.type === "last" ? N : +p.rank; return !N || (r >= 1 && r <= N); }).length;
     const hasChamp = H.prizes.some((p) => p.type === "champ");
-    $("#przSum").textContent = `順位の賞 ${rankCount}個` + (manualCount ? ` ＋ 手動の賞 ${manualCount}個` : "") + (hasChamp ? ` ＋ ピリオドチャンピオン賞（ピリオド数ぶん）` : "") + (N ? `（参加 ${N}人で計算）` : "");
+    const rankAll = H.prizes.filter((p) => p.type !== "champ" && p.type !== "manual").length;
+    const short = NA ? H.prizes.filter((p) => p.type === "rank" && +p.rank > NA && +p.rank <= N).length : 0;
+    $("#przSum").innerHTML = `<b>順位の賞 ${rankCount}個</b>` + (rankAll > rankCount ? `（名簿${N}人で対象外 ${rankAll - rankCount}個）` : "") + (manualCount ? ` ＋ 手動の賞 ${manualCount}個` : "") + (hasChamp ? ` ＋ ピリオドチャンピオン賞（ピリオド数ぶん）` : "") + `<br><span class="note">名簿 ${N}人で計算${NA ? `／いま参加 ${NA}人` : ""}</span>` + (short ? `<div class="pwarnbox">⚠ いまの参加は ${NA}人です。${NA + 1}位以下の賞 ${short}個は、このままだと表彰式で飛ばされます（参加者が増えれば自動で戻ります）</div>` : "");
     const tg = tieGroups().filter((g) => g.length > 1);
     $("#tieInfo").innerHTML = tg.length ? `同点のグループ：${tg.map((g) => `${g[0].p}pt・${(g[0].t / 1000).toFixed(2)}秒（${g.length}人）`).join("、")}。「同点を抽選」で順番を決め直せます。` : "同点の人はいません。";
   }
@@ -5773,7 +5782,7 @@ function hostPage() {
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/25-1</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/26-1</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -5868,6 +5877,7 @@ function hostPage() {
     gs.innerHTML = `<h2>ゲームの準備</h2>
       <div class="seg" id="gType"><button data-gt="molkky">🪵 モルック</button><button data-gt="archery">🏹 アーチェリー</button></div>
       <div class="seg" id="gMode" style="margin-top:6px"><button data-gm="normal">通常の試合</button><button data-gm="qual">予選（1人1投）</button></div>
+      <label class="chk2" id="gTeamL" style="margin-top:6px"><input type="checkbox" id="gTeam"> 2人1組（同じ店舗の2人で交互に投げる）</label>
       <p class="note" id="gModeNote" style="margin:4px 0 0"></p>
       <div class="field"><label>タイトル（モニターに出ます）</label><input type="text" id="gTitle" maxlength="30" placeholder="例：店長対抗 モルック対決"></div>
       <div id="gOptM" class="gopts"><label>上がり <input type="number" id="gMax" min="10" max="200"> 点</label><label>オーバーしたら <input type="number" id="gBack" min="0" max="200"> 点に戻る</label><label>連続ミス <input type="number" id="gMiss" min="0" max="9"> 回で失格（0＝なし）</label></div>
@@ -5875,7 +5885,10 @@ function hostPage() {
       <h3 style="margin:10px 0 4px">選手（投げる・射る順）</h3>
       <div class="row" style="margin:0"><input type="text" id="gFind" list="gRoster" placeholder="名前で探して追加（名簿から）" style="flex:1"><datalist id="gRoster"></datalist><button class="btn" id="gAdd">追加</button></div>
       <ol class="gplist" id="gPlayers"></ol>
-      <div class="row"><button class="btn" id="gShuffle">🔀 順番をシャッフル（モニターで演出）</button><button class="ghost" id="gClear">選手を全部外す</button></div>`;
+      <div class="row"><button class="btn" id="gShuffle">🔀 順番をシャッフル（モニターで演出）</button><button class="ghost" id="gClear">選手を全部外す</button></div>
+      <div class="gsets"><b>📋 登録しておいた選手リスト</b><p class="note" style="margin:2px 0 6px">予選・決勝などの組み合わせを事前に保存しておき、当日ワンタッチで呼び出せます（種目・予選/通常・2人1組の設定も一緒に保存）。</p>
+        <div id="gSetList"></div>
+        <div class="row"><input id="gSetName" maxlength="30" placeholder="リストの名前（例：モルック予選A）" style="flex:1;min-width:150px"><button class="btn" id="gSetSave">💾 いまの選手を保存</button></div></div>`;
     const gp = document.createElement("div"); gp.className = "ctl"; gp.id = "gPlay";
     gp.innerHTML = `<h2>進行 <span class="phase" id="gPhase"></span></h2>
       <div class="row"><button class="btn go big2" id="gShow">📺 モニターにゲームを映す</button></div>
@@ -6219,7 +6232,8 @@ function hostPage() {
   if (!H.game) H.game = { type: "molkky", title: "", players: [], log: [], intro: 0, introOn: false, opts: { max: 50, back: 25, missOut: 3, ends: 2, arrows: 3, pts: "10,9,8,7,6,5,4,3,2,1,0" } };
   const G = () => H.game;
   function gDerive() {
-    const g = G(), o = g.opts, P = g.players.map((p) => ({ n: p.n, s: p.s || "", hist: [], score: 0, miss: 0, out: false, win: false }));
+    const g = G(), o = g.opts, P = g.players.map((p) => ({ n: p.n, n2: g.mode !== "qual" && g.team && p.n2 ? p.n2 : "", s: p.s || "", hist: [], score: 0, miss: 0, out: false, win: false, tc: 0 }));
+    const who = (i) => { const p = P[i]; if (!p) return ""; return p.n2 && p.tc % 2 ? p.n2 : p.n; };
     let last = null, done = false, cur = -1, end = 1, arrowNo = 1, round = 1, inRound = [];
     if (g.mode === "qual") {
       // 予選：全員1投ずつ → 最高点の人が勝ち。同点なら同点の人だけで次の巡
@@ -6237,15 +6251,15 @@ function hostPage() {
       if (!done) { const nx = part.find((i) => !(i in thrown)); cur = nx == null ? -1 : nx; }
       P.forEach((p, i) => { p.qr = reach[i]; p.qs = lastSc[i]; if (!done && part.includes(i)) p.out = false; });
     } else if (g.type === "molkky") {
-      g.log.forEach((e, k) => { const p = P[e.p]; if (!p) return; p.hist.push(e.v); let msg = "";
+      g.log.forEach((e, k) => { const p = P[e.p]; if (!p) return; const wn = who(e.p); p.tc++; p.hist.push(e.v); let msg = "";
         if (e.v === 0) { p.miss++; if (o.missOut && p.miss >= o.missOut) { p.out = true; msg = "out"; } }
         else { p.miss = 0; p.score += e.v; if (p.score > o.max) { p.score = o.back; msg = "over"; } else if (p.score === o.max) { p.win = true; msg = "win"; done = true; } }
-        last = { p: e.p, v: e.v, msg, seq: k + 1 }; });
+        last = { p: e.p, v: e.v, msg, seq: k + 1, who: wn }; });
       if (!done && P.length > 1) { const alive = P.filter((p) => !p.out); if (alive.length === 1) { alive[0].win = true; done = true; } else if (!alive.length) done = true; }
       if (!done && P.length) { const n = P.length, st = g.log.length ? (g.log[g.log.length - 1].p + 1) % n : 0; for (let k = 0; k < n; k++) { const j = (st + k) % n; if (!P[j].out) { cur = j; break; } } if (cur < 0) done = true; }
     } else {
       const A = Math.max(1, +o.arrows || 1), n = P.length;
-      g.log.forEach((e, k) => { const p = P[e.p]; if (!p) return; p.hist.push(e.v); p.score += e.v; last = { p: e.p, v: e.v, msg: "", seq: k + 1 }; });
+      g.log.forEach((e, k) => { const p = P[e.p]; if (!p) return; const wn = who(e.p); p.tc++; p.hist.push(e.v); p.score += e.v; last = { p: e.p, v: e.v, msg: "", seq: k + 1, who: wn }; });
       const k = g.log.length; done = n > 0 && k >= A * Math.max(1, +o.ends || 1) * n;
       if (!done && n) { cur = Math.floor((k % (A * n)) / A); end = Math.floor(k / (A * n)) + 1; arrowNo = (k % A) + 1; }
       if (done && last && P.length) { const best = Math.max(...P.map((p) => p.score)); if (P[last.p] && P[last.p].score === best) last.msg = "win"; }
@@ -6253,10 +6267,11 @@ function hostPage() {
     const val = (p) => (g.mode === "qual" ? (p.win ? 1e6 : 0) + p.qr * 1000 + Math.max(0, p.qs) : g.type === "molkky" ? (p.win ? 1e6 : 0) + (p.out ? -1e3 : 0) + p.score : p.score);
     const sorted = P.map((p, i) => [i, val(p)]).sort((a, b) => b[1] - a[1]);
     sorted.forEach(([i, v], k) => { P[i].rank = k > 0 && v === sorted[k - 1][1] ? P[sorted[k - 1][0]].rank : k + 1; });
-    return { P, last, done, cur, end, arrowNo, round, inRound };
+    return { P, last, done, cur, end, arrowNo, round, inRound, thr: cur >= 0 ? who(cur) : "" };
   }
   window.__gameView = () => { const g = G(), d = gDerive(), o = g.opts; return { type: g.type, mode: g.mode || "normal", round: d.round, inRound: d.inRound, title: g.title, max: +o.max, back: +o.back, missOut: +o.missOut, ends: +o.ends, arrows: +o.arrows,
-    players: d.P.map((p) => ({ n: p.n, s: p.s, score: p.score, miss: p.miss, out: p.out, win: p.win, rank: p.rank, hist: g.type === "archery" || g.mode === "qual" ? p.hist : undefined })),
+    thr: d.thr, team: !!(g.team && g.mode !== "qual"),
+    players: d.P.map((p) => ({ n: p.n2 ? `${p.n}・${p.n2}` : p.n, s: p.s, score: p.score, miss: p.miss, out: p.out, win: p.win, rank: p.rank, hist: g.type === "archery" || g.mode === "qual" ? p.hist : undefined })),
     cur: d.cur, last: d.last, done: d.done, end: d.end, arrowNo: d.arrowNo, intro: g.introOn ? g.intro : null, shuf: g.shufOn ? g.shufAt : null }; };
   const gPts = () => { const g = G(); if (g.type === "molkky") return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0]; const a = String(g.opts.pts || "").split(/[,、\s]+/).map((x) => parseInt(x, 10)).filter((x) => Number.isInteger(x) && x >= 0 && x <= 1000); return a.length ? a : [1, 0]; };
   const gPub = (extra) => { save(); setS({ view: "game", ...(extra || {}) }); };
@@ -6271,13 +6286,14 @@ function hostPage() {
     document.querySelectorAll("#gType [data-gt]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.gt === g.type)));
     const qm = g.mode === "qual";
     document.querySelectorAll("#gMode [data-gm]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.gm === (g.mode || "normal"))));
+    $("#gTeamL").classList.toggle("hidden", qm); $("#gTeam").checked = !!g.team;
     $("#gModeNote").textContent = qm ? `順番に1人1${g.type === "molkky" ? "投" : "本"}ずつ。いちばん点数が高い人が勝ち。同点なら、同点の人だけでもう1巡します。` : "";
     $("#gOptM").classList.toggle("hidden", g.type !== "molkky" || qm); $("#gOptA").classList.toggle("hidden", g.type !== "archery");
     document.querySelectorAll("#gOptA label").forEach((l, k) => l.classList.toggle("hidden", qm && k < 2));
     const sv = (id, v) => { const e = $(id); if (document.activeElement !== e) e.value = v; };
     sv("#gTitle", g.title || ""); sv("#gMax", g.opts.max); sv("#gBack", g.opts.back); sv("#gMiss", g.opts.missOut); sv("#gEnds", g.opts.ends); sv("#gArrows", g.opts.arrows); sv("#gPts", g.opts.pts);
     const dl = Object.keys(H.roster).map((k) => `<option value="${esc(H.roster[k])}">${esc(H.rstore[k] || "")}</option>`).join(""); if ($("#gRoster")._h !== dl) { $("#gRoster")._h = dl; $("#gRoster").innerHTML = dl; }
-    $("#gPlayers").innerHTML = g.players.map((p, i) => `<li><b>${esc(p.n)}</b><small>${esc(p.s || "")}</small><span><button class="mini" data-gu="${i}">▲</button><button class="mini" data-gd="${i}">▼</button><button class="mini" data-gx="${i}">×</button></span></li>`).join("") || '<li class="note">まだ選手がいません。上の欄で名前を探して追加してください</li>';
+    $("#gPlayers").innerHTML = g.players.map((p, i) => `<li><b>${esc(p.n)}${g.team && g.mode !== "qual" && p.n2 ? `・${esc(p.n2)}` : ""}</b><small>${esc(p.s || "")}${g.team && g.mode !== "qual" && !p.n2 ? "（2人目待ち）" : ""}</small><span><button class="mini" data-gu="${i}">▲</button><button class="mini" data-gd="${i}">▼</button><button class="mini" data-gx="${i}">×</button></span></li>`).join("") || '<li class="note">まだ選手がいません。上の欄で名前を探して追加してください</li>';
     $("#gPlayers").querySelectorAll("[data-gu],[data-gd],[data-gx]").forEach((b) => (b.onclick = () => {
       const i = +(b.dataset.gu ?? b.dataset.gd ?? b.dataset.gx), a = g.players;
       if (g.log.length && !confirm("スコアの記録があります。選手を変えるとスコアは最初からになります。よろしいですか？")) return;
@@ -6289,7 +6305,7 @@ function hostPage() {
   function gRenderPlay(S) {
     const g = G(), d = gDerive(), cur = d.P[d.cur];
     $("#gPhase").textContent = !g.players.length ? "選手を追加してください" : g.shufOn ? "順番シャッフル中（モニター）" : d.done ? "終了" : g.introOn ? `選手紹介 ${g.intro + 1}/${g.players.length}` : g.mode === "qual" ? `予選 第${d.round}巡（${d.inRound.length}人）` : g.type === "molkky" ? "対戦中" : `第${d.end}エンド ${d.arrowNo}本目`;
-    $("#gNow").innerHTML = d.done ? `<div class="gn-done">🏆 ${d.P.filter((p) => p.rank === 1).map((p) => esc(p.n)).join("・")}</div>` : cur ? `<div class="gn-k">${g.type === "molkky" ? "いま投げる人" : "いま射る人"}</div><div class="gn-n">${esc(cur.n)}<small>${esc(cur.s)}</small></div><div class="gn-s">${g.mode === "qual" ? `予選 第${d.round}巡` : `${cur.score}点${g.type === "molkky" ? `（あと${g.opts.max - cur.score}点・ミス${cur.miss}）` : ""}`}</div>` : "";
+    $("#gNow").innerHTML = d.done ? `<div class="gn-done">🏆 ${d.P.filter((p) => p.rank === 1).map((p) => esc(p.n)).join("・")}</div>` : cur ? `<div class="gn-k">${g.type === "molkky" ? "いま投げる人" : "いま射る人"}</div><div class="gn-n">${esc(d.thr || cur.n)}<small>${esc(cur.s)}${cur.n2 ? `（${esc(cur.n)}・${esc(cur.n2)}）` : ""}</small></div><div class="gn-s">${g.mode === "qual" ? `予選 第${d.round}巡` : `${cur.score}点${g.type === "molkky" ? `（あと${g.opts.max - cur.score}点・ミス${cur.miss}）` : ""}`}</div>` : "";
     const pts = gPts(), padH = pts.map((v) => `<button class="btn${v === 0 ? " miss" : ""}" data-gv="${v}">${v === 0 ? (g.type === "molkky" ? "ミス<small>0本</small>" : "0<small>外れ</small>") : v}</button>`).join("");
     if ($("#gPad")._h !== padH) { $("#gPad")._h = padH; $("#gPad").innerHTML = padH; $("#gPad").querySelectorAll("[data-gv]").forEach((b) => (b.onclick = () => gScore(+b.dataset.gv))); }
     $("#gPad").classList.toggle("dis", d.done || d.cur < 0);
@@ -6308,11 +6324,16 @@ function hostPage() {
   const gOpt = (id, k, num) => ($(id).onchange = () => { const g = G(); g.opts[k] = num ? Math.max(0, parseInt($(id).value, 10) || 0) : $(id).value.trim(); gPub(); });
   gOpt("#gMax", "max", 1); gOpt("#gBack", "back", 1); gOpt("#gMiss", "missOut", 1); gOpt("#gEnds", "ends", 1); gOpt("#gArrows", "arrows", 1); gOpt("#gPts", "pts", 0);
   $("#gTitle").onchange = () => { G().title = $("#gTitle").value.trim(); gPub(); };
+  $("#gTeam").onchange = () => { const g = G(); if (g.log.length && !confirm("スコアの記録は消えます。よろしいですか？")) { $("#gTeam").checked = !!g.team; return; } g.team = $("#gTeam").checked; g.log = [];
+    if (g.team) { const out = []; g.players.forEach((p) => { const tm = p.s && out.find((x) => x.s === p.s && !x.n2); if (tm && !p.n2) tm.n2 = p.n; else out.push({ ...p }); }); g.players = out; toast("同じ店舗の人をペアにしました"); }
+    else { const out = []; g.players.forEach((p) => { out.push({ n: p.n, s: p.s }); if (p.n2) out.push({ n: p.n2, s: p.s }); }); g.players = out; }
+    gPub(); };
   const gAddName = () => {
     const v = $("#gFind").value.trim(); if (!v) return;
     const key = Object.keys(H.roster).find((k) => H.roster[k] === v) || Object.keys(H.roster).find((k) => foldName(H.roster[k]) === foldName(v));
     const g = G(); const n = key ? H.roster[key] : v, st = key ? H.rstore[key] || "" : "";
-    if (g.players.some((p) => p.n === n)) return toast("もう追加されています");
+    if (g.players.some((p) => p.n === n || p.n2 === n)) return toast("もう追加されています");
+    if (g.team && g.mode !== "qual" && st) { const tm = g.players.find((p) => p.s === st && !p.n2); if (tm) { if (g.log.length && !confirm("スコアの記録があります。選手を追加するとスコアは最初からになります。よろしいですか？")) return; g.log = []; tm.n2 = n; $("#gFind").value = ""; gPub(); return toast(`${st}：${tm.n}・${n} のペアにしました`); } }
     if (g.log.length && !confirm("スコアの記録があります。選手を追加するとスコアは最初からになります。よろしいですか？")) return;
     g.log = []; g.players.push({ n, s: st }); $("#gFind").value = ""; gPub(); if (!key) toast("名簿にない名前なので、自由入力で追加しました");
   };
@@ -6341,7 +6362,7 @@ function hostPage() {
   $("#camDev").onchange = () => camUseLocal($("#camDev").value);
   // ---- 別の司会PCへ引き継ぎ ----
   {
-    const SETUP = ["roster", "rstore", "rkana", "bank", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "snd", "pub", "exact", "game"];
+    const SETUP = ["roster", "rstore", "rkana", "bank", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "snd", "pub", "exact", "game", "gameSets"];
     const PROG = ["points", "tsum", "scored", "ever", "period", "champs", "handed", "tie", "bankIdx", "pairs", "lotUsed"];
     const b64e = (u8) => { let x = ""; for (let i = 0; i < u8.length; i += 0x8000) x += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(x); };
     const b64d = (x) => Uint8Array.from(atob(x), (c) => c.charCodeAt(0));
@@ -6355,7 +6376,7 @@ function hostPage() {
       (H.bank || []).forEach((b) => { const im = b.img; if (!im) return; [im.q, ...(im.c || []), ...(im.qx || []), ...(im.cx || []).flat()].filter(Boolean).forEach((id) => { if (IMG[id]) p.imgs[id] = IMG[id]; }); });
       return p;
     };
-    const pkgSum = (p) => { const st = p.setup || {}; return `名簿 ${Object.keys(st.roster || {}).length}人・問題 ${(st.bank || []).length}問・写真 ${Object.keys(p.imgs || {}).length}枚・賞 ${(st.prizes || []).length}個${p.prog ? "・得点と進行" : ""}`; };
+    const pkgSum = (p) => { const st = p.setup || {}; return `名簿 ${Object.keys(st.roster || {}).length}人・問題 ${(st.bank || []).length}問・写真 ${Object.keys(p.imgs || {}).length}枚・賞 ${(st.prizes || []).length}個${(st.gameSets || []).length ? `・選手リスト ${st.gameSets.length}件` : ""}${p.prog ? "・得点と進行" : ""}`; };
     const applyPkg = (p) => {
       if (!p || p.v !== 1 || typeof p.setup !== "object") return toast("引き継ぎデータの形が正しくありません");
       if (!confirm(`次の内容をこのPCに読み込みます。\n\n${pkgSum(p)}${p.vids && p.vids.length ? `・動画 ${p.vids.length}本` : ""}\n\nこのPCの名簿・問題・賞・設定は置き換わります。よろしいですか？`)) return false;
@@ -6386,9 +6407,12 @@ function hostPage() {
       const code = String(prompt("もう1台の司会PCに出ている6桁の引き継ぎコードを入れてください") || "").normalize("NFKC").replace(/\D/g, "");
       if (!code) return; if (code.length !== 6) return toast("6桁の数字を入れてください");
       toast("受け取っています…");
-      let man = null, done = false; const parts = {};
-      const fin = async () => {
-        done = true; try { c2.end(); } catch (e) {}
+      // すべての中継サーバーに同時につないで、データがそろったところから受け取る
+      let done = false; const got = {};
+      let cs = [];
+      const endAll = () => cs.forEach((c) => { try { c.end(true); } catch (e) {} });
+      const fin = async (man, parts) => {
+        done = true; endAll();
         try {
           if (Date.now() - man.at > 2 * 3600 * 1000) return toast("このコードは古くなっています。送る側でもう一度「送る」を押してください");
           const str = Array.from({ length: man.n }, (_, i) => parts[i]).join("");
@@ -6396,13 +6420,17 @@ function hostPage() {
           applyPkg(JSON.parse(new TextDecoder().decode(await gz(dec, false))));
         } catch (e) { toast("受け取れませんでした。コードを確かめてもう一度お試しください"); }
       };
-      const c2 = connectAny(0, xroom(code), ["m", "c/+"], (t, d) => {
+      const onMsg = (t, d, bi) => {
         if (done) return;
-        if (t === "m") { if (d && d.v === 1 && d.n > 0) man = d; }
-        else if (t.startsWith("c/") && d && typeof d.d === "string" && Number.isInteger(d.i)) parts[d.i] = d.d;
-        if (man && Array.from({ length: man.n }, (_, i) => parts[i]).every((x) => typeof x === "string")) fin();
-      });
-      setTimeout(() => { if (!done) { done = true; try { c2.end(); } catch (e) {} toast("このコードのデータが見つかりませんでした。コードを確かめるか、送る側でもう一度「送る」を押してください"); } }, 25000);
+        const g = (got[bi] = got[bi] || { man: null, parts: {} });
+        if (t === "m") { if (d && d.v === 1 && d.n > 0) g.man = d; }
+        else if (t.startsWith("c/") && d && typeof d.d === "string" && Number.isInteger(d.i)) g.parts[d.i] = d.d;
+        if (g.man && Array.from({ length: g.man.n }, (_, i) => g.parts[i]).every((x) => typeof x === "string")) fin(g.man, g.parts);
+        else if (g.man) { const have = Object.keys(g.parts).length; if (have && have % 5 === 0) toast(`受け取っています…（${have}/${g.man.n}）`); }
+      };
+      cs = BROKERS.map((_, i) => rawConnect(i, xroom(code), ["m", "c/+"], onMsg, () => {}));
+      const c2 = { end: endAll };
+      setTimeout(() => { if (!done) { done = true; try { c2.end(); } catch (e) {} toast("このコードのデータを受け取れませんでした。写真が多いとコードでは届かないことがあります。その場合は「ファイルで引き継ぐ」を使ってください"); } }, 45000);
     };
     // ファイル形式：「KQX1」＋ヘッダの長さ(4バイト)＋ヘッダ(JSON)＋動画データを順につなげたもの
     $("#xFileOut").onclick = async () => {
@@ -6451,7 +6479,7 @@ function hostPage() {
   const STEPS_C = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["review", "写真"], ["cutshow", "予選落ち"], ["fast", "最速"], ["list", "正解者"]];
   const STEPS_B = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["fast", "一番乗り"], ["list", "押した順"]];
   function renderExtra(S) {
-    try { renderLot(); } catch (x) {}
+    try { renderLot(); } catch (x) {} try { window.__gSetRender && window.__gSetRender(); } catch (x) {}
     // 準備チェック
     const why = H.exact && !localReason(H.exact) ? "" : localReason(pubBase());
     const nR = Object.keys(H.roster).length, nS = new Set(Object.values(H.rstore)).size, nB = H.bank.length;
@@ -6569,6 +6597,34 @@ function hostPage() {
     const l = H.lotLast;
     $("#lotRes").innerHTML = l ? `前回の結果：<b>${esc(l.title)}</b> → <b>${l.res}位</b>${l.name ? `（${esc(l.name)}さん）` : ""}　<button class="mini" onclick="__lotAddPrize()">＋ この結果を賞に追加</button>${H.lotUsed.length ? `　<button class="mini" onclick="__lotReset()">出た数字をリセット</button>` : ""}` : "";
     if (!$("#lotMax").value) $("#lotMax").placeholder = String(Object.keys(H.ever).filter((k) => H.roster[k]).length || "人数");
+  }
+
+  // ---- 選手リストの登録・呼び出し ----
+  if (!Array.isArray(H.gameSets)) H.gameSets = [];
+  {
+    const tl = (x) => `${x.type === "archery" ? "🏹" : "🪵"}${x.mode === "qual" ? "予選" : "通常"}${x.team && x.mode !== "qual" ? "・2人1組" : ""}`;
+    const pl = (x) => x.players.map((p) => p.n + (p.n2 ? "・" + p.n2 : "")).join("、");
+    window.__gSetRender = () => {
+      const el = $("#gSetList"); if (!el) return;
+      const h = H.gameSets.length ? H.gameSets.map((x, i) => `<div class="gsrow"><div class="gsi"><b>${esc(x.name)}</b> <span class="note">${tl(x)}・${x.players.length}${x.team && x.mode !== "qual" ? "組" : "人"}</span><div class="note gsp">${esc(pl(x))}</div></div><button class="btn go mini2" onclick="__gSetLoad(${i})">呼び出す</button><button class="mini" onclick="__gSetUp(${i})">上書き</button><button class="mini" onclick="__gSetDel(${i})">削除</button></div>`).join("") : '<p class="note">まだありません。選手を追加してから、名前をつけて保存してください。</p>';
+      if (el._h !== h) { el._h = h; el.innerHTML = h; }
+    };
+    const snap = (name) => { const g = G(); return { name, type: g.type, mode: g.mode || "normal", team: !!g.team, title: g.title || "", players: g.players.map((p) => ({ n: p.n, s: p.s || "", ...(p.n2 ? { n2: p.n2 } : {}) })) }; };
+    $("#gSetSave").onclick = () => {
+      const g = G(); if (!g.players.length) return toast("先に選手を追加してください");
+      const name = $("#gSetName").value.trim() || `${g.type === "archery" ? "アーチェリー" : "モルック"}${g.mode === "qual" ? "予選" : "本戦"}${H.gameSets.length + 1}`;
+      const i = H.gameSets.findIndex((x) => x.name === name);
+      if (i >= 0) { if (!confirm(`「${name}」を上書きしますか？`)) return; H.gameSets[i] = snap(name); } else H.gameSets.push(snap(name));
+      $("#gSetName").value = ""; save(); render(); toast(`「${name}」を保存しました`);
+    };
+    window.__gSetLoad = (i) => {
+      const x = H.gameSets[i], g = G(); if (!x) return;
+      if (g.log.length && !confirm("いまのスコアは消えます。呼び出しますか？")) return;
+      g.type = x.type; g.mode = x.mode; g.team = x.team; if (x.title) g.title = x.title; g.players = x.players.map((p) => ({ ...p })); g.log = []; g.introOn = false; g.shufOn = false;
+      gPub(); toast(`「${x.name}」を呼び出しました`);
+    };
+    window.__gSetUp = (i) => { const x = H.gameSets[i]; if (!x || !G().players.length) return; if (!confirm(`「${x.name}」を、いまの選手で上書きしますか？`)) return; H.gameSets[i] = snap(x.name); save(); render(); toast("上書きしました"); };
+    window.__gSetDel = (i) => { const x = H.gameSets[i]; if (!x || !confirm(`「${x.name}」を削除しますか？`)) return; H.gameSets.splice(i, 1); save(); render(); };
   }
   document.querySelectorAll("#hostV7 [data-view]").forEach((b) => (b.onclick = () => act("view", { v: b.dataset.view })));
   function render() {
