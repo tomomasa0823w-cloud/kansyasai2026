@@ -1174,6 +1174,54 @@ body.v-player.offline #offBar{display:block}
 .tv-cutl .vt{-webkit-text-stroke:0;color:#fff;text-shadow:0 3px 0 #1D2F80;font-size:38px;line-height:1.05}
 .tv-cutl .vt{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;font-weight:900;letter-spacing:0;line-height:1.15}
 .tv-cutl .vt{writing-mode:horizontal-tb;flex-direction:column;gap:2px}.tv-cutl .vt i{font-style:normal;display:block;line-height:1.05;text-align:center}.tv-cutl .vt i.nn{margin-top:6px;font-size:1.1em}
+/* ピリオドチャンピオン：カウントアップ */
+.tv-cu{position:relative;flex:1;display:flex;flex-direction:column;gap:10px;padding:12px 30px;background:linear-gradient(180deg,rgba(40,24,0,.9),rgba(12,6,0,.95));border-radius:22px;box-shadow:0 0 0 4px #E8B740,0 14px 40px rgba(0,0,0,.5)}
+.tv-cu .cuh{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.tv-cu .cuh .k{font:900 44px var(--lux,serif);color:#FFE7A0}
+.tv-cu .cut{font:900 84px/1 var(--disp,sans-serif);color:#fff;font-variant-numeric:tabular-nums;background:#000;border:3px solid #E8B740;border-radius:14px;padding:4px 22px;min-width:4.2em;text-align:right;box-shadow:0 0 24px rgba(232,183,64,.5)}
+.tv-cu .cut.done{color:#FFD55A}
+.tv-cu ol{list-style:none;margin:0;padding:0;flex:1;display:flex;flex-direction:column;gap:calc(40px / var(--n));justify-content:center}
+.tv-cu li{position:relative;flex:1;max-height:84px;background:rgba(255,255,255,.08);border:2px solid rgba(232,183,64,.35);border-radius:14px;font-size:calc(min(48px, 380px / var(--n) + 8px))}
+.tv-cu li .rw{position:absolute;inset:0;display:flex;align-items:stretch;gap:8px;animation:cutFlip .25s ease-out both}
+.tv-cu li .no,.tv-cu li .tn,.tv-cu li .tm{display:flex;align-items:center;color:#fff;font-weight:900;border-radius:12px;background:linear-gradient(180deg,#3C5BC4,#1D2F80)}
+.tv-cu li .no{padding:0 .4em;min-width:1.6em;justify-content:center}.tv-cu li .tn{flex:1;padding:0 .4em;white-space:nowrap;overflow:hidden}.tv-cu li .tm{width:4.2em;justify-content:flex-end;padding:0 .4em;background:linear-gradient(180deg,#2B3A86,#151F55);font-variant-numeric:tabular-nums}
+.tv-cu li.top .no,.tv-cu li.top .tn{background:linear-gradient(180deg,#FFE27A,#E8A812);color:#2A1700}.tv-cu li.top .tm{background:linear-gradient(180deg,#C98A00,#7A5200)}
+.tv-cu li.top{box-shadow:0 0 30px rgba(255,200,60,.8)}
+.tv-cu .cu-win{position:absolute;inset:8% 10%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(60,36,0,.97),rgba(15,8,0,.97));border:4px solid #FFD55A;border-radius:28px;box-shadow:0 0 80px rgba(255,200,60,.7);opacity:0;animation:cuWin .7s cubic-bezier(.2,1.4,.4,1) both}
+.tv-cu .cu-win .crown{font-size:110px;line-height:1}.tv-cu .cu-win .kick{font:900 46px var(--lux,serif);color:#FFE7A0}.tv-cu .cu-win .winner{font:900 120px/1.15 var(--lux,serif);color:#fff;text-shadow:0 0 30px rgba(255,220,120,.8)}.tv-cu .cu-win .time{font:900 56px var(--disp,sans-serif);color:#FFD55A}
+@keyframes cuWin{0%{opacity:0;transform:scale(.4)}100%{opacity:1;transform:none}}
+.noanim .tv .tv-cu li .rw,.noanim .tv .tv-cu .cu-win{animation:none;opacity:1}
+.cu-fx{opacity:0;animation:cuShow .01s both}@keyframes cuShow{to{opacity:1}}.noanim .tv .cu-fx{animation:none;opacity:1}
+.tv-cu li .rw{animation:none;visibility:hidden}.tv-cu li.on .rw{visibility:visible;animation:cutFlip .25s ease-out both}
+.tv-cu .cu-win{animation:none;opacity:0;pointer-events:none}.tv-cu.win .cu-win{animation:cuWin .7s cubic-bezier(.2,1.4,.4,1) both}
+.cu-fx{animation:none!important;opacity:0}.cu-fx.on{opacity:1}
+/* ボーナス：残り10秒の大きなカウントダウン */
+.bn-cd{position:fixed;inset:0;z-index:30;pointer-events:none;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(60,20,110,.55),rgba(5,4,20,.85))}
+.tv .bn-cd{position:absolute;inset:-200px -100px}
+.bn-cd.on{display:flex}
+.bn-cd .cdx{position:relative;display:flex;align-items:center;justify-content:center}
+.bn-cd b{position:relative;z-index:2;font:italic 900 520px/1 "Arial Black","Helvetica Neue",Arial,sans-serif;letter-spacing:-20px;color:#F2F4FA;background:linear-gradient(180deg,#ffffff 0%,#d9dde8 45%,#9aa1b5 55%,#eef0f6 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 30px rgba(190,120,255,.8)) drop-shadow(0 10px 0 rgba(0,0,0,.5));animation:cdIn .9s cubic-bezier(.15,.9,.3,1) both}
+.bn-cd .end b{font-size:220px;letter-spacing:0;-webkit-text-fill-color:#fff;color:#fff;filter:drop-shadow(0 0 30px rgba(255,80,160,.9))}
+.bn-cd .flare{position:absolute;z-index:3;left:50%;top:50%;width:1600px;height:14px;margin:-7px 0 0 -800px;border-radius:50%;background:radial-gradient(ellipse at center,#fff 0%,rgba(255,170,255,.95) 18%,rgba(190,80,255,.55) 45%,rgba(120,40,255,0) 72%);transform:rotate(-38deg);mix-blend-mode:screen;filter:blur(1px);animation:cdFlare .9s ease-out both}
+.bn-cd .flare::after{content:"";position:absolute;left:50%;top:50%;width:260px;height:260px;margin:-130px 0 0 -130px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,160,255,.5) 30%,rgba(160,80,255,0) 70%)}
+@keyframes cdIn{0%{opacity:0;transform:scale(1.7);filter:blur(14px) drop-shadow(0 0 30px rgba(190,120,255,.8))}35%{opacity:1;filter:blur(0) drop-shadow(0 0 40px rgba(220,150,255,1))}100%{opacity:1;transform:scale(1)}}
+@keyframes cdFlare{0%{opacity:0;transform:rotate(-38deg) scaleX(.2)}30%{opacity:1;transform:rotate(-38deg) scaleX(1.1)}100%{opacity:.35;transform:rotate(-38deg) scaleX(1)}}
+.noanim .tv .bn-cd b,.noanim .tv .bn-cd .flare{animation:none}
+.tv .bn-cd{position:absolute;inset:0}.bn-cd b{font-size:680px}
+/* 突入演出：10→1 カウントダウン */
+.bo-cbg{inset:0;background:radial-gradient(ellipse at center,#3a1a6e 0%,#14092e 55%,#05030f 100%);animation:boCbg 10.6s linear both}
+@keyframes boCbg{0%{opacity:0}4%{opacity:1}96%{opacity:1}100%{opacity:0}}
+.bo-cd{inset:0;display:flex;align-items:center;justify-content:center;animation:boCd 1s linear both}
+.bo-cd b{position:relative;z-index:2;font:italic 900 640px/1 "Arial Black","Helvetica Neue",Arial,sans-serif;letter-spacing:-24px;background:linear-gradient(180deg,#fff 0%,#dfe3ee 44%,#8f97ad 56%,#f3f4f8 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 34px rgba(190,120,255,.85)) drop-shadow(0 12px 0 rgba(0,0,0,.5))}
+.bo-cd.hot b{filter:drop-shadow(0 0 44px rgba(255,90,200,.95)) drop-shadow(0 12px 0 rgba(0,0,0,.5))}
+.bo-cd .fl{position:absolute;z-index:3;left:50%;top:50%;width:1800px;height:16px;margin:-8px 0 0 -900px;border-radius:50%;background:radial-gradient(ellipse at center,#fff 0%,rgba(255,170,255,.95) 18%,rgba(190,80,255,.5) 45%,rgba(120,40,255,0) 72%);mix-blend-mode:screen;animation:boFl 1s ease-out both}
+.bo-cd .fl::after{content:"";position:absolute;left:50%;top:50%;width:300px;height:300px;margin:-150px 0 0 -150px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,160,255,.5) 30%,rgba(160,80,255,0) 70%)}
+@keyframes boCd{0%{opacity:0;transform:scale(1.6);filter:blur(16px)}22%{opacity:1;transform:scale(1);filter:blur(0)}80%{opacity:1;transform:scale(.94)}100%{opacity:0;transform:scale(.9)}}
+@keyframes boFl{0%{opacity:0;transform:rotate(-38deg) scaleX(.15)}25%{opacity:1;transform:rotate(-38deg) scaleX(1.1)}100%{opacity:0;transform:rotate(-38deg) scaleX(1)}}
+.bo-cd.last{animation:boCdLast 1.65s cubic-bezier(.5,0,.9,.4) both}
+@keyframes boCdLast{0%{opacity:0;transform:scale(1.6);filter:blur(16px)}13%{opacity:1;transform:scale(1);filter:blur(0)}55%{opacity:1;transform:scale(.95) rotate(0)}70%{opacity:1;transform:scale(.6) rotate(-8deg);filter:blur(0)}100%{opacity:0;transform:scale(9) rotate(25deg);filter:blur(30px)}}
+.bo-zip{left:-20%;top:50%;width:140%;height:30px;margin-top:-15px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff 50%,rgba(255,255,255,0));box-shadow:0 0 60px 30px rgba(220,140,255,.8);transform:rotate(-30deg) scaleX(0);animation:boZip .7s cubic-bezier(.7,0,.3,1) both}
+@keyframes boZip{0%{opacity:0;transform:rotate(-30deg) scaleX(0)}40%{opacity:1;transform:rotate(-30deg) scaleX(1)}100%{opacity:0;transform:rotate(-30deg) scaleX(1.4) translateY(-30px)}}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -4603,11 +4651,14 @@ const SFX = (() => {
     chime() { const t = now(), b = bus(0.45); [1568, 2093, 2637, 3136].forEach((f, i) => chimeTone(f, t + i * 0.06, 0.8, 0.16, b)); applause(t + 0.1, 2.5, 0.35, bus(0.3)); },
     // 「○位は…」の溜め
     tame() { const t = now(); riser(t, 1.6, bus(0.4)); },
-    bonusIntro() { // 警報 → ゴゴゴ… → ドラムロール → ジャン！ → ファンファーレ
-      const t = now(), b = bus(0.3);
-      for (let i = 0; i < 8; i++) { osc("square", i % 2 ? 660 : 880, t + 0.6 + i * 0.28, 0.26, 0.13, b, { hold: true, r: 0.02 }); }
-      riser(t + 2.6, 3.0, bus(0.4)); roll(t + 3.5, 2.1, b); hit(t + 5.6, b, 0.6);
-      setTimeout(() => { try { P.fanfare(); } catch (e) {} }, 5800);
+    bonusIntro() { // 10→1 カウント（ドン・ドン…）→ ちゅいぃーん → ジャン！ → ファンファーレ
+      const t = now(), b = bus(0.32);
+      for (let i = 0; i < 10; i++) { const tt = t + i, hot = i >= 7; timpani(hot ? 73 : 55, tt, hot ? 0.55 : 0.4, b); noise(tt, 0.35, hot ? 0.22 : 0.14, b, "bandpass", 1800, 0.8, 0.005); osc("sine", hot ? 1320 : 880, tt, 0.18, hot ? 0.16 : 0.1, b); }
+      riser(t + 6.2, 3.8, bus(0.35));
+      osc("sine", 380, t + 9.95, 0.75, 0.3, b, { to: 3600, glide: 0.7, hold: true, a: 0.05 }); osc("sawtooth", 190, t + 9.95, 0.75, 0.08, b, { to: 1800, glide: 0.7, hold: true, a: 0.05 });
+      { const f = noise(t + 9.95, 0.75, 0.5, b, "bandpass", 600, 3, 0.05); f.frequency.setValueAtTime(600, t + 9.95); f.frequency.exponentialRampToValueAtTime(9000, t + 10.6); }
+      hit(t + 10.6, b, 0.65);
+      setTimeout(() => { try { P.fanfare(); } catch (e) {} }, 10800);
     },
     // ピリオド開始：「ジャン・ジャン・ジャーン！」＋大きな拍手
     period() {
@@ -4991,11 +5042,18 @@ function monHTML(S, list, joinURL) {
       else body = w.length ? `<div class="tv-champ">${S.mode === "choice" ? "最速正解" : "一番乗り"}　<b>${esc(w[0].n)}</b>　${sec(w[0].ms)}</div>` + (w.length > 1 ? `<ol class="tv-top">${w.slice(1, 13).map((a, i) => `<li style="animation-delay:${0.1 + i * 0.08}s"><span class="no">${i + 2}<small>位</small></span><span class="tn">${esc(a.n)}</span><span class="tm">${sec(a.ms)}</span></li>`).join("")}</ol>` : "") + (w.length > 13 ? `<div class="tv-more">ほか ${w.length - 13}人が正解</div>` : "") : `<div class="tv-center"><div class="giant dim">正解者なし</div></div>`;
       tel = telopHTML(per, `${kind}　${S.predict ? "的中者" : S.mode === "choice" ? `正解者 ${w.length}人` : `押した人 ${w.length}人`}`);
     } else if (st === "champ") {
-      const c = S.champ;
+      const c = S.champ, CU = c && Array.isArray(c.cands) ? c.cands.slice(0, 10) : []; let cuFx = "";
+      if (c && CU.length) {
+        const last = Math.max(...CU.map((x) => +x.ms || 0)), sp = Math.max(1, last / 6000), at = Math.abs(Date.now() - (c.at || 0)) < 60000 ? c.at : Date.now(), endS = last / sp / 1000, el = 0;
+        cuFx = `<div class="cu-fx">${confetti(130)}</div>`;
+        body = `<div class="tv-cu"><div class="cuh"><span class="k">第${c.period}ピリオド　チャンピオンは…</span><span class="cut js-cu" data-t0="${at}" data-sp="${sp}" data-end="${last}">0.00</span></div><ol style="--n:${CU.length}">${CU.map((x, i) => `<li class="${i === 0 ? "top" : ""}" data-ms="${+x.ms || 0}"><div class="rw"><span class="no">${i === 0 ? "👑" : i + 1}</span><span class="tn">${esc(x.n)}</span><span class="tm">${((+x.ms || 0) / 1000).toFixed(2)}</span></div></li>`).join("")}</ol>
+          <div class="cu-win"><div class="crown">👑</div><div class="kick">第${c.period}ピリオド チャンピオン</div><div class="winner">${esc(c.n)}</div><div class="time">${sec(c.ms)}</div></div></div>`;
+        tel = telopHTML(per, `第${c.period}ピリオド　最速の正解者がチャンピオン！`);
+      } else
       body = !c ? `<div class="tv-center"><div class="kick">第${S.period.no}ピリオド</div><div class="giant dim">チャンピオンなし</div></div>`
         : `<div class="tv-center spot hot"><div class="crown">👑</div><div class="kick">第${c.period}ピリオド チャンピオン</div><div class="winner late">${esc(c.n)}</div><div class="time late">${sec(c.ms)}</div></div>`;
-      if (c) fx = `<div class="late2">${confetti(130)}</div>`;
-      tel = telopHTML(per, c ? `第${c.period}ピリオド チャンピオン決定！` : "ピリオド終了");
+      if (c) fx = cuFx || `<div class="late2">${confetti(130)}</div>`;
+      if (!cuFx) tel = telopHTML(per, c ? `第${c.period}ピリオド チャンピオン決定！` : "ピリオド終了");
     } else { body = qPanel(S); tel = telopHTML(per, kind); }
   }
   void tag;
@@ -5248,14 +5306,21 @@ function shPrep(root) {
 // ================= 🎁 ボーナスタイム（モニター・共通） =================
 const BEND = {};
 function bonusEnd(b) { const k = b.ph + ":" + b.at; if (!BEND[k]) { const e = b.at + b.dur * 1000; BEND[k] = Math.abs(Date.now() - b.at) < 15 * 60 * 1000 ? e : Date.now() + b.dur * 1000; } return BEND[k]; }
+setInterval(() => { document.querySelectorAll(".js-cu[data-t0]").forEach((e) => { const raw = (Date.now() - +e.dataset.t0 - 300) * +e.dataset.sp, v = Math.min(+e.dataset.end, Math.max(0, raw)), box = e.closest(".tv-cu"), tv = e.closest(".tv");
+  e.textContent = (v / 1000).toFixed(2); e.classList.toggle("done", v >= +e.dataset.end);
+  if (box) { box.querySelectorAll("li[data-ms]").forEach((li) => { if (!li.classList.contains("on") && +li.dataset.ms <= v) li.classList.add("on"); }); if (raw >= +e.dataset.end + 1200 * +e.dataset.sp && !box.classList.contains("win")) { box.classList.add("win"); tv && tv.querySelector(".cu-fx") && tv.querySelector(".cu-fx").classList.add("on"); } } }); }, 40);
 setInterval(() => { document.querySelectorAll(".js-bt[data-bend]").forEach((e) => { const r = Math.max(0, +e.dataset.bend - Date.now()), sec = Math.ceil(r / 1000); e.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`; e.classList.toggle("hurry", sec <= 10); }); }, 250);
+function bnCdHTML(b) { return `<div class="bn-cd" data-bend="${bonusEnd(b)}"></div>`; }
+setInterval(() => { document.querySelectorAll(".bn-cd[data-bend]").forEach((e) => { const r = +e.dataset.bend - Date.now(), sec = Math.ceil(r / 1000), v = sec >= 1 && sec <= 10 ? String(sec) : r <= 0 && r > -2500 ? "END" : "";
+  if (e.dataset.v === v) return; e.dataset.v = v; e.classList.toggle("on", !!v);
+  e.innerHTML = v ? `<div class="cdx${v === "END" ? " end" : ""}"><span class="flare"></span><b>${v === "END" ? "TIME UP!" : v}</b></div>` : ""; }); }, 100);
 function bonusMonHTML(S) {
   const b = S.bonus || {};
   let body = "";
   const nm = b.kind === "name", no = nm ? "第1回" : "第2回";
   if (b.ph === "intro" && b.own) return { key: "bn-own-" + b.at, html: bonusOwnHTML(b) };
   if (b.ph === "intro") return { key: "bn-intro-" + b.at, html: `<div class="bn-vid js-ytv" data-yt="${esc(b.yt || "")}" data-at="${b.at}"></div>`, chrome: false };
-  if (b.ph === "talk" && nm) body = `<div class="bn-wrap"><div class="bn-k">🎁 ボーナスタイム ${no}「名前当て」</div><div class="bn-t">スタッフの<b>フルネーム</b>を覚えよう！</div><div class="bn-time js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">このあとスマホに「下の名前＋店舗」が出ます → <b>苗字</b>を答えて（1分）<br>当たった数 × <b>0.1点</b> をクイズの得点に加点！</div></div>`;
+  if (b.ph === "talk" && nm) body = `<div class="bn-wrap"><div class="bn-k">🎁 ボーナスタイム ${no}「名前当て」</div><div class="bn-t">スタッフの<b>フルネーム</b>を覚えよう！</div><div class="bn-time js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">このあとスマホで答えます（1分）<br>当たった数 × <b>0.1点</b> をクイズの得点に加点！</div></div>`;
   else if (b.ph === "input" && nm) body = `<div class="bn-wrap"><div class="bn-k">📱 スマホで答えて！</div><div class="bn-t">この人の苗字は？</div><div class="bn-time big js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">名前をタップ → 苗字を選ぶ or 入力（1人1回）　スタッフ ${(b.qs || []).length}人</div></div>`;
   else if (b.ph === "talk") body = `<div class="bn-wrap"><div class="bn-k">🎁 ボーナスタイム ${no}「趣味当て」</div><div class="bn-t">スタッフの<b>名前</b>と<b>趣味</b>を聞き出そう！</div><div class="bn-time js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">歓談のあと、スマホで「この人の趣味は？」に答えます（1分）<br>当たった数 × <b>0.1点</b> をクイズの得点に加点！</div></div>`;
   else if (b.ph === "input") body = `<div class="bn-wrap"><div class="bn-k">📱 スマホで答えて！</div><div class="bn-t">この人の趣味は？</div><div class="bn-time big js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">名前をタップ → 趣味を選ぶ（1人1回）　スタッフ ${(b.people || []).length}人</div></div>`;
@@ -5271,7 +5336,7 @@ function bonusMonHTML(S) {
       + (F.length ? `<div class="tv-champ pop">👑 1位　<b>${F.map((x) => esc(x.n)).join("・")}</b>　${F[0].c}人正解 ${pt(F[0].c)}</div>` : `<div class="tv-center"><div class="giant dim">正解者なし</div></div>`)
       + (R.length ? `<ol class="tv-top bn-rk" style="grid-template-rows:repeat(${half},auto)">${R.map((x, i) => `<li style="animation-delay:${(d0 + i * 0.08).toFixed(2)}s"><span class="no">${x.rk}<small>位</small></span><span class="tn">${esc(x.n)}</span><span class="tm">${x.c}人 ${pt(x.c)}</span></li>`).join("")}</ol>` : "") + `</div>`;
   }
-  return { key: "bn-" + b.ph + "-" + b.at, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main">${body}</div>${telopHTML("ボーナス" + no, b.ph === "staff" ? (b.side === "low" ? "このスタッフの名前と顔、覚えて帰ってね！" : "たくさんの人に当てられたスタッフ！") : b.ph === "talk" ? (nm ? "歓談タイム！スタッフの名前を覚えよう" : "歓談タイム！スタッフの趣味を聞き出そう") : b.ph === "input" ? "スマホで回答中！" : "ボーナス点を加点しました")}` };
+  return { key: "bn-" + b.ph + "-" + b.at, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main">${body}</div>${b.ph === "talk" || b.ph === "input" ? bnCdHTML(b) : ""}${telopHTML("ボーナス" + no, b.ph === "staff" ? (b.side === "low" ? "このスタッフの名前と顔、覚えて帰ってね！" : "たくさんの人に当てられたスタッフ！") : b.ph === "talk" ? (nm ? "歓談タイム！スタッフのフルネームを覚えよう" : "歓談タイム！スタッフの趣味を聞き出そう") : b.ph === "input" ? "スマホで回答中！" : "ボーナス点を加点しました")}` };
 }
 // ================= 受付用の画面（スマホ・PC 何台でも） =================
 function recvPage(room, bi) {
@@ -5341,20 +5406,20 @@ function ytvSync(el, S) {
   });
 }
 
-// オリジナル演出（約11秒）：暗転 → 警報 → スポットライト → 「BONUS TIME」ドン！ → ルール
+// オリジナル演出（約17秒）：10→1 カウントダウン → ちゅいーん → 「BONUS TIME」ドン！ → ルール
 function bonusOwnHTML(b) {
-  const el = Math.max(0, (Date.now() - b.at) / 1000), d = (t) => `${(t - el).toFixed(2)}s`;
-  const conf = Array.from({ length: 70 }, (_, i) => `<i style="left:${(i * 37) % 100}%;background:${["#FFD55A", "#FF5A5A", "#5AC8FF", "#7CFF8A", "#fff"][i % 5]};animation-delay:${d(5.7 + (i % 10) * 0.08)};--dx:${((i * 53) % 200) - 100}px;--rt:${(i * 47) % 720}deg"></i>`).join("");
+  const el = Math.max(0, (Date.now() - b.at) / 1000), d = (t) => `${(t - el).toFixed(2)}s`, T = 10.6;
+  const conf = Array.from({ length: 70 }, (_, i) => `<i style="left:${(i * 37) % 100}%;background:${["#FFD55A", "#FF5A5A", "#5AC8FF", "#7CFF8A", "#fff"][i % 5]};animation-delay:${d(T + 0.1 + (i % 10) * 0.08)};--dx:${((i * 53) % 200) - 100}px;--rt:${(i * 47) % 720}deg"></i>`).join("");
+  const nums = Array.from({ length: 10 }, (_, i) => `<div class="bo-cd${i === 9 ? " last" : ""}${i >= 7 ? " hot" : ""}" style="animation-delay:${d(i)}"><span class="fl" style="animation-delay:${d(i)}"></span><b>${10 - i}</b></div>`).join("");
   return `<div class="bo-wrap">
-    <div class="bo-warn" style="animation-delay:${d(0.6)}"><div class="bo-stripe"></div><div class="bo-wt">⚠ WARNING ⚠</div><div class="bo-ws">緊急速報</div><div class="bo-stripe b"></div></div>
-    <div class="bo-beam l" style="animation-delay:${d(2.6)}"></div><div class="bo-beam r" style="animation-delay:${d(2.6)}"></div>
-    <div class="bo-q" style="animation-delay:${d(2.8)}">なにかが…始まる…！</div>
-    <div class="bo-box" style="animation-delay:${d(3.4)}">🎁</div>
-    <div class="bo-flash" style="animation-delay:${d(5.6)}"></div>
-    <div class="bo-rays" style="animation-delay:${d(5.6)}"></div>
-    <div class="bo-main" style="animation-delay:${d(5.6)}"><div class="bo-en">BONUS TIME</div><div class="bo-jp">ボーナスタイム${b.kind === "name" ? "①" : b.kind === "hobby" ? "②" : ""}突入！</div></div>
-    <div class="bo-sub" style="animation-delay:${d(7.4)}">${b.kind === "name" ? "スタッフの<b>苗字</b>を当てろ！" : "スタッフの<b>名前</b>と<b>趣味</b>を聞き出せ！"}</div>
-    <div class="bo-sub2" style="animation-delay:${d(8.8)}">当てれば 1人につき <b>＋0.1点</b></div>
+    <div class="bo-cbg" style="animation-delay:${d(0)}"></div>
+    ${nums}
+    <div class="bo-zip" style="animation-delay:${d(9.95)}"></div>
+    <div class="bo-flash" style="animation-delay:${d(T)}"></div>
+    <div class="bo-rays" style="animation-delay:${d(T)}"></div>
+    <div class="bo-main" style="animation-delay:${d(T)}"><div class="bo-en">BONUS TIME</div><div class="bo-jp">ボーナスタイム${b.kind === "name" ? "①" : b.kind === "hobby" ? "②" : ""}突入！</div></div>
+    <div class="bo-sub" style="animation-delay:${d(T + 1.8)}">${b.kind === "name" ? "スタッフの<b>フルネーム</b>を覚えろ！" : "スタッフの<b>名前</b>と<b>趣味</b>を聞き出せ！"}</div>
+    <div class="bo-sub2" style="animation-delay:${d(T + 3.2)}">当てれば 1人につき <b>＋0.1点</b></div>
     <div class="bo-conf">${conf}</div></div>`;
 }
 // ================= 司会・サブ司会の操作パネル（共通） =================
@@ -5374,7 +5439,7 @@ function nextLabel(S) {
   if (st === "closed") return S.mode === "choice" ? "回答分布を出す ▶" : "一番乗りを発表 ▶";
   if (st === "dist") return "正解を発表 ▶";
   if (st === "correct" && hasPics(S)) return "📷 写真をふりかえる ▶";
-  if (st === "correct" || st === "review") return S.predict ? "的中者一覧 ▶" : S.cut ? "予選落ちを発表 ▶" : "最速正解者を発表 ▶";
+  if (st === "correct" || st === "review") return S.predict ? "的中者一覧 ▶" : S.cut ? "予選落ちを発表 ▶" : S.last && S.rule === "kanshasai" && S.period && S.period.active ? "👑 ピリオドチャンピオン発表（カウントアップ） ▶" : "最速正解者を発表 ▶";
   if (st === "cutshow") return "最速正解者を発表 ▶";
   if (st === "fast") return S.mode === "choice" ? "正解者一覧 ▶" : "2位以下を出す ▶";
   if (st === "list") return S.last && S.rule === "kanshasai" && S.period && S.period.active ? "ピリオドチャンピオン発表 ▶" : (window.__nbInfo && window.__nbInfo.has ? `次の問題（${window.__nbInfo.i}/${window.__nbInfo.n}問目）へ ▶` : "次の問題へ ▶");
@@ -5810,6 +5875,11 @@ function hostPage() {
         if (st === "correct" && hasPics(S)) return setS({ stage: "review", rvZoom: null, ...sfx("chime") });
         if ((st === "correct" || st === "review") && S.predict) { const w = l.filter((x) => isHit(S, x.c)); sendPlaces(w, "corr"); return setS({ stage: "list", winners: w.map((x) => ({ n: x.n, ms: x.ms })), ...sfx("chime") }); }
         if ((st === "correct" || st === "review") && S.cut && !S.predict) return setS({ stage: "cutshow", ...sfx("cut") });
+        if ((st === "correct" || st === "review") && S.last && kan() && H.period.active && !S.predict) {
+          const c = H.secret.champ; H.period.active = false;
+          const w = l.filter((x) => isHit(S, x.c)); sendPlaces(w, "corr");
+          return setS({ stage: "champ", winners: w.map((x) => ({ n: x.n, ms: x.ms })), champ: c ? { period: c.period, n: c.n, ms: c.ms, at: Date.now(), cands: (c.cands || []).slice(0, 10).map((x) => ({ n: x.n, ms: x.ms })) } : null, ...sfx(c ? "champ" : "wrong") });
+        }
         if (st === "correct" || st === "review" || st === "cutshow") { const w = l.filter((x) => isHit(S, x.c)); return setS({ stage: "fast", winners: w.slice(0, 1).map((x) => ({ n: x.n, ms: x.ms })), ...sfx(w.length ? "drumReveal" : "wrong") }); }
         if (st === "fast") { const w = l.filter((x) => isHit(S, x.c)); sendPlaces(w, "corr"); return setS({ stage: "list", winners: w.map((x) => ({ n: x.n, ms: x.ms })), ...sfx("chime") }); }
       } else {
@@ -6266,7 +6336,7 @@ function hostPage() {
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-14</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-18</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -7284,7 +7354,7 @@ function hostPage() {
       <p class="note" style="margin:0 0 8px">歓談でスタッフのことを聞き出す → スマホで答える（1分） → 当たった数 × 0.1点 をクイズの得点に加点（2回分は合計）。<br>受付スタッフなど「対象外」にした人には、参加者全員の平均点を加点します。</p>
       <div class="seg" id="bnKind"><button data-bk="name">第1回　名前当て</button><button data-bk="hobby">第2回　趣味当て</button></div>
       <p class="note" id="bnKindNote" style="margin:6px 0"></p>
-      <div class="row"><button class="btn go" id="bnOwn">🎬 ボーナスタイム突入の演出（約11秒）</button><button class="btn" id="bnIntro">▶ YouTubeの予告映像</button><label class="chk2"><input type="checkbox" id="bnAuto" checked> 終わったら自動で①へ</label></div>
+      <div class="row"><button class="btn go" id="bnOwn">🎬 ボーナスタイム突入の演出（約17秒）</button><button class="btn" id="bnIntro">▶ YouTubeの予告映像</button><label class="chk2"><input type="checkbox" id="bnAuto" checked> 終わったら自動で①へ</label></div>
       <div class="row"><button class="btn go" id="bnTalk">① 歓談スタート</button><button class="btn go" id="bnInput">② 記入スタート（1分）</button></div>
       <div class="row"><button class="btn" id="bnFinish">③ 今すぐ締め切って結果を出す</button><button class="btn" id="bnBack">クイズの画面に戻る</button><button class="ghost" id="bnReset">この回のボーナスをリセット</button></div>
       <div class="row"><button class="btn go" id="bnStTop">④ よく当てられたスタッフ TOP3</button><button class="btn go" id="bnStLow">⑤ あまり当てられなかったスタッフ 3名</button></div>
@@ -7335,7 +7405,7 @@ function hostPage() {
     const ytId = (u) => { const m = String(u || "").match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : ""; };
     $("#bnIntro").onclick = () => { const id = ytId((H.links.bonusIntro || {}).url); if (!id) return toast("設定の音のリンク「ボーナスタイムの予告映像」にYouTubeのURLを入れてください"); clearTimeout(bnT); setS({ view: "bonus", bonus: { ph: "intro", at: Date.now(), yt: id } }); };
     document.querySelectorAll("#bnKind [data-bk]").forEach((x) => (x.onclick = () => { if (H.S.view === "bonus" && H.S.bonus && H.S.bonus.ph === "input") return toast("記入中は切り替えられません"); H.bonusKind = x.dataset.bk; save(); render(); }));
-    $("#bnOwn").onclick = () => { clearTimeout(bnT); const at = Date.now(); setS({ view: "bonus", bonus: { kind: H.bonusKind, ph: "intro", own: true, at }, ...sfx("bonusIntro") }); bnT = setTimeout(() => { const b = H.S.bonus; if (H.S.view === "bonus" && b && b.ph === "intro" && b.at === at && $("#bnAuto").checked) $("#bnTalk").click(); }, 12000); };
+    $("#bnOwn").onclick = () => { clearTimeout(bnT); const at = Date.now(); setS({ view: "bonus", bonus: { kind: H.bonusKind, ph: "intro", own: true, at }, ...sfx("bonusIntro") }); bnT = setTimeout(() => { const b = H.S.bonus; if (H.S.view === "bonus" && b && b.ph === "intro" && b.at === at && $("#bnAuto").checked) $("#bnTalk").click(); }, 17500); };
     YTV.onEnd = (at) => { const b = H.S.bonus; if (H.S.view === "bonus" && b && b.ph === "intro" && b.at === at && $("#bnAuto").checked) $("#bnTalk").click(); };
     $("#bnTalk").onclick = () => { clearTimeout(bnT); setS({ view: "bonus", bonus: { kind: H.bonusKind, ph: "talk", dur: BK[H.bonusKind].talk, at: Date.now() }, ...sfx("fanfare") }); };
     $("#bnInput").onclick = () => {
@@ -7708,7 +7778,7 @@ function playerPage(room, bi) {
     if (S.view === "bonus" && S.bonus) {
       const b = S.bonus, key = b.ph + ":" + b.at;
       const bnm = b.kind === "name";
-      if (b.ph === "talk" && bnm) { el.innerHTML = `<div class="status bnp"><div class="h">🎁 ボーナス①　名前当て</div><div class="bnbig">歓談タイム <b class="js-bt" data-bend="${bonusEnd(b)}"></b></div><p>スタッフと話して、<b>フルネーム</b>を覚えよう！<br>このあと1分間で「下の名前＋店舗」を見て<b>苗字</b>を答えます。<br>当たった数 × <b>0.1点</b> がクイズの得点に加点されます。</p></div>`; bKey = key; return; }
+      if (b.ph === "talk" && bnm) { el.innerHTML = `<div class="status bnp"><div class="h">🎁 ボーナス①　名前当て</div><div class="bnbig">歓談タイム <b class="js-bt" data-bend="${bonusEnd(b)}"></b></div><p>スタッフと話して、<b>フルネーム</b>を覚えよう！<br>このあと1分間、スマホで答えます。<br>当たった数 × <b>0.1点</b> がクイズの得点に加点されます。</p></div>`; bKey = key; return; }
       if (b.ph === "talk") { el.innerHTML = `<div class="status bnp"><div class="h">🎁 ボーナス②　趣味当て</div><div class="bnbig">歓談タイム <b class="js-bt" data-bend="${bonusEnd(b)}"></b></div><p>スタッフと話して、<b>名前と趣味</b>を聞き出そう！<br>このあと1分間で、スマホで「この人の趣味は？」を答えます。<br>当たった数 × <b>0.1点</b> がクイズの得点に加点されます。</p></div>`; bKey = key; return; }
       if (b.ph === "staff") { el.innerHTML = `<div class="status bnp"><div class="h">${b.side === "low" ? "📢 もっと覚えてね！" : "🌟 みんなに覚えられたスタッフ"}</div>${(b.list || []).map((x) => `<p><b>${esc(x.n)}</b>（${esc(x.s)}）${x.h ? "<br>趣味：" + esc(x.h) : ""}</p>`).join("")}<p class="note">モニターに注目！</p></div>`; bKey = key; return; }
       if (b.ph === "done") { el.innerHTML = `<div class="status bnp"><div class="h">🎁 ${bnm ? "名前当て" : "趣味当て"}の結果</div>${bRes ? (bRes.ex ? `<div class="bnbig">+${bRes.pts}<small>pt</small></div><p>（受付スタッフなどは全体の平均点を加点）</p>` : `<div class="bnbig">${bRes.c ?? 0}<small>人 正解</small></div><div class="bnbig2">+${bRes.pts}<small>pt 加点！</small></div>`) + (bRes.total && bRes.total !== bRes.pts ? `<p>ボーナス合計 <b>+${bRes.total}pt</b></p>` : "") : "<p>結果を集計しています…</p>"}</div>`; bKey = key; return; }
