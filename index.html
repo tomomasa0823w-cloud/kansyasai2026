@@ -5365,7 +5365,7 @@ function bonusMonHTML(S) {
   const nm = b.kind === "name", no = nm ? "第1回" : "第2回";
   if (b.ph === "intro" && b.own) return { key: "bn-own-" + b.at, html: bonusOwnHTML(b) };
   if (b.ph === "intro") return { key: "bn-intro-" + b.at, html: `<div class="bn-vid js-ytv" data-yt="${esc(b.yt || "")}" data-at="${b.at}"></div>`, chrome: false };
-  if (b.ph === "talk" && nm) body = `<div class="bn-wrap"><div class="bn-k">🎁 ボーナスタイム ${no}「名前当て」</div><div class="bn-t">スタッフの<b>フルネーム</b>を覚えよう！</div><div class="bn-time js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">このあとスマホで答えます（1分）<br>当たった数 × <b>0.1点</b> をクイズの得点に加点！</div></div>`;
+  if (b.ph === "talk" && nm) body = `<div class="bn-wrap"><div class="bn-k">🎁 ボーナスタイム ${no}「名前当て」</div><div class="bn-t">スタッフの<b>フルネーム</b>を覚えよう！</div><div class="bn-time js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">このあとスマホで答えます（5分）<br>当たった数 × <b>0.1点</b> をクイズの得点に加点！</div></div>`;
   else if (b.ph === "input" && nm) body = `<div class="bn-wrap"><div class="bn-k">📱 スマホで答えて！</div><div class="bn-t">この人の苗字は？</div><div class="bn-time big js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">名前をタップ → 苗字を入力（1人1回）　スタッフ ${(b.qs || []).length}人</div></div>`;
   else if (b.ph === "talk") body = `<div class="bn-wrap"><div class="bn-k">🎁 ボーナスタイム ${no}「趣味当て」</div><div class="bn-t">スタッフの<b>名前</b>と<b>趣味</b>を聞き出そう！</div><div class="bn-time js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">歓談のあと、スマホで「この人の趣味は？」に答えます（1分）<br>当たった数 × <b>0.1点</b> をクイズの得点に加点！</div></div>`;
   else if (b.ph === "input") body = `<div class="bn-wrap"><div class="bn-k">📱 スマホで答えて！</div><div class="bn-t">この人の趣味は？</div><div class="bn-time big js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">名前をタップ → 趣味を選ぶ（1人1回）　スタッフ ${(b.people || []).length}人</div></div>`;
@@ -6241,7 +6241,8 @@ function hostPage() {
   });
   document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && fullOn) exitFull(); });
   $("#bReset").onclick = () => {
-    if (!confirm("得点・合計タイム・ピリオド・チャンピオン・表彰式の記録をすべて0に戻します（名簿・賞の設定・問題の登録はそのまま）。よろしいですか？")) return;
+    if (!confirm("得点・合計タイム・ピリオド・チャンピオン・表彰式・ボーナスタイムの記録をすべて0に戻します（名簿・受付台帳・賞の設定・問題の登録はそのまま）。よろしいですか？")) return;
+    H.bonusR = { name: { pts: {}, ans: {} }, hobby: { pts: {}, ans: {} } }; H.bonusPts = {}; H.bonusAns = {}; H.bonusKey = {};
     Object.assign(H, { points: {}, tsum: {}, scored: [], answers: {}, champs: [], cere: null, handed: {}, tie: {}, bankIdx: 0,
       period: { no: 0, active: false, q: 0, stand: {} }, psnap: {}, secret: { last: false, correct: [] }, S: { ...DEF } });
     H.ever = {}; joinedKeys().forEach((k) => (H.ever[k] = true));
@@ -6381,7 +6382,7 @@ function hostPage() {
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-28</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-29</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -7380,7 +7381,7 @@ function hostPage() {
   if (!H.recv) H.recv = {}; if (!H.bonusEx) H.bonusEx = {}; if (!H.bonusPts) H.bonusPts = {}; if (!H.bonusAns) H.bonusAns = {}; if (!H.bonusKey) H.bonusKey = {};
   if (!H.bonusR) { H.bonusR = { name: { pts: {}, ans: {} }, hobby: { pts: Object.keys(H.bonusPts).length ? H.bonusPts : {}, ans: H.bonusAns || {} } }; }
   if (!H.bonusKind) H.bonusKind = "name";
-  const BK = { name: { t: "名前当て", talk: 120, no: "第1回" }, hobby: { t: "趣味当て", talk: 300, no: "第2回" } };
+  const BK = { name: { t: "名前当て", talk: 120, inp: 300, no: "第1回" }, hobby: { t: "趣味当て", talk: 300, inp: 60, no: "第2回" } };
   const bnTotal = () => { const t = {}; ["name", "hobby"].forEach((kd) => Object.entries((H.bonusR[kd] || {}).pts || {}).forEach(([k, v]) => (t[k] = Math.round(((t[k] || 0) + v) * 10) / 10))); H.bonusPts = t; };
   const splitName = (n) => { const m = String(n || "").trim().split(/[\s\u3000]+/); return m.length >= 2 ? { sur: m[0], giv: m.slice(1).join(" ") } : null; };
   const kanaOf = (k) => { const r = String((H.rkana || {})[k] || "").trim().split(/[\s\u3000]+/); return r.length >= 2 ? r[0] : ""; };
@@ -7409,11 +7410,11 @@ function hostPage() {
     P2("colA") && P2("colA").append(rc);
     const bc = document.createElement("div"); bc.className = "ctl"; bc.id = "bonusCard";
     bc.innerHTML = `<h2>🎁 ボーナスタイム <span class="phase" id="bnPhase"></span></h2>
-      <p class="note" style="margin:0 0 8px">歓談でスタッフのことを聞き出す → スマホで答える（1分） → 当たった数 × 0.1点 をクイズの得点に加点（2回分は合計）。<br>受付スタッフなど「対象外」にした人には、参加者全員の平均点を加点します。</p>
+      <p class="note" style="margin:0 0 8px">歓談でスタッフのことを聞き出す → スマホで答える（名前当て5分・趣味当て1分） → 当たった数 × 0.1点 をクイズの得点に加点（2回分は合計）。<br>受付スタッフなど「対象外」にした人には、参加者全員の平均点を加点します。</p>
       <div class="seg" id="bnKind"><button data-bk="name">第1回　名前当て</button><button data-bk="hobby">第2回　趣味当て</button></div>
       <p class="note" id="bnKindNote" style="margin:6px 0"></p>
       <div class="row"><button class="btn go" id="bnOwn">🎬 ボーナスタイム突入の演出（約17秒）</button><button class="btn" id="bnIntro">▶ YouTubeの予告映像</button><label class="chk2"><input type="checkbox" id="bnAuto" checked> 終わったら自動で①へ</label></div>
-      <div class="row"><button class="btn go" id="bnTalk">① 歓談スタート</button><button class="btn go" id="bnInput">② 記入スタート（1分）</button></div>
+      <div class="row"><button class="btn go" id="bnTalk">① 歓談スタート</button><button class="btn go" id="bnInput">② 記入スタート</button></div>
       <div class="row"><button class="btn" id="bnFinish">③ 今すぐ締め切って結果を出す</button><button class="btn" id="bnBack">クイズの画面に戻る</button><button class="ghost" id="bnReset">この回のボーナスをリセット</button></div>
       <div class="row"><button class="btn go" id="bnStTop">④ よく当てられたスタッフ TOP3</button><button class="btn go" id="bnStLow">⑤ あまり当てられなかったスタッフ 3名</button></div>
       <div id="bnInfo" class="note" style="margin-top:6px"></div>
@@ -7487,8 +7488,8 @@ function hostPage() {
         bonus = { qs: shuf(ks.slice()).map((k) => ({ k, g: splitName(H.roster[k]).giv, s: H.rstore[k] || "" })), sur: surList };
       }
       H.bonusRun = kd;
-      const at = Date.now(); setS({ view: "bonus", bonus: { kind: kd, ph: "input", dur: 60, at, ...bonus }, ...sfx("open") });
-      clearTimeout(bnT); bnT = setTimeout(() => bonusFinish(at), 62500);
+      const at = Date.now(); setS({ view: "bonus", bonus: { kind: kd, ph: "input", dur: BK[kd].inp || 60, at, ...bonus }, ...sfx("open") });
+      clearTimeout(bnT); bnT = setTimeout(() => bonusFinish(at), (BK[kd].inp || 60) * 1000 + 2500);
     };
     const nameOk = (k, c) => { const key = H.bonusKey[k]; if (!key) return false; const t = String(c || "").trim(); if (!t) return false;
       const S = H.S, q = (S.bonus.qs || []).find((x) => x.k === k), same = q ? Object.keys(H.bonusKey).filter((x) => { const sp = splitName(H.roster[x]); return sp && sp.giv === q.g && (H.rstore[x] || "") === q.s; }) : [k];
@@ -7841,8 +7842,8 @@ function playerPage(room, bi) {
     if (S.view === "bonus" && S.bonus) {
       const b = S.bonus, key = b.ph + ":" + b.at;
       const bnm = b.kind === "name";
-      if (b.ph === "talk" && bnm) { el.innerHTML = `<div class="status bnp"><div class="h">🎁 ボーナス①　名前当て</div><div class="bnbig">歓談タイム <b class="js-bt" data-bend="${bonusEnd(b)}"></b></div><p>スタッフと話して、<b>フルネーム</b>を覚えよう！<br>このあと1分間、スマホで答えます。<br>当たった数 × <b>0.1点</b> がクイズの得点に加点されます。</p></div>`; bKey = key; return; }
-      if (b.ph === "talk") { el.innerHTML = `<div class="status bnp"><div class="h">🎁 ボーナス②　趣味当て</div><div class="bnbig">歓談タイム <b class="js-bt" data-bend="${bonusEnd(b)}"></b></div><p>スタッフと話して、<b>名前と趣味</b>を聞き出そう！<br>このあと1分間で、スマホで「この人の趣味は？」を答えます。<br>当たった数 × <b>0.1点</b> がクイズの得点に加点されます。</p></div>`; bKey = key; return; }
+      if (b.ph === "talk" && bnm) { el.innerHTML = `<div class="status bnp"><div class="h">🎁 ボーナス①　名前当て</div><div class="bnbig">歓談タイム</div><p>スタッフと話して、<b>フルネーム</b>を覚えよう！<br>このあと5分間、スマホで答えます。<br>当たった数 × <b>0.1点</b> がクイズの得点に加点されます。</p></div>`; bKey = key; return; }
+      if (b.ph === "talk") { el.innerHTML = `<div class="status bnp"><div class="h">🎁 ボーナス②　趣味当て</div><div class="bnbig">歓談タイム</div><p>スタッフと話して、<b>名前と趣味</b>を聞き出そう！<br>このあと1分間で、スマホで「この人の趣味は？」を答えます。<br>当たった数 × <b>0.1点</b> がクイズの得点に加点されます。</p></div>`; bKey = key; return; }
       if (b.ph === "staff") { el.innerHTML = `<div class="status bnp"><div class="h">${b.side === "low" ? "📢 もっと覚えてね！" : "🌟 みんなに覚えられたスタッフ"}</div>${(b.list || []).map((x) => `<p><b>${esc(x.n)}</b>（${esc(x.s)}）${x.h ? "<br>趣味：" + esc(x.h) : ""}</p>`).join("")}<p class="note">モニターに注目！</p></div>`; bKey = key; return; }
       if (b.ph === "done") { el.innerHTML = `<div class="status bnp"><div class="h">🎁 ${bnm ? "名前当て" : "趣味当て"}の結果</div>${bRes ? (bRes.ex ? `<div class="bnbig">+${bRes.pts}<small>pt</small></div><p>（受付スタッフなどは全体の平均点を加点）</p>` : `<div class="bnbig">${bRes.c ?? 0}<small>人 正解</small></div><div class="bnbig2">+${bRes.pts}<small>pt 加点！</small></div>`) + (bRes.total && bRes.total !== bRes.pts ? `<p>ボーナス合計 <b>+${bRes.total}pt</b></p>` : "") : "<p>結果を集計しています…</p>"}</div>`; bKey = key; return; }
       if (b.ph === "input") {
@@ -7851,7 +7852,7 @@ function playerPage(room, bi) {
           const me = normName(P.name || "").slice(0, 60), qs = (b.qs || []).filter((x) => x.k !== me), sur = b.sur || [];
           if (!el.querySelector(".bnin") || el.dataset.bk !== key) {
             el.dataset.bk = key;
-            el.innerHTML = `<div class="status bnp bnin"><div class="bnhd"><b>🎁 この人の苗字は？</b><span>残り <b class="js-bt" data-bend="${bonusEnd(b)}"></b></span></div><div class="note">名前をタップ → 苗字を入力して「決定」（1人1回・答えたのは <b id="bnCnt">0</b>人）</div><div class="bnchips" id="bnChips"></div><input id="bnFind" placeholder="下の名前で探す" autocomplete="off"><div id="bnList"></div></div>`;
+            el.innerHTML = `<div class="status bnp bnin"><div class="bnhd"><b>🎁 この人の苗字は？</b></div><div class="note">名前をタップ → 苗字を入力して「決定」（1人1回・答えたのは <b id="bnCnt">0</b>人）</div><div class="bnchips" id="bnChips"></div><input id="bnFind" placeholder="下の名前で探す" autocomplete="off"><div id="bnList"></div></div>`;
             const opts = `<option value="">▼ 苗字をえらぶ（スクロール）</option>` + sur.map((x) => `<option value="${esc(x.n)}">${esc(x.n)}${x.r && x.r !== x.n ? "（" + esc(x.r) + "）" : ""}</option>`).join("");
             const draw = () => {
               const q = foldName(el.querySelector("#bnFind").value || "");
@@ -7872,7 +7873,7 @@ function playerPage(room, bi) {
         const ppl = (b.people || []).filter((x) => x.n !== P.name);
         if (!el.querySelector(".bnin") || el.dataset.bk !== key) {
           el.dataset.bk = key;
-          el.innerHTML = `<div class="status bnp bnin"><div class="bnhd"><b>🎁 この人の趣味は？</b><span>残り <b class="js-bt" data-bend="${bonusEnd(b)}"></b></span></div><div class="note">名前をタップ → 趣味を選ぶ（1人1回・答えたのは <b id="bnCnt">0</b>人）</div><div class="bnchips" id="bnChips"></div><input id="bnFind" placeholder="名前で探す" autocomplete="off"><div id="bnList"></div></div>`;
+          el.innerHTML = `<div class="status bnp bnin"><div class="bnhd"><b>🎁 この人の趣味は？</b></div><div class="note">名前をタップ → 趣味を選ぶ（1人1回・答えたのは <b id="bnCnt">0</b>人）</div><div class="bnchips" id="bnChips"></div><input id="bnFind" placeholder="名前で探す" autocomplete="off"><div id="bnList"></div></div>`;
           const draw = () => {
             const q = foldName(el.querySelector("#bnFind").value || "");
             bnChipDraw(el, ppl, draw);
