@@ -1138,6 +1138,21 @@ body.v-player.offline #offBar{display:block}
 @keyframes bnstIn{0%{opacity:0;transform:translateY(60px) scale(.6)}100%{opacity:1;transform:none}}
 .noanim .tv .bnst-c{animation:none}
 .bn-wrap.bnst{justify-content:center;inset:-60px 0 0}.bnst .bnst-c{padding:34px 20px}
+.tv-cutl{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(ellipse at center,rgba(40,8,12,.88),rgba(8,2,6,.94));border-radius:24px;box-shadow:0 0 0 3px #E8B740;padding:18px 40px}
+.tv-cutl .k{font-weight:900;font-size:46px;color:#FFD6D9}
+.tv-cutl ol{list-style:none;margin:0;padding:0;width:min(1300px,96%);display:flex;flex-direction:column;gap:calc(40px / var(--n))}
+.tv-cutl li{position:relative;display:flex;align-items:baseline;gap:24px;padding:calc(60px / var(--n) + 2px) 30px;border-radius:16px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:calc(min(46px, 470px / var(--n) + 6px));font-weight:900;animation:tvup .35s both}
+.tv-cutl li .no{color:#FFD55A;min-width:4em}.tv-cutl li .no small{font-size:.55em}.tv-cutl li .tn{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tv-cutl li .tm{font-variant-numeric:tabular-nums;color:#FFD55A}
+.tv-cutl li.last{background:linear-gradient(90deg,#8B0010,#E0152A);border-color:#FF6B78;box-shadow:0 0 30px rgba(255,45,59,.7);animation:cutLast .6s both}
+.tv-cutl li.last .tm,.tv-cutl li.last .no{color:#fff}
+.tv-cutl .stp{position:absolute;right:-20px;top:50%;transform:translateY(-50%) rotate(-8deg);background:#fff;color:#E0152A;border:5px solid #E0152A;border-radius:14px;padding:4px 18px;font-size:.95em;white-space:nowrap;animation:cutStamp .45s cubic-bezier(.2,1.6,.4,1) both;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+@keyframes cutLast{0%{opacity:0;transform:scale(1.4)}60%{opacity:1;transform:scale(.97)}100%{transform:none}}
+@keyframes cutStamp{0%{opacity:0;transform:translateY(-50%) rotate(-8deg) scale(3)}100%{opacity:1;transform:translateY(-50%) rotate(-8deg) scale(1)}}
+.noanim .tv .tv-cutl li,.noanim .tv .tv-cutl .stp{animation:none}
+.tv-cutl{padding:12px 40px;gap:10px;justify-content:flex-start}.tv-cutl .k{font-size:40px}
+.tv-cutl ol{gap:calc(30px / var(--n))}
+.tv-cutl li{font-size:calc(min(40px, 340px / var(--n) + 4px));padding:calc(30px / var(--n) + 3px) 30px}
+.tv-cutl .stp{right:230px}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -4933,8 +4948,13 @@ function monHTML(S, list, joinURL) {
       tel = telopHTML(per, st === "dist" ? `${kind}　みんなの答えは…` : `${kind}　正解は ${corrSet(S).map((i) => L[i]).join("・")}！${S.ansNote ? "　" + esc(S.ansNote) : ""}`, ex);
     } else if (st === "cutshow") {
       const ms = ((S.winners || []).length ? null : null);
+      const CL = Array.isArray(S.cutList) ? S.cutList : [];
+      if (CL.length >= 2) {
+        const N = CL.length, step = Math.min(0.45, 3.2 / (N - 1)), tEnd = 0.4 + (N - 1) * step;
+        body = `<div class="tv-cutl"><div class="k">正解したけど…遅かった順に発表！</div><ol style="--n:${N}">${CL.map((a, i) => { const last = i === N - 1; return `<li class="${last ? "last" : ""}" style="animation-delay:${(0.4 + i * step).toFixed(2)}s"><span class="no">${a.r}<small>位</small></span><span class="tn">${esc(a.n)}</span><span class="tm">${sec(a.ms)}</span>${last ? `<b class="stp" style="animation-delay:${(tEnd + 0.5).toFixed(2)}s">予選落ち・着席</b>` : ""}</li>`; }).join("")}</ol></div>`;
+      } else
       body = `<div class="tv-cut"><div class="k">正解したけど、いちばん遅かったのは…</div><div class="t">予選落ち</div><div class="n late">${esc(S.cut || "")}</div><div class="s late">着席です</div></div>`;
-      tel = telopHTML(per, `${kind}　予選落ち：${esc(S.cut || "")}さん`);
+      tel = telopHTML(per, CL.length >= 2 ? `${kind}　予選落ちになるのは…？` : `${kind}　予選落ち：${esc(S.cut || "")}さん`);
       void ms;
     } else if (st === "fast") {
       const w = (S.mode === "choice" ? S.winners : S.order) || [];
@@ -5635,7 +5655,7 @@ function hostPage() {
       win.forEach((x) => { H.points[x.key] = (H.points[x.key] || 0) + pts; if (!S.predict) H.tsum[x.key] = (H.tsum[x.key] || 0) + x.ms; });
       H.scored = [...H.scored, S.rid].slice(-300);
     }
-    let seatedNow = [], cut = null, champ = null, revivedNow = [];
+    let seatedNow = [], cut = null, champ = null, revivedNow = [], cutList = null;
     if (kan() && H.period.active && !H.secret.judged && !S.predict) {
       const byKey = {}; l.forEach((a) => (byKey[a.key] = a));
       const sk = standKeys();
@@ -5652,11 +5672,12 @@ function hostPage() {
       } else if (!H.opt.noCut && !S.revive && (corrStand.length >= 2 || (corrStand.length === 1 && !H.opt.noCutIfOne))) {
         const slow = corrStand[corrStand.length - 1];
         H.period.stand[slow.key] = false; cut = slow.n; seatedNow.push(slow.n);
+        cutList = corrStand.slice(-10).map((a, i, arr) => ({ n: a.n, ms: a.ms, r: corrStand.length - arr.length + i + 1 }));
       }
       H.secret.judged = true; H.secret.champ = champ;
     }
     const counts = IDX(nchOf(S)).map(() => 0); l.forEach((x) => { if (x.c >= 0 && x.c < counts.length) counts[x.c]++; });
-    setS({ phase: "reveal", stage: "correct", correct, counts, total: l.length, seatedNow, revivedNow, cut, winners: null, ansNote: (H.secret && H.secret.ans) || "", cans: (H.secret && H.secret.cans) || null, ...sfx(seatedNow.length ? "correct+seat" : "correct") });
+    setS({ phase: "reveal", stage: "correct", correct, counts, total: l.length, seatedNow, revivedNow, cut, cutList, winners: null, ansNote: (H.secret && H.secret.ans) || "", cans: (H.secret && H.secret.cans) || null, ...sfx(seatedNow.length ? "correct+seat" : "correct") });
     sendMe();
   }
   // 各参加者に、自分の得点と総合順位を個別に送る（31位以下の人も自分の順位が分かる）
@@ -6222,7 +6243,7 @@ function hostPage() {
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-11</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-13</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -7261,7 +7282,7 @@ function hostPage() {
       const ks = Object.keys(H.roster), done = ks.filter((k) => isAtt(k)).length, hb = ks.filter((k) => H.recv[k] && H.recv[k].h).length;
       $("#rvCount").textContent = `出席 ${done} / ${ks.length}人・趣味 ${hb}人`; $("#rvGate").checked = H.opt.attGate !== false;
       const u = rURL(); if ($("#rvURL").value !== u) { $("#rvURL").value = u; qrInto($("#rvQR"), u); }
-      if ($("#rvList").contains(document.activeElement) && document.activeElement.tagName === "INPUT" && document.activeElement.type === "text") return;
+      { const ae = document.activeElement; if ($("#rvList").contains(ae) && ae.tagName === "INPUT" && ae.type === "text" && ae.dataset.rvh && ae.value !== ((H.recv[ae.dataset.rvh] || {}).h || "")) return; }
       const q = foldName($("#rvFind").value || ""), only = $("#rvOnlyNo").checked;
       const stores = []; ks.forEach((k) => { const st = H.rstore[k] || "店舗なし"; if (!stores.includes(st)) stores.push(st); });
       const h = stores.map((st) => { const its = ks.filter((k) => (H.rstore[k] || "店舗なし") === st).filter((k) => (!q || foldName(H.roster[k] + st).includes(q)) && (!only || !isAtt(k))); if (!its.length) return "";
