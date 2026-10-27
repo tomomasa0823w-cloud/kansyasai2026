@@ -1068,6 +1068,14 @@ body.v-player.offline #offBar{display:block}
 .tv .g-intro.cam,.tv .g-stage.cam{grid-template-rows:minmax(0,1fr)}
 .tv .g-intro.cam .gcam,.tv .g-stage.cam .gcam{position:relative;overflow:hidden;min-height:0}
 .tv .gcam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* 写真のふりかえり：縦長カードで大きく、余白はぼかし */
+.tv-rv .card,.tv-rv.zoom{background:#0B1748;position:relative}
+.tv-rv .pbg{position:absolute;inset:0;background:center/cover no-repeat;filter:blur(24px) brightness(.7);transform:scale(1.15);z-index:0}
+.tv-rv .ph{position:relative;z-index:1;background-color:transparent!important;background-position:center;background-size:contain}
+.tv-rv .cap{position:relative;z-index:2}
+.tv-rv.row1{grid-auto-rows:minmax(0,1fr);gap:18px}
+.tv-rv.row1 .cap{white-space:normal;font-size:28px;line-height:1.25;padding:10px 14px;min-height:76px;text-overflow:clip}
+.tv-rv.row1 .ok{font-size:24px;padding:3px 10px}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -1339,6 +1347,7 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
   #hostV7 .hgrid2.withMon>.colB{grid-column:2;grid-row:2}
   #hostV7 .hgrid2.withMon>.monSlot>.monCol{position:sticky;top:150px;z-index:5}
 }
+#bankList .blim{padding:3px 4px;font-size:13px;border-radius:6px;background:#fff;color:#0B1748;-webkit-text-fill-color:#0B1748;font-weight:700}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -3970,7 +3979,7 @@ const IDX = (n) => Array.from({ length: n }, (_, i) => i);
 const nchOf = (S) => (S.nch === 5 ? 5 : S.nch === 3 ? 3 : 4);
 const corrSet = (S) => (Array.isArray(S.correct) ? S.correct : S.correct == null ? [] : [S.correct]);
 const isHit = (S, c) => corrSet(S).includes(c);
-const corrText = (S) => corrSet(S).map((i) => `${L[i]}「${esc(S.choices[i])}」`).join("・");
+const corrText = (S) => corrSet(S).map((i) => { const t = (S.cans && S.cans[i]) || String(S.choices[i] || "").replace(/\u200b/g, "").trim(); return t ? `${L[i]}「${esc(t)}」` : L[i]; }).join("・");
 const normName = (x) => String(x || "").normalize("NFKC").replace(/[\s\u3000]+/g, "").toLowerCase();
 // 異体字のゆれ（髙→高 など）を吸収した比較用
 const ITAI = { "髙": "高", "﨑": "崎", "嵜": "崎", "邉": "辺", "邊": "辺", "濵": "浜", "濱": "浜", "德": "徳", "惠": "恵", "眞": "真", "櫻": "桜", "澤": "沢", "齋": "斎", "齊": "斉", "廣": "広", "國": "国", "實": "実", "瀨": "瀬", "黑": "黒", "槇": "槙", "冨": "富", "富": "富" };
@@ -4165,8 +4174,10 @@ const LINKS = (() => {
     if (!fade) return halt(P);
     let v = vol; const step = () => { v -= vol / 8; if (v <= 0) { setVol(P, vol); return halt(P); } setVol(P, v); setTimeout(step, 50); }; step();
   }
-  async function play(slot) {
+  async function play(slot, opt) {
     const L = links[slot]; if (!L || !on) return false;
+    { const pp = parse(L.url); if (pp && bg && keyOf(pp) === bg.key) return true; } // 待ち時間BGMと同じ曲なら、そのまま流し続ける
+    if (opt && opt.endAt) return playSync(L, opt.endAt);
     const p = parse(L.url); if (!p) return false;
     stop(false);
     const P = await prepare(p); if (P.err) return false;
@@ -4181,7 +4192,58 @@ const LINKS = (() => {
     if (dur > 0) stopT = setTimeout(() => { if (active === P) stop(true); }, dur * 1000);
     return true;
   }
+  // 曲（指定区間）の終わりが締め切りにそろうように、途中から再生する（短い曲は少し待ってから）
+  async function playSync(L, endAt) {
+    const p = parse(L.url); if (!p) return false;
+    stop(false);
+    const P = await prepare(p); if (P.err) return false;
+    const start = Math.max(0, +L.start || p.t || 0), dur = Math.max(0, +L.dur || 0);
+    active = P; setVol(P, vol); box().classList.add("show"); P.wrap.classList.add("on");
+    if (P.yt && !P.ready) { const t = Date.now(); while (!P.ready && Date.now() - t < 2500) await new Promise((r) => setTimeout(r, 100)); }
+    const total = () => { try { return P.yt ? P.yt.getDuration() : P.audio ? P.audio.duration : 0; } catch (e) { return 0; } };
+    const segEnd = () => (dur > 0 ? start + dur : total() || start + 600);
+    const want = () => segEnd() - (endAt - Date.now()) / 1000; // いま再生しているべき位置
+    const seek = (x) => { try { if (P.yt) P.yt.seekTo(x, true); else if (P.audio) P.audio.currentTime = x; else if (P.nico) nicoCmd(P, "seek", { time: x * 1000 }); } catch (e) {} };
+    const go = async () => {
+      if (active !== P) return;
+      try { seek(Math.max(start, want())); if (P.yt) P.yt.playVideo(); else if (P.audio) await P.audio.play(); else if (P.nico) nicoCmd(P, "play"); } catch (e) { halt(P); return; }
+      // 読み込みの遅れを1回だけ補正
+      setTimeout(() => { if (active !== P) return; try { const cur = P.yt ? P.yt.getCurrentTime() : P.audio ? P.audio.currentTime : null; if (cur != null && Math.abs(cur - want()) > 0.35 && want() >= start) seek(want()); } catch (e) {} }, 1500);
+    };
+    const wait = start - want(); // 曲が回答時間より短いときは、その分だけ遅らせて始める
+    if (wait > 0.05) setTimeout(go, wait * 1000); else await go();
+    clearTimeout(stopT); stopT = setTimeout(() => { if (active === P) stop(true); }, Math.max(0, endAt - Date.now()) + 600);
+    return true;
+  }
+  // ---- 待ち時間のBGM（ほかの効果音とは別に、小さめでくり返し流す） ----
+  let bg = null, bgLv = 0, bgCur = 0, bgFadeT = null, bgLoopT = null, bgBusy = false;
+  const bgSetVol = (v) => { bgCur = v; if (bg) setVol(bg.P, vol * v); };
+  const bgFade = (to, done) => { clearInterval(bgFadeT); const from = bgCur, n = 10; let i = 0; bgFadeT = setInterval(() => { i++; bgSetVol(from + ((to - from) * i) / n); if (i >= n) { clearInterval(bgFadeT); done && done(); } }, 60); };
+  async function bgm(level) {
+    bgLv = level;
+    const L = links.bgm, p = L && parse(L.url);
+    if (!p || !on || level <= 0) { if (bg) { const P = bg.P; bg = null; clearInterval(bgLoopT); bgFade(0, () => { if (active !== P) halt(P); }); } return; }
+    if (bg && bg.key === keyOf(p)) { if (Math.abs(bgCur - level) > 0.01) bgFade(level); return; }
+    if (bgBusy) return; bgBusy = true;
+    try {
+      if (bg) { try { halt(bg.P); } catch (e) {} bg = null; }
+      const P = await prepare(p); if (P.err) return;
+      const start = Math.max(0, +L.start || p.t || 0), dur = Math.max(0, +L.dur || 0);
+      if (P.yt && !P.ready) { const t = Date.now(); while (!P.ready && Date.now() - t < 2500) await new Promise((r) => setTimeout(r, 100)); }
+      if (bgLv <= 0) return;
+      bg = { P, key: keyOf(p) }; bgCur = 0; setVol(P, 0); box().classList.add("show"); P.wrap.classList.add("on");
+      const seek = (x) => { try { if (P.yt) P.yt.seekTo(x, true); else if (P.audio) P.audio.currentTime = x; else if (P.nico) nicoCmd(P, "seek", { time: x * 1000 }); } catch (e) {} };
+      const go = () => { try { if (P.yt) P.yt.playVideo(); else if (P.audio) P.audio.play().catch(() => {}); else if (P.nico) nicoCmd(P, "play"); } catch (e) {} };
+      seek(start); go(); bgFade(bgLv);
+      clearInterval(bgLoopT); bgLoopT = setInterval(() => { // くり返し
+        if (!bg || bg.P !== P) return clearInterval(bgLoopT);
+        try { const cur = P.yt ? P.yt.getCurrentTime() : P.audio ? P.audio.currentTime : 0, ended = P.yt ? P.yt.getPlayerState() === 0 : P.audio ? P.audio.ended : false;
+          if (ended || (dur > 0 && cur >= start + dur - 0.05)) { seek(start); go(); } } catch (e) {}
+      }, 250);
+    } finally { bgBusy = false; }
+  }
   return {
+    bgm,
     parse,
     set(obj) {
       links = obj && typeof obj === "object" ? obj : {};
@@ -4189,7 +4251,7 @@ const LINKS = (() => {
     },
     has(slot) { return !!(links[slot] && parse(links[slot].url)); },
     play, stop,
-    setVolume(v, o) { vol = v; on = o; if (active) setVol(active, vol); if (!on) stop(false); },
+    setVolume(v, o) { vol = v; on = o; if (active) setVol(active, vol); if (bg) setVol(bg.P, vol * bgCur); if (!on) { stop(false); bgm(0); } },
   };
 })();
 
@@ -4380,8 +4442,15 @@ const SFX = (() => {
     unlock() { if (!ensure()) return false; unlocked = true; const t = now(); osc("sine", 880, t, 0.08, 0.05, dry); decodeAll().then(() => { if (window.onSfxReady) window.onSfxReady(); }); return true; },
     get unlocked() { return unlocked; },
     set(v, o) { vol = Math.max(0, Math.min(1, v)); on = !!o; if (out) out.gain.value = vol; LINKS.setVolume(vol, on); },
-    play(name) {
+    play(name, opt) {
       if (!unlocked || !on || !ensure()) return;
+      if (name === "think" && opt && opt.endAt) { stopCustom();
+        const ls = "think" + (opt.limit || ""), slot = custom[ls] || LINKS.has(ls) ? ls : "think";
+        const b = custom[slot];
+        if (b) { const rem = (opt.endAt - Date.now()) / 1000, off = Math.max(0, b.duration - rem), wait = Math.max(0, rem - b.duration);
+          const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b; s.connect(g).connect(dry); s.start(ctx.currentTime + wait, off); playing.push({ s, g }); s.onended = () => { playing = playing.filter((p) => p.s !== s); }; return; }
+        if (LINKS.has(slot)) { LINKS.play(slot, opt).then((ok) => { if (!ok) (P.chime || (() => {}))(); }); return; }
+      }
       stopCustom(); // 前の場面の差し替え音（長い曲など）はフェードアウト
       // 優先順：このPCのファイル → 司会が登録したリンク → 標準の合成音
       const one = (k) => { if (playCustom(k)) return; if (LINKS.has(k)) { LINKS.play(k).then((ok) => { if (!ok) (P[k] || (() => {}))(); }); return; } (P[k] || (() => {}))(); };
@@ -4433,7 +4502,7 @@ const SFX = (() => {
 })();
 // 差し替えできる場面
 const SFX_SLOTS = [
-  ["title", "オープニング（オープニング画面を出したとき）"], ["roll", "総合順位の発表（下からスクロール）"], ["cut", "予選落ちの発表"], ["think", "回答中のBGM（スタート〜締め切り）"],
+  ["title", "オープニング（オープニング画面を出したとき）"], ["roll", "総合順位の発表（下からスクロール）"], ["cut", "予選落ちの発表"], ["think", "回答中のBGM（スタート〜締め切り）"], ["think15", "回答中のBGM：15秒の問題用（空欄なら上の曲）"], ["think20", "回答中のBGM：20秒の問題用（空欄なら上の曲）"], ["bgm", "待ち時間のBGM（参加受付・ルール説明・解答紹介でくり返し。受付中は普通、それ以外は小さめ）"],
   ["period", "ピリオド開始"], ["open", "出題"], ["countdown", "残り5秒のカウント（5秒の音声を1つ）"], ["close", "締め切り"], ["bell", "最終問題の鐘"],
   ["drum", "回答分布（ドラムロール）"], ["correct", "正解発表"], ["wrong", "不正解・該当者なし"], ["seat", "着席"],
   ["drumReveal", "最速正解者の発表"], ["chime", "正解者一覧"], ["tame", "表彰「○位は…」"], ["fanfare", "1位・チャンピオン"],
@@ -4471,14 +4540,25 @@ function countWatcher() {
   };
 }
 // 状態に含まれる効果音番号が変わったときだけ鳴らす
+// 待ち時間BGMの音量（0＝止める）：参加受付は普通、ルール説明・解答紹介は小さめ
+function bgmLevel(S) {
+  const v = S.view || "q", st = S.stage || S.phase;
+  if (v === "title" || v === "att") return 1;
+  if (v === "rules") return 0.35;
+  if (v !== "q") return 0;
+  if (S.phase === "idle" || !S.rid) return S.stage === "period" ? 0 : 1;
+  if (["correct", "review", "list"].includes(st)) return 0.35;
+  return 0;
+}
 function sfxWatcher() {
   let last = null, lastLinks = "";
   return (S) => {
     if (S.snd) SFX.set(S.snd.vol, S.snd.on);
     const lk = JSON.stringify(S.links || {}); if (lk !== lastLinks) { lastLinks = lk; LINKS.set(S.links || {}); }
+    try { if (SFX.unlocked) LINKS.bgm(bgmLevel(S)); } catch (e) {}
     const x = S.sfx; if (!x) return;
     if (last === null) { last = x.seq; return; }   // 開いた直後は過去の音を鳴らさない
-    if (x.seq !== last) { last = x.seq; SFX.play(x.name); }
+    if (x.seq !== last) { last = x.seq; SFX.play(x.name, x.name === "think" && S.phase === "open" && S.limit ? { endAt: Date.now() + S.limit * 1000, limit: S.limit } : undefined); }
   };
 }
 
@@ -4575,9 +4655,9 @@ function rvItems(S) {
 function reviewHTML(S) {
   const it = rvItems(S);
   const z = S.rvZoom != null ? it.find((x) => x.i === S.rvZoom) : null;
-  if (z) return `<div class="tv-rv zoom${z.hit ? " hit" : ""}"><div class="ph" style="background-image:url('${z.src}')"></div><div class="cap">${esc(z.lab)}${z.hit ? '<span class="ok">正解</span>' : ""}</div></div>`;
-  const n = it.length, cols = n <= 1 ? 1 : n <= 2 ? 2 : n <= 4 ? 2 : 3;
-  return `<div class="tv-rv g${cols}" style="--cols:${cols}">${it.map((x, k) => `<div class="card${x.hit ? " hit" : ""}" style="animation-delay:${0.08 * k}s"><div class="ph" style="background-image:url('${x.src}')"></div><div class="cap">${esc(x.lab)}${x.hit ? '<span class="ok">正解</span>' : ""}</div></div>`).join("")}</div>`;
+  if (z) return `<div class="tv-rv zoom${z.hit ? " hit" : ""}"><div class="pbg" style="background-image:url('${z.src}')"></div><div class="ph" style="background-image:url('${z.src}')"></div><div class="cap">${esc(z.lab)}${z.hit ? '<span class="ok">正解</span>' : ""}</div></div>`;
+  const n = it.length, cols = n <= 5 ? n : n <= 8 ? 4 : 5;
+  return `<div class="tv-rv g${cols}${n <= 5 ? " row1" : ""}" style="--cols:${cols}">${it.map((x, k) => `<div class="card${x.hit ? " hit" : ""}" style="animation-delay:${0.08 * k}s"><div class="pbg" style="background-image:url('${x.src}')"></div><div class="ph" style="background-image:url('${x.src}')"></div><div class="cap">${esc(x.lab)}${x.hit ? '<span class="ok">正解</span>' : ""}</div></div>`).join("")}</div>`;
 }
 // 感謝祭風：左に選択肢パネル（写真つき）、右に縦長の問題パネル
 function qaLayout(S, mode) {
@@ -5106,6 +5186,9 @@ function hostPage() {
   if (!H.linksV7) { H.links = H.links || {}; H.links.title = H.links.title || { url: "https://youtu.be/tJOL_ii0LbY" }; H.links.think = H.links.think || { url: "https://youtu.be/TI3liav5eSY" }; H.linksV7 = true; }
   if (!H.linksV8) { H.links = H.links || {}; H.links.roll = H.links.roll || { url: "https://youtu.be/ZYAgAINllA0" }; H.linksV8 = true; }
   if (!H.linksV9) { H.links = H.links || {}; H.links.cut = H.links.cut || { url: "https://youtu.be/D4IZxYG02u8" }; H.linksV9 = true; }
+  if (!H.linksV10) { H.links = H.links || {}; const th = H.links.think; if (!th || !th.url || /TI3liav5eSY/.test(th.url)) H.links.think = { url: "https://youtu.be/tYNXv76ZtUY" }; H.linksV10 = true; }
+  if (!H.linksV11) { H.links = H.links || {}; if (!H.links.think15 || !H.links.think15.url) H.links.think15 = { url: "https://youtu.be/d1LFCMMtGb8" }; if (!H.links.think20 || !H.links.think20.url) H.links.think20 = { url: "https://youtu.be/tYNXv76ZtUY" }; H.linksV11 = true; }
+  if (!H.linksV12) { H.links = H.links || {}; if (!H.links.bgm || !H.links.bgm.url) H.links.bgm = { url: "https://youtu.be/tJOL_ii0LbY" }; H.linksV12 = true; }
   let saveT = null;
   const save = () => { clearTimeout(saveT); saveT = setTimeout(() => store.set("hq-host", H), 150); };
   save();
@@ -5566,12 +5649,13 @@ function hostPage() {
   $("#bankNext").onclick = () => loadBank(H.bankIdx || 0);
   function renderBank() {
     $("#bankCount").textContent = H.bank.length ? `${H.bank.length}問（次は ${Math.min((H.bankIdx || 0) + 1, H.bank.length + 1)}問目）` : "未登録";
-    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td>${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td style="white-space:nowrap">${b.predict ? `予想${b.pts || 1}点` : b.mode === "choice" ? `<label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label><label class="bchk rv${b.revive ? " on" : ""}"><input type="checkbox" data-brev="${i}" ${b.revive ? "checked" : ""}>🔥復活</label>` : ""}</td><td style="white-space:nowrap"><button class="mini mv" data-mv="${i}:-1" ${i ? "" : "disabled"} title="上へ">▲</button><button class="mini mv" data-mv="${i}:1" ${i < H.bank.length - 1 ? "" : "disabled"} title="下へ">▼</button> <button class="mini" data-bedit="${i}">✏️編集</button> <button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button> <button class="mini" data-bdel="${i}" title="この問題を消す">🗑</button></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
+    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td><select class="blim" data-blim="${i}" title="回答時間">${[5, 10, 15, 20, 30, 60].map((s) => `<option value="${s}"${+b.limit === s ? " selected" : ""}>${s}秒</option>`).join("")}</select> ${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td style="white-space:nowrap">${b.predict ? `予想${b.pts || 1}点` : b.mode === "choice" ? `<label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label><label class="bchk rv${b.revive ? " on" : ""}"><input type="checkbox" data-brev="${i}" ${b.revive ? "checked" : ""}>🔥復活</label>` : ""}</td><td style="white-space:nowrap"><button class="mini mv" data-mv="${i}:-1" ${i ? "" : "disabled"} title="上へ">▲</button><button class="mini mv" data-mv="${i}:1" ${i < H.bank.length - 1 ? "" : "disabled"} title="下へ">▼</button> <button class="mini" data-bedit="${i}">✏️編集</button> <button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button> <button class="mini" data-bdel="${i}" title="この問題を消す">🗑</button></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
     $("#bankList").querySelectorAll("[data-load]").forEach((x) => (x.onclick = () => loadBank(+x.dataset.load)));
     $("#bankList").querySelectorAll("[data-blast]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.blast]; if (!b) return; b.last = x.checked; save(); render(); }));
     $("#bankList").querySelectorAll("[data-brev]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.brev]; if (!b) return; b.revive = x.checked; save(); render(); }));
     $("#bankList").querySelectorAll("[data-bedit]").forEach((x) => (x.onclick = () => bankEditor(+x.dataset.bedit)));
     $("#bankList").querySelectorAll("[data-bdel]").forEach((x) => (x.onclick = () => { const i = +x.dataset.bdel, b = H.bank[i]; if (!b || !confirm(`第${i + 1}問「${b.q.slice(0, 30)}」を消しますか？`)) return; H.bank.splice(i, 1); if ((H.bankIdx || 0) > i) H.bankIdx--; save(); render(); toast("問題を消しました"); }));
+    $("#bankList").querySelectorAll("[data-blim]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.blim]; if (!b) return; b.limit = +x.value; save(); render(); toast(`第${+x.dataset.blim + 1}問を ${b.limit}秒にしました`); }));
     const bankMove = (i, j) => { if (i === j || i < 0 || j < 0 || i >= H.bank.length || j >= H.bank.length) return; const [it] = H.bank.splice(i, 1); H.bank.splice(j, 0, it); save(); render(); };
     $("#bankList").querySelectorAll("[data-mv]").forEach((x) => (x.onclick = () => { const [i, d] = x.dataset.mv.split(":").map(Number); bankMove(i, i + d); }));
     $("#bankList").querySelectorAll("tr").forEach((tr, i) => {
@@ -6501,7 +6585,7 @@ function hostPage() {
   $("#camDev").onchange = () => camUseLocal($("#camDev").value);
   // ---- 別の司会PCへ引き継ぎ ----
   {
-    const SETUP = ["roster", "rstore", "rkana", "bank", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "snd", "pub", "exact", "game", "gameSets"];
+    const SETUP = ["roster", "rstore", "rkana", "bank", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "linksV10", "linksV11", "linksV12", "snd", "pub", "exact", "game", "gameSets"];
     const PROG = ["points", "tsum", "scored", "ever", "period", "champs", "handed", "tie", "bankIdx", "pairs", "lotUsed"];
     const b64e = (u8) => { let x = ""; for (let i = 0; i < u8.length; i += 0x8000) x += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(x); };
     const b64d = (x) => Uint8Array.from(atob(x), (c) => c.charCodeAt(0));
