@@ -1307,6 +1307,13 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
   #hostV7 .hpanel[data-hp="live"] .hlive{align-items:stretch}
   #hostV7 .hpanel[data-hp="live"] .colA>.monCol{position:sticky;top:150px;z-index:5}
 }
+@media (min-width:900px){
+  #hostV7 .hgrid2.withMon{grid-template-columns:minmax(0,1.3fr) minmax(380px,1fr);align-items:stretch}
+  #hostV7 .hgrid2.withMon>.monSlot{grid-column:1;grid-row:1 / span 2;min-width:0}
+  #hostV7 .hgrid2.withMon>.colA{grid-column:2;grid-row:1}
+  #hostV7 .hgrid2.withMon>.colB{grid-column:2;grid-row:2}
+  #hostV7 .hgrid2.withMon>.monSlot>.monCol{position:sticky;top:150px;z-index:5}
+}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5937,7 +5944,11 @@ function hostPage() {
     P("set", "colA").append(cRule, dat);
     P("set", "colB").append(cSnd);
   })();
-  const setTab = (k) => { H.tab = k; save(); { const mc = $(".monCol"); const dst = document.querySelector(`#hostV7 .hpanel[data-hp="${k === "game" ? "game" : "live"}"] .colA`); if (mc && dst && mc.parentNode !== dst) dst.prepend(mc); } document.querySelectorAll("#hTabs2 [data-ht]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.ht === k))); document.querySelectorAll("#hostV7 .hpanel").forEach((p) => p.classList.toggle("on", p.dataset.hp === k)); };
+  const setTab = (k) => { H.tab = k; save(); { const mc = $(".monCol"); let dst;
+      if (k === "game" || k === "live") dst = document.querySelector(`#hostV7 .hpanel[data-hp="${k}"] .colA`);
+      else if (window.innerWidth >= 900) { const gr = document.querySelector(`#hostV7 .hpanel[data-hp="${k}"] .hgrid2`); if (gr) { let sl = gr.querySelector(":scope > .monSlot"); if (!sl) { sl = document.createElement("div"); sl.className = "monSlot"; gr.prepend(sl); gr.classList.add("withMon"); } dst = sl; } }
+      if (!dst) dst = document.querySelector('#hostV7 .hpanel[data-hp="live"] .colA');
+      if (mc && dst && mc.parentNode !== dst) dst.prepend(mc); } document.querySelectorAll("#hTabs2 [data-ht]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.ht === k))); document.querySelectorAll("#hostV7 .hpanel").forEach((p) => p.classList.toggle("on", p.dataset.hp === k)); };
   document.querySelectorAll("#hTabs2 [data-ht]").forEach((b) => (b.onclick = () => setTab(b.dataset.ht)));
   setTab(H.tab || (Object.keys(H.roster).length && H.bank.length ? "live" : "prep"));
   $("#bToLive").onclick = () => setTab("live");
