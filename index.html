@@ -1222,6 +1222,8 @@ body.v-player.offline #offBar{display:block}
 @keyframes boCdLast{0%{opacity:0;transform:scale(1.6);filter:blur(16px)}13%{opacity:1;transform:scale(1);filter:blur(0)}55%{opacity:1;transform:scale(.95) rotate(0)}70%{opacity:1;transform:scale(.6) rotate(-8deg);filter:blur(0)}100%{opacity:0;transform:scale(9) rotate(25deg);filter:blur(30px)}}
 .bo-zip{left:-20%;top:50%;width:140%;height:30px;margin-top:-15px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff 50%,rgba(255,255,255,0));box-shadow:0 0 60px 30px rgba(220,140,255,.8);transform:rotate(-30deg) scaleX(0);animation:boZip .7s cubic-bezier(.7,0,.3,1) both}
 @keyframes boZip{0%{opacity:0;transform:rotate(-30deg) scaleX(0)}40%{opacity:1;transform:rotate(-30deg) scaleX(1)}100%{opacity:0;transform:rotate(-30deg) scaleX(1.4) translateY(-30px)}}
+.noanim .tv .tv-cu .cu-win{opacity:0!important}.noanim .tv .tv-cu.win .cu-win{opacity:1!important;animation:none}
+.noanim .tv .cu-fx{opacity:0!important}.noanim .tv .cu-fx.on{opacity:1!important}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -1576,6 +1578,9 @@ body.v-recv>*:not(#vRecv):not(#toast):not(.toast){display:none!important}
 .bnbank{color:#8a5a00}.bnins{margin-top:8px;align-items:center}
 #bankList tr.bnrow td:nth-child(3){display:none!important}#bankList tr.bnrow td:nth-child(4) button:not([data-mv]):not([data-bdel]){display:none!important}
 #bankList tr.bnrow [data-photo]{display:none!important}
+.bnsu{grid-template-columns:1fr auto!important}
+.bnsu .bntx,#bnFind{background:#fff!important;color:#0B1748!important;-webkit-text-fill-color:#0B1748!important;caret-color:#0B1748;border:2px solid #E8B740!important;font-size:18px!important}
+.bnsu .bntx::placeholder,#bnFind::placeholder{color:#8a90a8!important;-webkit-text-fill-color:#8a90a8!important}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5045,7 +5050,8 @@ function monHTML(S, list, joinURL) {
       const c = S.champ, CU = c && Array.isArray(c.cands) ? c.cands.slice(0, 10) : []; let cuFx = "";
       if (c && CU.length) {
         const last = Math.max(...CU.map((x) => +x.ms || 0)), sp = Math.max(1, last / 6000), at = Math.abs(Date.now() - (c.at || 0)) < 60000 ? c.at : Date.now(), endS = last / sp / 1000, el = 0;
-        cuFx = `<div class="cu-fx">${confetti(130)}</div>`;
+        const CF = (window.__CUF = window.__CUF || {}); if (!CF[at]) CF[at] = confetti(130);
+        cuFx = `<div class="cu-fx">${CF[at]}</div>`;
         body = `<div class="tv-cu"><div class="cuh"><span class="k">第${c.period}ピリオド　チャンピオンは…</span><span class="cut js-cu" data-t0="${at}" data-sp="${sp}" data-end="${last}">0.00</span></div><ol style="--n:${CU.length}">${CU.map((x, i) => `<li class="${i === 0 ? "top" : ""}" data-ms="${+x.ms || 0}"><div class="rw"><span class="no">${i === 0 ? "👑" : i + 1}</span><span class="tn">${esc(x.n)}</span><span class="tm">${((+x.ms || 0) / 1000).toFixed(2)}</span></div></li>`).join("")}</ol>
           <div class="cu-win"><div class="crown">👑</div><div class="kick">第${c.period}ピリオド チャンピオン</div><div class="winner">${esc(c.n)}</div><div class="time">${sec(c.ms)}</div></div></div>`;
         tel = telopHTML(per, `第${c.period}ピリオド　最速の正解者がチャンピオン！`);
@@ -5321,7 +5327,7 @@ function bonusMonHTML(S) {
   if (b.ph === "intro" && b.own) return { key: "bn-own-" + b.at, html: bonusOwnHTML(b) };
   if (b.ph === "intro") return { key: "bn-intro-" + b.at, html: `<div class="bn-vid js-ytv" data-yt="${esc(b.yt || "")}" data-at="${b.at}"></div>`, chrome: false };
   if (b.ph === "talk" && nm) body = `<div class="bn-wrap"><div class="bn-k">🎁 ボーナスタイム ${no}「名前当て」</div><div class="bn-t">スタッフの<b>フルネーム</b>を覚えよう！</div><div class="bn-time js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">このあとスマホで答えます（1分）<br>当たった数 × <b>0.1点</b> をクイズの得点に加点！</div></div>`;
-  else if (b.ph === "input" && nm) body = `<div class="bn-wrap"><div class="bn-k">📱 スマホで答えて！</div><div class="bn-t">この人の苗字は？</div><div class="bn-time big js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">名前をタップ → 苗字を選ぶ or 入力（1人1回）　スタッフ ${(b.qs || []).length}人</div></div>`;
+  else if (b.ph === "input" && nm) body = `<div class="bn-wrap"><div class="bn-k">📱 スマホで答えて！</div><div class="bn-t">この人の苗字は？</div><div class="bn-time big js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">名前をタップ → 苗字を入力（1人1回）　スタッフ ${(b.qs || []).length}人</div></div>`;
   else if (b.ph === "talk") body = `<div class="bn-wrap"><div class="bn-k">🎁 ボーナスタイム ${no}「趣味当て」</div><div class="bn-t">スタッフの<b>名前</b>と<b>趣味</b>を聞き出そう！</div><div class="bn-time js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">歓談のあと、スマホで「この人の趣味は？」に答えます（1分）<br>当たった数 × <b>0.1点</b> をクイズの得点に加点！</div></div>`;
   else if (b.ph === "input") body = `<div class="bn-wrap"><div class="bn-k">📱 スマホで答えて！</div><div class="bn-t">この人の趣味は？</div><div class="bn-time big js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">名前をタップ → 趣味を選ぶ（1人1回）　スタッフ ${(b.people || []).length}人</div></div>`;
   else if (b.ph === "staff") {
@@ -5408,7 +5414,8 @@ function ytvSync(el, S) {
 
 // オリジナル演出（約17秒）：10→1 カウントダウン → ちゅいーん → 「BONUS TIME」ドン！ → ルール
 function bonusOwnHTML(b) {
-  const el = Math.max(0, (Date.now() - b.at) / 1000), d = (t) => `${(t - el).toFixed(2)}s`, T = 10.6;
+  const B0 = (window.__BO0 = window.__BO0 || {}); if (!B0[b.at]) B0[b.at] = Date.now(); // 表示がちらつかないよう、最初に見た時刻で固定
+  const el = Math.max(0, (B0[b.at] - b.at) / 1000), d = (t) => `${(t - el).toFixed(2)}s`, T = 10.6;
   const conf = Array.from({ length: 70 }, (_, i) => `<i style="left:${(i * 37) % 100}%;background:${["#FFD55A", "#FF5A5A", "#5AC8FF", "#7CFF8A", "#fff"][i % 5]};animation-delay:${d(T + 0.1 + (i % 10) * 0.08)};--dx:${((i * 53) % 200) - 100}px;--rt:${(i * 47) % 720}deg"></i>`).join("");
   const nums = Array.from({ length: 10 }, (_, i) => `<div class="bo-cd${i === 9 ? " last" : ""}${i >= 7 ? " hot" : ""}" style="animation-delay:${d(i)}"><span class="fl" style="animation-delay:${d(i)}"></span><b>${10 - i}</b></div>`).join("");
   return `<div class="bo-wrap">
@@ -6336,7 +6343,7 @@ function hostPage() {
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-18</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-22</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -7788,18 +7795,17 @@ function playerPage(room, bi) {
           const me = normName(P.name || "").slice(0, 60), qs = (b.qs || []).filter((x) => x.k !== me), sur = b.sur || [];
           if (!el.querySelector(".bnin") || el.dataset.bk !== key) {
             el.dataset.bk = key;
-            el.innerHTML = `<div class="status bnp bnin"><div class="bnhd"><b>🎁 この人の苗字は？</b><span>残り <b class="js-bt" data-bend="${bonusEnd(b)}"></b></span></div><div class="note">名前をタップ → 苗字を選ぶ or 入力して「決定」（1人1回・答えたのは <b id="bnCnt">0</b>人）</div><input id="bnFind" placeholder="下の名前・店舗で探す" autocomplete="off"><div id="bnList"></div></div>`;
+            el.innerHTML = `<div class="status bnp bnin"><div class="bnhd"><b>🎁 この人の苗字は？</b><span>残り <b class="js-bt" data-bend="${bonusEnd(b)}"></b></span></div><div class="note">名前をタップ → 苗字を入力して「決定」（1人1回・答えたのは <b id="bnCnt">0</b>人）</div><input id="bnFind" placeholder="下の名前・店舗で探す" autocomplete="off"><div id="bnList"></div></div>`;
             const opts = `<option value="">▼ 苗字をえらぶ（スクロール）</option>` + sur.map((x) => `<option value="${esc(x.n)}">${esc(x.n)}${x.r && x.r !== x.n ? "（" + esc(x.r) + "）" : ""}</option>`).join("");
             const draw = () => {
               const q = foldName(el.querySelector("#bnFind").value || "");
               el.querySelector("#bnList").innerHTML = qs.filter((x) => !q || foldName(x.g + x.s).includes(q)).map((x) => bAns[x.k] ? `<div class="bnr done"><span>${esc(bAns[x.k] === "?" ? "？？" : bAns[x.k])} ${esc(x.g)}<small>${esc(x.s)}</small></span><b>✓ 回答済み</b></div>`
-                : `<div class="bnr" data-bk="${esc(x.k)}"><span><em class="bnq">？？</em> ${esc(x.g)}<small>${esc(x.s)}</small></span><div class="bno bnsu hidden"><select class="bnsel">${opts}</select><input class="bntx" placeholder="または苗字を入力" autocomplete="off"><button class="btn go bnok">決定</button></div></div>`).join("") || '<p class="note">見つかりません</p>';
+                : `<div class="bnr" data-bk="${esc(x.k)}"><span><em class="bnq">？？</em> ${esc(x.g)}<small>${esc(x.s)}</small></span><div class="bno bnsu hidden"><input class="bntx" placeholder="苗字を入力" autocomplete="off" autocapitalize="off" enterkeyhint="done"><button class="btn go bnok">決定</button></div></div>`).join("") || '<p class="note">見つかりません</p>';
               el.querySelectorAll(".bnr[data-bk]").forEach((r) => {
-                const box = r.querySelector(".bno"), sel = r.querySelector(".bnsel"), tx = r.querySelector(".bntx");
-                r.querySelector("span").onclick = () => { el.querySelectorAll(".bno").forEach((x) => x !== box && x.classList.add("hidden")); box.classList.toggle("hidden"); };
-                sel.onchange = () => { if (sel.value) tx.value = ""; };
-                tx.oninput = () => { if (tx.value.trim()) sel.value = ""; };
-                r.querySelector(".bnok").onclick = () => { const c = (tx.value.trim() || sel.value).replace(/\s+/g, "").slice(0, 20); if (!c) return toast("苗字を選ぶか入力してください"); if (bAns[r.dataset.bk]) return; bAns[r.dataset.bk] = c; cli.send("bonus", { tok: P.tok, cid: P.cid, k: r.dataset.bk, c }); el.querySelector("#bnCnt").textContent = Object.keys(bAns).length; draw(); };
+                const box = r.querySelector(".bno"), tx = r.querySelector(".bntx");
+                r.querySelector("span").onclick = () => { el.querySelectorAll(".bno").forEach((x) => x !== box && x.classList.add("hidden")); box.classList.toggle("hidden"); if (!box.classList.contains("hidden")) setTimeout(() => tx.focus(), 30); };
+                tx.onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); r.querySelector(".bnok").click(); } };
+                r.querySelector(".bnok").onclick = () => { const c = tx.value.trim().replace(/\s+/g, "").slice(0, 20); if (!c) return toast("苗字を入力してください"); if (bAns[r.dataset.bk]) return; bAns[r.dataset.bk] = c; cli.send("bonus", { tok: P.tok, cid: P.cid, k: r.dataset.bk, c }); el.querySelector("#bnCnt").textContent = Object.keys(bAns).length; draw(); };
               });
             };
             el.querySelector("#bnFind").oninput = draw; draw();
@@ -7864,6 +7870,8 @@ function playerPage(room, bi) {
         return `<button class="${c}" data-c="${i}" ${locked ? "disabled" : ""}>${cnts ? `<span class="pcnt" style="--w:${Math.round(((cnts[i] || 0) / cMax) * 100)}%"><b>${cnts[i] || 0}</b>人</span>` : ""}<span class="L">${L[i]}<span class="kbd">${L[i]} / ${i + 1}</span></span>${showC && S.cans && S.cans[i] ? `<span class="cnm">${esc(S.cans[i])}</span>` : ""}${S.phase !== "read" && cImg(S, i) ? `<span class="ph"${frAttr(S, i)} style="background-image:url('${cImg(S, i)}')"></span>` : ""}<span class="T">${S.phase === "read" ? "？" : esc(S.choices[i])}</span></button>`;
       }).join("") + `</div>`;
     } else h += `<button class="buzz" data-c="-1" ${locked ? "disabled" : ""}>押す！<br><span class="kbd" style="border-color:#fff">スペース</span></button>`;
+    const cutReady = (() => { if (st !== "cutshow") return false; const W = (window.__cutSeen = window.__cutSeen || {}), k = S.rid + ":cut"; if (!W[k]) W[k] = Date.now(); const n = Array.isArray(S.cutList) ? S.cutList.length : 0, wait = n >= 2 ? (0.4 + (n - 1) * Math.min(0.45, 3.2 / (n - 1)) + 1.0) * 1000 : 1500, left = wait - (Date.now() - W[k]); if (left > 0) { clearTimeout(window.__cutT); window.__cutT = setTimeout(() => render(), left + 50); return false; } return true; })();
+    const fastReady = (() => { if (st !== "fast") return true; const W = (window.__cutSeen = window.__cutSeen || {}), k = S.rid + ":fast"; if (!W[k]) W[k] = Date.now(); const left = 2600 - (Date.now() - W[k]); if (left > 0) { clearTimeout(window.__fastT); window.__fastT = setTimeout(() => render(), left + 50); return false; } return true; })();
     const cTxt = corrSet(S).length ? `<div>正解は ${corrText(S)}</div>` : "";
     let res = "";
     if (S.phase === "read") res = `<div class="h">問題をよく読んで…</div><div class="s">「スタート」の合図で選択肢が出ます</div>`;
@@ -7871,12 +7879,12 @@ function playerPage(room, bi) {
     else if (mine) {
       if (showC && S.mode === "choice") {
         const rk = st === "list" || st === "champ" ? (S.winners || []).findIndex((w) => w.n === P.name) : -1;
-        const cutMe = S.cut === P.name && st === "cutshow";
+        const cutMe = S.cut === P.name && cutReady;
         const corr = pl.corr || (rk >= 0 ? { p: rk + 1, of: (S.winners || []).length } : null);
         res = isHit(S, mine.c)
-          ? `<div class="h okc">${S.predict ? "的中！" : "正解！"}</div>${S.predict ? `<div>+${S.pts}点</div>` : ""}<div>${sec(mine.ms)}</div>${st === "list" || st === "champ" ? placeBox(corr, S.predict ? "的中者" : "正解者") : ""}${placeBox(pl.all, "回答した")}${cutMe ? '<div class="ngc"><b>ただし一番遅かったため「予選落ち」で着席です</b></div>' : ""}`
+          ? `<div class="h okc">${S.predict ? "的中！" : "正解！"}</div>${S.predict ? `<div>+${S.pts}点</div>` : ""}<div>${sec(mine.ms)}</div>${st === "list" || st === "champ" ? placeBox(corr, S.predict ? "的中者" : "正解者") : ""}${S.cut && !S.predict && (["dist", "correct", "review"].includes(st) || (st === "cutshow" && !cutReady)) || !fastReady ? "" : placeBox(pl.all, "回答した")}${cutMe ? '<div class="ngc"><b>ただし一番遅かったため「予選落ち」で着席です</b></div>' : ""}`
           : `<div class="h ngc">${S.predict ? "はずれ…" : "残念…"}</div>${cTxt}${S.predict ? "" : placeBox(pl.all, "回答した")}`;
-      } else if (S.mode === "buzzer" && (st === "list" || st === "fast")) {
+      } else if (S.mode === "buzzer" && (st === "list" || (st === "fast" && fastReady))) {
         const rk = (S.order || []).findIndex((w) => w.n === P.name);
         const push = pl.push || (st === "list" && rk >= 0 ? { p: rk + 1, of: (S.order || []).length } : null);
         res = `<div class="h">${push && push.p === 1 ? "🥇 一番乗り！" : "押しました"}</div><div>${sec(mine.ms)}</div>${placeBox(push, "押した")}`;
@@ -7895,7 +7903,8 @@ function playerPage(room, bi) {
         if (z) h += `<div class="rvnow">📺 いまモニターに映っている写真</div>` + card(z, true);
         h += `<div class="rvps">${it.filter((x) => !z || x.i !== z.i).map((x) => card(x, false)).join("")}</div>`;
       } else if (st === "dist" && cnts) h += `<div class="pinfo">📊 回答分布　<b>${S.total || 0}</b>人が回答</div>`;
-      else if (st === "cutshow" && S.cut) h += `<div class="pinfo cut">予選落ち…<br><b>${esc(S.cut)}</b>${S.cut === P.name ? "（あなた）" : ""}</div>`;
+      else if (st === "cutshow" && S.cut) h += cutReady ? `<div class="pinfo cut">予選落ち…<br><b>${esc(S.cut)}</b>${S.cut === P.name ? "（あなた）" : ""}</div>` : `<div class="pinfo">予選落ちは…？　モニターに注目！</div>`;
+      else if (st === "fast" && !fastReady) h += `<div class="pinfo">⚡ 最速正解は…？　🥁 ドゥルルル…</div>`;
       else if (st === "fast") h += W.length ? `<div class="pinfo fast">⚡ 最速正解<br><b>${esc(W[0].n)}</b>${W[0].n === P.name ? "（あなた！）" : ""}<span>${sec(W[0].ms)}</span></div>` : `<div class="pinfo">正解者はいませんでした</div>`;
       else if ((st === "list" || st === "champ") && W.length) {
         const me = W.findIndex((w) => w.n === P.name);
