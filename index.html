@@ -1563,7 +1563,7 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
           <div class="opts">
             <label class="chk2"><input type="checkbox" id="sndOn"> 音を鳴らす（すべてのモニター）</label>
             <label>音量 <input type="range" id="sndVol" min="0" max="100" value="80"></label>
-            <label>回答中BGMのタイミング <button class="mini" id="sndAdjM">−</button> <b id="sndAdjV">+1.0</b>秒 <button class="mini" id="sndAdjP">＋</button><small class="note">（＋で曲を早める。カウントより曲が遅れるときは＋）</small></label>
+            <label>回答中BGMのタイミング <button class="mini" id="sndAdjM">−</button> <b id="sndAdjV">-1.0</b>秒 <button class="mini" id="sndAdjP">＋</button><small class="note">（曲が締め切りより先に終わる→「−」／曲が締め切りより後まで続く→「＋」）</small></label>
             <label>試し聞き <select id="sndPick"><option value="period">ピリオド開始</option><option value="open">出題（デデン）</option><option value="countdown">残り5秒のカウント</option><option value="close">締め切り</option><option value="drum">ドラムロール→ジャン</option><option value="drumReveal">最速正解者の発表</option><option value="chime">正解者一覧（拍手）</option><option value="tame">溜め（○位は…）</option><option value="correct">正解（ピンポン）</option><option value="wrong">不正解（ブー）</option><option value="bell">鐘（カーン）</option><option value="seat">着席</option><option value="fanfare">ファンファーレ</option></select>
               <button class="mini" id="sndTest">▶</button></label>
           </div>
@@ -4211,7 +4211,7 @@ const LINKS = (() => {
   async function play(slot, opt) {
     const L = links[slot]; if (!L || !on) return false;
     { const pp = parse(L.url); if (pp && bg && keyOf(pp) === bg.key) return true; } // 待ち時間BGMと同じ曲なら、そのまま流し続ける
-    if (opt && opt.endAt) return playSync(L, opt.endAt);
+    if (opt && opt.endAt) return playSync(L, opt.endAt, opt.stopAt);
     const p = parse(L.url); if (!p) return false;
     stop(false);
     const P = await prepare(p); if (P.err) return false;
@@ -4227,7 +4227,7 @@ const LINKS = (() => {
     return true;
   }
   // 曲（指定区間）の終わりが締め切りにそろうように、途中から再生する（短い曲は少し待ってから）
-  async function playSync(L, endAt) {
+  async function playSync(L, endAt, stopAt) {
     const p = parse(L.url); if (!p) return false;
     stop(false);
     const P = await prepare(p); if (P.err) return false;
@@ -4242,11 +4242,12 @@ const LINKS = (() => {
       if (active !== P) return;
       try { seek(Math.max(start, want())); if (P.yt) P.yt.playVideo(); else if (P.audio) await P.audio.play(); else if (P.nico) nicoCmd(P, "play"); } catch (e) { halt(P); return; }
       // 読み込みの遅れを1回だけ補正
-      setTimeout(() => { if (active !== P) return; try { const cur = P.yt ? P.yt.getCurrentTime() : P.audio ? P.audio.currentTime : null; if (cur != null && Math.abs(cur - want()) > 0.35 && want() >= start) seek(want()); } catch (e) {} }, 1500);
+      const fix = () => { if (active !== P) return; try { const cur = P.yt ? P.yt.getCurrentTime() : P.audio ? P.audio.currentTime : null; if (cur != null && Math.abs(cur - want()) > 0.35 && want() >= start) { seek(want()); if (P.yt) P.yt.playVideo(); } } catch (e) {} };
+      setTimeout(fix, 1200); setTimeout(fix, 3000);
     };
     const wait = start - want(); // 曲が回答時間より短いときは、その分だけ遅らせて始める
     if (wait > 0.05) setTimeout(go, wait * 1000); else await go();
-    clearTimeout(stopT); stopT = setTimeout(() => { if (active === P) stop(true); }, Math.max(0, endAt - Date.now()) + 600);
+    clearTimeout(stopT); stopT = setTimeout(() => { if (active === P) stop(true); }, Math.max(0, (stopAt || endAt) - Date.now()) + 600);
     return true;
   }
   // ---- 待ち時間のBGM（ほかの効果音とは別に、小さめでくり返し流す） ----
@@ -4592,7 +4593,7 @@ function sfxWatcher() {
     try { if (SFX.unlocked) LINKS.bgm(bgmLevel(S)); } catch (e) {}
     const x = S.sfx; if (!x) return;
     if (last === null) { last = x.seq; return; }   // 開いた直後は過去の音を鳴らさない
-    if (x.seq !== last) { last = x.seq; SFX.play(x.name, x.name === "think" && S.phase === "open" && S.limit ? { endAt: Date.now() + S.limit * 1000 - ((S.snd && S.snd.adj != null ? +S.snd.adj : 1) || 0) * 1000, limit: S.limit } : undefined); }
+    if (x.seq !== last) { last = x.seq; SFX.play(x.name, x.name === "think" && S.phase === "open" && S.limit ? { endAt: Date.now() + S.limit * 1000 - ((S.snd && S.snd.adj != null ? +S.snd.adj : -1) || 0) * 1000, stopAt: Date.now() + S.limit * 1000, limit: S.limit } : undefined); }
   };
 }
 
@@ -5089,6 +5090,7 @@ function nextLabel(S) {
   if (S.view === "rules") { const n = S.ruleN || 1, i = (S.ruleIdx || 0) + 1; return i < n ? `次の説明へ ▶（${i}/${n}）` : `ルール説明を終わる ▶（${i}/${n}）`; }
   if (S.view && S.view !== "q") return "問題の表示に戻る ▶";
   const st = S.stage || S.phase;
+  { const nb = window.__nbInfo; if ((S.phase === "idle" || !S.rid) && nb && nb.has) return `次の問題（${nb.i}/${nb.n}問目）を出す ▶`; }
   if (S.phase === "idle" || !S.rid) return "（問題を出題してください）";
   if (S.phase === "read") return "スタート！（選択肢を出す） ▶";
   if (S.phase === "open") return "締め切る ▶";
@@ -5098,8 +5100,8 @@ function nextLabel(S) {
   if (st === "correct" || st === "review") return S.predict ? "的中者一覧 ▶" : S.cut ? "予選落ちを発表 ▶" : "最速正解者を発表 ▶";
   if (st === "cutshow") return "最速正解者を発表 ▶";
   if (st === "fast") return S.mode === "choice" ? "正解者一覧 ▶" : "2位以下を出す ▶";
-  if (st === "list") return S.last && S.rule === "kanshasai" && S.period && S.period.active ? "ピリオドチャンピオン発表 ▶" : "次の問題へ ▶";
-  if (st === "champ") return "次の問題へ ▶";
+  if (st === "list") return S.last && S.rule === "kanshasai" && S.period && S.period.active ? "ピリオドチャンピオン発表 ▶" : (window.__nbInfo && window.__nbInfo.has ? `次の問題（${window.__nbInfo.i}/${window.__nbInfo.n}問目）へ ▶` : "次の問題へ ▶");
+  if (st === "champ") { const nb = window.__nbInfo; return nb && nb.has ? `次の問題（${nb.i}/${nb.n}問目）へ ▶` : "次の問題へ ▶"; }
   return "次へ ▶";
 }
 function applyFormMode() {
@@ -5165,7 +5167,7 @@ function renderControls(S, answered) {
   $("#bOpen").disabled = open || (S.phase !== "idle" && S.stage !== "list" && S.stage !== "champ" && !!S.rid) || S.view === "cere";
   const lab = nextLabel(S);
   $("#bAdvance").textContent = lab;
-  $("#bAdvance").disabled = (S.view === "cere" && (S.cere || {}).step === "end") || ((S.phase === "idle" || !S.rid) && (!S.view || S.view === "q"));
+  $("#bAdvance").disabled = (S.view === "cere" && (S.cere || {}).step === "end") || ((S.phase === "idle" || !S.rid) && (!S.view || S.view === "q") && !(window.__nbInfo && window.__nbInfo.has));
   const needC = S.mode === "choice" && S.rid && (S.phase === "read" || S.phase === "open" || st === "closed" || st === "dist");
   $("#pickCorrect").classList.toggle("hidden", !needC);
   document.querySelectorAll("#pickCorrect [data-c]").forEach((b) => { b.classList.toggle("on", pickedCorrect.includes(+b.dataset.c)); b.classList.toggle("hidden", +b.dataset.c >= nchOf(S)); });
@@ -5222,6 +5224,8 @@ function hostPage() {
   if (!H.linksV9) { H.links = H.links || {}; H.links.cut = H.links.cut || { url: "https://youtu.be/D4IZxYG02u8" }; H.linksV9 = true; }
   if (!H.linksV10) { H.links = H.links || {}; const th = H.links.think; if (!th || !th.url || /TI3liav5eSY/.test(th.url)) H.links.think = { url: "https://youtu.be/tYNXv76ZtUY" }; H.linksV10 = true; }
   if (!H.linksV11) { H.links = H.links || {}; if (!H.links.think15 || !H.links.think15.url) H.links.think15 = { url: "https://youtu.be/d1LFCMMtGb8" }; if (!H.links.think20 || !H.links.think20.url) H.links.think20 = { url: "https://youtu.be/tYNXv76ZtUY" }; H.linksV11 = true; }
+  if (!H.sndV2) { H.snd = H.snd || { vol: 0.8, on: true }; H.snd.adj = -1; H.sndV2 = true; }
+  if (!H.linksV13) { H.links = H.links || {}; [["think", "tYNXv76ZtUY", 20], ["think20", "tYNXv76ZtUY", 20], ["think15", "d1LFCMMtGb8", 15]].forEach(([k, id, d]) => { const L = H.links[k]; if (L && L.url && L.url.includes(id) && !(+L.dur > 0)) { L.dur = d; L.start = +L.start || 0; } }); H.linksV13 = true; }
   if (!H.linksV12) { H.links = H.links || {}; if (!H.links.bgm || !H.links.bgm.url) H.links.bgm = { url: "https://youtu.be/tJOL_ii0LbY" }; H.linksV12 = true; }
   let saveT = null;
   const save = () => { clearTimeout(saveT); saveT = setTimeout(() => store.set("hq-host", H), 150); };
@@ -5510,7 +5514,7 @@ function hostPage() {
       if (S.view === "cere") return cereNext();
       if (S.view === "rules") { const n = rulesList({ rule: H.rule, rulesOpt: { noCut: !!H.opt.noCut } }).length, i = S.ruleIdx || 0; return i < n - 1 ? setS({ ruleIdx: i + 1, ...sfx("chime") }) : setS({ view: "q" }); }
       if (S.view && S.view !== "q") return setS({ view: "q" });
-      if (!S.rid) return;
+      if (!S.rid) { if (S.phase === "idle" || !S.rid) window.__goNextBank && window.__goNextBank(); return; }
       if (isCList(a.correct, nchOf(S))) H.secret.correct = cleanC(a.correct, nchOf(S));
       const st = S.stage || S.phase, l = answersList();
       if (S.phase === "read") return act("start");
@@ -5533,7 +5537,7 @@ function hostPage() {
         H.period.active = false;
         return setS({ stage: "champ", champ: c ? { period: c.period, n: c.n, ms: c.ms } : null, ...sfx(c ? "champ" : "wrong") });
       }
-      if (st === "list" || st === "champ") return act("next");
+      if (st === "list" || st === "champ") { if (window.__goNextBank && window.__goNextBank()) return; return act("next"); }
     } else if (cmd === "next") {
       if (S.phase === "open") return;
       H.answers = {};
@@ -5610,7 +5614,7 @@ function hostPage() {
   // ---- 音 ----
   $("#sndUnlock").onclick = () => { if (SFX.unlock()) { SFX.play("chime"); render(); } };
   $("#sndVol").oninput = () => { H.snd.vol = +$("#sndVol").value / 100; SFX.set(H.snd.vol, H.snd.on); save(); pubState(); };
-  const adjSet = (d) => { H.snd.adj = Math.round(Math.max(-5, Math.min(5, (H.snd.adj ?? 1) + d)) * 10) / 10; save(); pubState(); render(); };
+  const adjSet = (d) => { H.snd.adj = Math.round(Math.max(-5, Math.min(5, (H.snd.adj ?? -1) + d)) * 10) / 10; save(); pubState(); render(); };
   $("#sndAdjM").onclick = () => adjSet(-0.5); $("#sndAdjP").onclick = () => adjSet(0.5);
   $("#sndOn").onchange = () => { H.snd.on = $("#sndOn").checked; SFX.set(H.snd.vol, H.snd.on); save(); pubState(); };
   $("#sndTest").onclick = () => { if (!SFX.unlocked) SFX.unlock(); SFX.preview($("#sndPick").value); };
@@ -6622,7 +6626,7 @@ function hostPage() {
   $("#camDev").onchange = () => camUseLocal($("#camDev").value);
   // ---- 別の司会PCへ引き継ぎ ----
   {
-    const SETUP = ["roster", "rstore", "rkana", "bank", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "linksV10", "linksV11", "linksV12", "snd", "pub", "exact", "game", "gameSets"];
+    const SETUP = ["roster", "rstore", "rkana", "bank", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "linksV10", "linksV11", "linksV12", "linksV13", "sndV2", "snd", "pub", "exact", "game", "gameSets"];
     const PROG = ["points", "tsum", "scored", "ever", "period", "champs", "handed", "tie", "bankIdx", "pairs", "lotUsed"];
     const b64e = (u8) => { let x = ""; for (let i = 0; i < u8.length; i += 0x8000) x += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(x); };
     const b64d = (x) => Uint8Array.from(atob(x), (c) => c.charCodeAt(0));
@@ -6756,6 +6760,8 @@ function hostPage() {
       if (other) $("#takeTxt").textContent = `（この端末のルーム ${H.room} ／ 参加者のいるルーム ${lobbyCur}）このままでは、ここで出題しても参加者には届きません。`; }
     // 次の問題
     const i = bankI(), b = H.bank[i];
+    window.__nbInfo = { has: !!b, i: i + 1, n: nB };
+    window.__goNextBank = () => { if (!H.bank[bankI()] || H.S.view === "cere") return false; $("#nqGo").click(); return true; };
     $("#nqNo").textContent = nB ? `${Math.min(i + 1, nB)} / ${nB}問目` : "未登録";
     $("#imgCount").textContent = `（このPCに保存済み：${Object.keys(window.__hostImgs || {}).length}枚）`;
     const th = (id) => (id && IMG[id] ? `<img src="${IMG[id]}" alt="">` : id ? '<i class="miss">写真なし</i>' : "");
@@ -6969,7 +6975,7 @@ function hostPage() {
     $("#oNoCut").checked = !!H.opt.noCutIfOne; $("#oCutOff").checked = !!H.opt.noCut; $("#oNoCut").disabled = !!H.opt.noCut; $("#oChamp").value = H.opt.champFrom; $("#oDup").value = H.opt.dup; $("#oVerify").checked = !!H.opt.verify; $("#oRead").checked = H.opt.readFirst !== false;
     $("#hLastRow").classList.toggle("hidden", !kan());
     $("#sndUnlock").textContent = SFX.unlocked ? "🔊 音は有効です（テスト再生）" : "🔊 音を有効にする";
-    $("#sndVol").value = Math.round(H.snd.vol * 100); $("#sndOn").checked = !!H.snd.on; { const a = H.snd.adj ?? 1; $("#sndAdjV").textContent = (a > 0 ? "+" : "") + a.toFixed(1); }
+    $("#sndVol").value = Math.round(H.snd.vol * 100); $("#sndOn").checked = !!H.snd.on; { const a = H.snd.adj ?? -1; $("#sndAdjV").textContent = (a > 0 ? "+" : "") + a.toFixed(1); }
     $("#champHist").innerHTML = H.champs.length ? H.champs.map((c) => `<li>第${c.period}ピリオド：<b>${esc(c.n)}</b>（${sec(c.ms)}）</li>`).join("") : '<li class="note">まだいません</li>';
     $("#secretInfo").textContent = S.rid && S.phase !== "idle" ? `この問題：${S.predict ? `予想問題（${S.pts}点）・` : ""}正解 ${(H.secret.correct || []).length ? H.secret.correct.map((c) => L[c]).join("・") : "未定"}${kan() && H.secret.last ? "・ピリオド最終問題（締め切りまで非公開）" : ""}` : "";
     renderRoster(); renderBank(); renderPrizes(); renderWinners();
