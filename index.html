@@ -1299,6 +1299,14 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
 .gfl input{width:15px;height:15px;margin:0}.gfl.cur{border-color:#E8B740;background:rgba(232,183,64,.2);font-weight:900}
 .gfin{border:2px dashed #E8B740;background:transparent;color:inherit;border-radius:10px;padding:4px 10px;font-weight:800;cursor:pointer}.gfin.on{background:#E8B740;color:#1A1400;border-style:solid}
 .gwin{font-style:normal;font-size:11px;color:#B7791F;font-weight:900}
+@media (min-width:900px){
+  #hostV7 .hpanel[data-hp="game"] .hgrid2,#hostV7 .hpanel[data-hp="game"] .hlive{align-items:stretch}
+  #hostV7 .hpanel[data-hp="game"] .colA>.monCol{position:sticky;top:150px;z-index:5}
+}
+@media (min-width:900px){
+  #hostV7 .hpanel[data-hp="live"] .hlive{align-items:stretch}
+  #hostV7 .hpanel[data-hp="live"] .colA>.monCol{position:sticky;top:150px;z-index:5}
+}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
