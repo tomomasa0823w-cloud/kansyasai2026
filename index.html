@@ -6418,7 +6418,15 @@ function hostPage() {
   $("#gIntroPrev").onclick = () => { const g = G(); if (g.intro > 0) { g.intro--; g.introOn = true; gPub(); } };
   $("#gBoard").onclick = () => { G().introOn = false; G().shufOn = false; gPub(); };
   $("#gUndo").onclick = () => { const g = G(); if (!g.log.length) return; g.log.pop(); gPub(); };
-  $("#gReset").onclick = () => { if (!confirm("このゲームのスコアを全部消して、最初からにします。よろしいですか？")) return; G().log = []; G().introOn = false; gPub(); };
+  $("#gReset").onclick = () => {
+    const g = G(), stg = g.stage && g.stage !== "free";
+    if (!stg) { if (!confirm("このゲームのスコアを全部消して、最初からにします。よろしいですか？")) return; g.log = []; g.introOn = false; return gPub(); }
+    const others = Object.entries(g.sd || {}).filter(([k, v]) => k !== g.stage && k !== "free" && v && v.log && v.log.length).map(([k]) => STG[k].t);
+    if (!confirm(`${g.title || STG[g.stage].t} のスコアを消して、最初からにします。よろしいですか？`)) return;
+    g.log = []; g.introOn = false;
+    if (others.length && confirm(`ほかの試合（${others.join("・")}）の記録も消しますか？\n［OK］全部消す（予選通過の🏆も消えます）\n［キャンセル］この試合だけ`)) Object.keys(g.sd || {}).forEach((k) => { if (g.sd[k]) g.sd[k].log = []; });
+    gPub();
+  };
   $("#gBack2").onclick = () => setS({ view: "q" });
   // カメラ（このPCで表示する映像）
   CAM.send = (o) => cli && cli.send("cam", { ...o, mid: rand(12, lower) }, { qos: 0 });
@@ -6733,7 +6741,7 @@ function hostPage() {
     const stores = []; g.pool.forEach((p) => { const k = p.s || "店舗なし"; if (!stores.includes(k)) stores.push(k); });
     const ord = Object.values(H.rstore || {}).filter((v, i, a) => a.indexOf(v) === i); stores.sort((a, b) => (ord.indexOf(a) < 0 ? 999 : ord.indexOf(a)) - (ord.indexOf(b) < 0 ? 999 : ord.indexOf(b)));
     const win = {}; ["A", "B"].forEach((st) => { const sd = st === g.stage ? { log: g.log, players: g.players } : (g.sd || {})[st]; if (!sd || !sd.log || !sd.log.length) return;
-      try { const save = [g.log, g.players, g.mode]; g.log = sd.log; g.players = sd.players; g.mode = "qual"; const d = gDerive(); [g.log, g.players, g.mode] = save; d.P.forEach((p) => { if (p.win) win[p.n] = st; }); } catch (e) {} });
+      try { const save = [g.log, g.players, g.mode]; g.log = sd.log; g.players = sd.players; g.mode = "qual"; const d = gDerive(); [g.log, g.players, g.mode] = save; d.P.forEach((p) => { if (p.win && (g.pool || []).some((x) => x.n === p.n && x.g && x.g[st])) win[p.n] = st; }); } catch (e) {} });
     const cnt = (st) => g.pool.filter((p) => p.g && p.g[st]).length;
     const h = (g.pool.length ? `<div class="note" style="margin-bottom:4px">予選A ${cnt("A")}人／予選B ${cnt("B")}人／決勝 ${cnt("F")}人</div>` : "") + (g.pool.length ? stores.map((st) => {
       const its = g.pool.map((p, i) => [p, i]).filter(([p]) => (p.s || "店舗なし") === st), inF = its.filter(([p]) => p.g && p.g.F).length;
