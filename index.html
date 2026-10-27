@@ -1282,6 +1282,12 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
 .gsrow{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(128,140,180,.2)}.gsi{flex:1;min-width:0}.gsp{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gsrow .mini2{padding:6px 12px;font-size:14px}
 #gSetName{padding:6px 8px;font-size:15px;border-radius:8px}
+.gph{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0 4px}
+#gPool{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px}
+.gpc{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:10px;border:2px solid rgba(128,140,180,.35);cursor:pointer;font-weight:700}
+.gpc input{width:18px;height:18px;margin:0}.gpc span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gpc small{opacity:.7;font-size:12px}
+.gpc.on{border-color:#E8B740;background:rgba(232,183,64,.16)}.gpc .mini{padding:0 6px}
+.gpc span{white-space:normal;overflow:visible}.gpc{flex-wrap:wrap}#gPool{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5884,6 +5890,8 @@ function hostPage() {
       <div id="gOptA" class="gopts"><label><input type="number" id="gEnds" min="1" max="20"> エンド</label><label>1エンド <input type="number" id="gArrows" min="1" max="12"> 本</label><label class="w">点数ボタン <input type="text" id="gPts" placeholder="10,9,8,7,6,5,4,3,2,1,0"></label></div>
       <h3 style="margin:10px 0 4px">選手（投げる・射る順）</h3>
       <div class="row" style="margin:0"><input type="text" id="gFind" list="gRoster" placeholder="名前で探して追加（名簿から）" style="flex:1"><datalist id="gRoster"></datalist><button class="btn" id="gAdd">追加</button></div>
+      <div class="gpool"><div class="gph"><b>選手候補</b><span class="note">チェックした人が出場します</span><span style="flex:1"></span><button class="mini" id="gPoolAll">全員チェック</button><button class="mini" id="gPoolNone">全員外す</button><button class="mini" id="gPoolClr">候補を全部消す</button></div><div id="gPool"></div></div>
+      <div class="gph" style="margin-top:8px"><b>出場する選手（投げる・射る順）</b></div>
       <ol class="gplist" id="gPlayers"></ol>
       <div class="row"><button class="btn" id="gShuffle">🔀 順番をシャッフル（モニターで演出）</button><button class="ghost" id="gClear">選手を全部外す</button></div>
       <div class="gsets"><b>📋 登録しておいた選手リスト</b><p class="note" style="margin:2px 0 6px">予選・決勝などの組み合わせを事前に保存しておき、当日ワンタッチで呼び出せます（種目・予選/通常・2人1組の設定も一緒に保存）。</p>
@@ -6328,19 +6336,46 @@ function hostPage() {
     if (g.team) { const out = []; g.players.forEach((p) => { const tm = p.s && out.find((x) => x.s === p.s && !x.n2); if (tm && !p.n2) tm.n2 = p.n; else out.push({ ...p }); }); g.players = out; toast("同じ店舗の人をペアにしました"); }
     else { const out = []; g.players.forEach((p) => { out.push({ n: p.n, s: p.s }); if (p.n2) out.push({ n: p.n2, s: p.s }); }); g.players = out; }
     gPub(); };
+  // 出場者に入れる（2人1組なら同じ店舗の1人目とペアにする）
+  const gJoin = (n, st, quiet) => {
+    const g = G();
+    if (g.players.some((p) => p.n === n || p.n2 === n)) { if (!quiet) toast("もう出場メンバーに入っています"); return false; }
+    if (g.log.length && !confirm("スコアの記録があります。選手を変えるとスコアは最初からになります。よろしいですか？")) return false;
+    g.log = [];
+    if (g.team && g.mode !== "qual" && st) { const tm = g.players.find((p) => p.s === st && !p.n2); if (tm) { tm.n2 = n; if (!quiet) toast(`${st}：${tm.n}・${n} のペアにしました`); return true; } }
+    g.players.push({ n, s: st }); return true;
+  };
+  const gLeave = (n) => {
+    const g = G(); const i = g.players.findIndex((p) => p.n === n || p.n2 === n); if (i < 0) return false;
+    if (g.log.length && !confirm("スコアの記録があります。選手を変えるとスコアは最初からになります。よろしいですか？")) return false;
+    g.log = []; const p = g.players[i];
+    if (p.n2 === n) delete p.n2; else if (p.n2) { p.n = p.n2; delete p.n2; } else g.players.splice(i, 1);
+    return true;
+  };
   const gAddName = () => {
     const v = $("#gFind").value.trim(); if (!v) return;
     const key = Object.keys(H.roster).find((k) => H.roster[k] === v) || Object.keys(H.roster).find((k) => foldName(H.roster[k]) === foldName(v));
     const g = G(); const n = key ? H.roster[key] : v, st = key ? H.rstore[key] || "" : "";
-    if (g.players.some((p) => p.n === n || p.n2 === n)) return toast("もう追加されています");
-    if (g.team && g.mode !== "qual" && st) { const tm = g.players.find((p) => p.s === st && !p.n2); if (tm) { if (g.log.length && !confirm("スコアの記録があります。選手を追加するとスコアは最初からになります。よろしいですか？")) return; g.log = []; tm.n2 = n; $("#gFind").value = ""; gPub(); return toast(`${st}：${tm.n}・${n} のペアにしました`); } }
-    if (g.log.length && !confirm("スコアの記録があります。選手を追加するとスコアは最初からになります。よろしいですか？")) return;
-    g.log = []; g.players.push({ n, s: st }); $("#gFind").value = ""; gPub(); if (!key) toast("名簿にない名前なので、自由入力で追加しました");
+    if (!g.pool) g.pool = [];
+    if (!g.pool.some((p) => p.n === n)) g.pool.push({ n, s: st });
+    gJoin(n, st); $("#gFind").value = ""; gPub(); if (!key) toast("名簿にない名前なので、自由入力で追加しました");
   };
   $("#gAdd").onclick = gAddName; $("#gFind").addEventListener("keydown", (e) => { if (e.key === "Enter") gAddName(); });
   $("#gShuffle").onclick = () => { const g = G(); if (g.log.length && !confirm("スコアは最初からになります。よろしいですか？")) return; g.log = []; for (let i = g.players.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [g.players[i], g.players[j]] = [g.players[j], g.players[i]]; }
     g.introOn = false; if (g.players.length > 1) { g.shufOn = true; g.shufAt = Date.now(); gPub(sfx("drumReveal")); } else gPub(); };
-  $("#gClear").onclick = () => { if (!confirm("選手を全部外します。よろしいですか？")) return; const g = G(); g.players = []; g.log = []; gPub(); };
+  $("#gClear").onclick = () => { if (!confirm("出場する選手を全部外します（候補には残ります）。よろしいですか？")) return; const g = G(); g.players = []; g.log = []; gPub(); };
+  $("#gPoolAll").onclick = () => { const g = G(); (g.pool || []).forEach((p) => { if (!g.players.some((x) => x.n === p.n || x.n2 === p.n)) gJoin(p.n, p.s, true); }); gPub(); };
+  $("#gPoolNone").onclick = () => { const g = G(); if (g.log.length && !confirm("スコアの記録は消えます。よろしいですか？")) return; g.players = []; g.log = []; gPub(); };
+  $("#gPoolClr").onclick = () => { if (!confirm("選手候補を全部消します（出場メンバーも外れます）。よろしいですか？")) return; const g = G(); g.pool = []; g.players = []; g.log = []; gPub(); };
+  window.__gPoolRender = () => {
+    const g = G(); if (!g.pool) g.pool = [];
+    g.players.forEach((p) => [p.n, p.n2].filter(Boolean).forEach((n) => { if (!g.pool.some((x) => x.n === n)) g.pool.push({ n, s: p.s || "" }); }));
+    const on = (n) => g.players.some((p) => p.n === n || p.n2 === n);
+    const h = g.pool.length ? g.pool.map((p, i) => `<label class="gpc${on(p.n) ? " on" : ""}"><input type="checkbox" data-gpi="${i}" ${on(p.n) ? "checked" : ""}><span>${esc(p.n)}</span><small>${esc(p.s || "")}</small><button class="mini" data-gpx="${i}" title="候補から消す">×</button></label>`).join("") : '<p class="note">上の欄から名前を追加すると、ここに候補として並びます。</p>';
+    const el = $("#gPool"); if (el._h === h) return; el._h = h; el.innerHTML = h;
+    el.querySelectorAll("[data-gpi]").forEach((x) => (x.onchange = () => { const p = g.pool[+x.dataset.gpi]; if (!p) return; const ok = x.checked ? gJoin(p.n, p.s) : gLeave(p.n); if (!ok) x.checked = !x.checked; gPub(); }));
+    el.querySelectorAll("[data-gpx]").forEach((x) => (x.onclick = (e) => { e.preventDefault(); const p = g.pool[+x.dataset.gpx]; if (!p) return; if (on(p.n) && !gLeave(p.n)) return; g.pool.splice(+x.dataset.gpx, 1); gPub(); }));
+  };
   $("#gShow").onclick = () => { G().introOn = false; G().shufOn = false; gPub(sfx("chime")); };
   $("#gIntroBtn").onclick = () => { const g = G(); if (!g.players.length) return toast("先に選手を追加してください"); g.intro = 0; g.introOn = true; g.shufOn = false; gPub(sfx("drumReveal")); };
   $("#gIntroNext").onclick = () => { const g = G(); if (g.intro < g.players.length - 1) { g.intro++; g.introOn = true; gPub(sfx("drumReveal")); } };
@@ -6479,7 +6514,7 @@ function hostPage() {
   const STEPS_C = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["review", "写真"], ["cutshow", "予選落ち"], ["fast", "最速"], ["list", "正解者"]];
   const STEPS_B = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["fast", "一番乗り"], ["list", "押した順"]];
   function renderExtra(S) {
-    try { renderLot(); } catch (x) {} try { window.__gSetRender && window.__gSetRender(); } catch (x) {}
+    try { renderLot(); } catch (x) {} try { window.__gSetRender && window.__gSetRender(); } catch (x) {} try { window.__gPoolRender && window.__gPoolRender(); } catch (x) {}
     // 準備チェック
     const why = H.exact && !localReason(H.exact) ? "" : localReason(pubBase());
     const nR = Object.keys(H.roster).length, nS = new Set(Object.values(H.rstore)).size, nB = H.bank.length;
@@ -6609,7 +6644,7 @@ function hostPage() {
       const h = H.gameSets.length ? H.gameSets.map((x, i) => `<div class="gsrow"><div class="gsi"><b>${esc(x.name)}</b> <span class="note">${tl(x)}・${x.players.length}${x.team && x.mode !== "qual" ? "組" : "人"}</span><div class="note gsp">${esc(pl(x))}</div></div><button class="btn go mini2" onclick="__gSetLoad(${i})">呼び出す</button><button class="mini" onclick="__gSetUp(${i})">上書き</button><button class="mini" onclick="__gSetDel(${i})">削除</button></div>`).join("") : '<p class="note">まだありません。選手を追加してから、名前をつけて保存してください。</p>';
       if (el._h !== h) { el._h = h; el.innerHTML = h; }
     };
-    const snap = (name) => { const g = G(); return { name, type: g.type, mode: g.mode || "normal", team: !!g.team, title: g.title || "", players: g.players.map((p) => ({ n: p.n, s: p.s || "", ...(p.n2 ? { n2: p.n2 } : {}) })) }; };
+    const snap = (name) => { const g = G(); return { name, type: g.type, mode: g.mode || "normal", team: !!g.team, title: g.title || "", players: g.players.map((p) => ({ n: p.n, s: p.s || "", ...(p.n2 ? { n2: p.n2 } : {}) })), pool: (g.pool || []).map((p) => ({ n: p.n, s: p.s || "" })) }; };
     $("#gSetSave").onclick = () => {
       const g = G(); if (!g.players.length) return toast("先に選手を追加してください");
       const name = $("#gSetName").value.trim() || `${g.type === "archery" ? "アーチェリー" : "モルック"}${g.mode === "qual" ? "予選" : "本戦"}${H.gameSets.length + 1}`;
@@ -6620,7 +6655,7 @@ function hostPage() {
     window.__gSetLoad = (i) => {
       const x = H.gameSets[i], g = G(); if (!x) return;
       if (g.log.length && !confirm("いまのスコアは消えます。呼び出しますか？")) return;
-      g.type = x.type; g.mode = x.mode; g.team = x.team; if (x.title) g.title = x.title; g.players = x.players.map((p) => ({ ...p })); g.log = []; g.introOn = false; g.shufOn = false;
+      g.type = x.type; g.mode = x.mode; g.team = x.team; if (x.title) g.title = x.title; g.players = x.players.map((p) => ({ ...p })); if (x.pool) g.pool = x.pool.map((p) => ({ ...p })); g.log = []; g.introOn = false; g.shufOn = false;
       gPub(); toast(`「${x.name}」を呼び出しました`);
     };
     window.__gSetUp = (i) => { const x = H.gameSets[i]; if (!x || !G().players.length) return; if (!confirm(`「${x.name}」を、いまの選手で上書きしますか？`)) return; H.gameSets[i] = snap(x.name); save(); render(); toast("上書きしました"); };
