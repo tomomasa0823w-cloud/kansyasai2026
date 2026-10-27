@@ -1076,6 +1076,68 @@ body.v-player.offline #offBar{display:block}
 .tv-rv.row1{grid-auto-rows:minmax(0,1fr);gap:18px}
 .tv-rv.row1 .cap{white-space:normal;font-size:28px;line-height:1.25;padding:10px 14px;min-height:76px;text-overflow:clip}
 .tv-rv.row1 .ok{font-size:24px;padding:3px 10px}
+/* ボーナスタイム（モニター） */
+.bn-wrap{position:absolute;inset:150px 80px 130px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center;color:#fff}
+.bn-k{font:900 92px/1.1 var(--lux,serif);color:#FFD55A;text-shadow:0 6px 0 rgba(0,0,0,.45)}
+.bn-t{font:900 64px/1.2 var(--lux,serif)}.bn-t b{color:#FFE7A0}
+.bn-time{font:900 170px/1 var(--disp,sans-serif);color:#fff;font-variant-numeric:tabular-nums;padding:10px 60px;border-radius:30px;background:rgba(0,0,0,.25);box-shadow:0 0 0 6px #E8B740}
+.bn-time.big{font-size:220px}.bn-time.hurry{color:#FF6B6B}
+.bn-d{font:800 40px/1.5 var(--lux,serif);opacity:.95}.bn-d b{color:#FFD55A}
+.bn-wrap.res{justify-content:flex-start;padding-top:10px}.bn-avg{font-size:64px}
+.bn-top{list-style:none;margin:0;padding:0;width:min(1200px,100%);display:flex;flex-direction:column;gap:12px}
+.bn-top li{display:flex;align-items:center;gap:24px;padding:14px 30px;border-radius:18px;background:linear-gradient(180deg,#fff,#E6EEFF);color:#0B1748;font:900 46px/1.2 var(--lux,serif);animation:rvIn .5s cubic-bezier(.2,1.4,.4,1) both}
+.bn-top .bno1{width:60px;color:#B7791F}.bn-top .bnm{flex:1;text-align:left}.bn-top .bnc{font-size:34px;opacity:.8}.bn-top .bnpt{color:#C8102E;min-width:120px;text-align:right}
+.bn-vid{position:absolute;inset:0;background:#000;z-index:50}
+.bn-vid .ytvbox,.bn-vid .ytvbox iframe,.bn-vid #ytvPl{position:absolute;inset:0;width:100%!important;height:100%!important;border:0}
+.bn-vid .vmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font:800 48px var(--lux,serif)}
+/* ボーナスタイム突入のオリジナル演出 */
+.bo-wrap{position:absolute;inset:0;background:#000;overflow:hidden;color:#fff;text-align:center;z-index:50}
+.bo-wrap>*{position:absolute;opacity:0;animation-fill-mode:both;animation-timing-function:ease}
+.bo-warn{left:0;right:0;top:50%;transform:translateY(-50%);animation:boWarn 2s linear both}
+.bo-stripe{height:56px;background:repeating-linear-gradient(-45deg,#FFD200 0 40px,#111 40px 80px);animation:boSlide .6s linear infinite}
+.bo-stripe.b{animation-direction:reverse}
+.bo-wt{font:900 180px/1.1 var(--disp,sans-serif);color:#FF2B2B;text-shadow:0 0 40px #f00;letter-spacing:.06em;animation:boBlink .28s steps(2) infinite}
+.bo-ws{font:900 60px var(--lux,serif);color:#fff;margin:6px 0 14px}
+@keyframes boWarn{0%{opacity:0}5%,92%{opacity:1}100%{opacity:0}}
+@keyframes boBlink{50%{opacity:.25}}
+@keyframes boSlide{to{background-position:113px 0}}
+.bo-beam{top:-20%;width:520px;height:140%;background:linear-gradient(180deg,rgba(255,240,180,.5),rgba(255,240,180,0) 80%);filter:blur(8px);transform-origin:50% 0;animation:boBeam 3s ease-in-out both}
+.bo-beam.l{left:18%;--a:-25deg;--b:20deg}.bo-beam.r{right:18%;--a:25deg;--b:-20deg}
+@keyframes boBeam{0%{opacity:0;transform:rotate(var(--a))}15%{opacity:1}85%{opacity:1;transform:rotate(var(--b))}100%{opacity:0;transform:rotate(0)}}
+.bo-q{left:0;right:0;top:22%;font:900 84px var(--lux,serif);text-shadow:0 0 30px rgba(255,255,255,.5);animation:boQ 2.8s ease both}
+@keyframes boQ{0%{opacity:0;letter-spacing:.6em}25%,80%{opacity:1;letter-spacing:.12em}100%{opacity:0}}
+.bo-box{left:50%;top:48%;font-size:220px;transform:translate(-50%,-50%);animation:boBox 2.2s ease-in both}
+@keyframes boBox{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}20%{opacity:1;transform:translate(-50%,-50%) scale(1)}40%{transform:translate(-52%,-50%) rotate(-8deg)}50%{transform:translate(-48%,-50%) rotate(8deg)}60%{transform:translate(-52%,-50%) rotate(-12deg)}70%{transform:translate(-48%,-50%) rotate(12deg)}85%{transform:translate(-50%,-50%) scale(1.25) rotate(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(3)}}
+.bo-flash{inset:0;background:#fff;animation:boFlash .7s ease-out both}
+@keyframes boFlash{0%{opacity:0}6%{opacity:1}100%{opacity:0}}
+.bo-rays{left:50%;top:42%;width:2600px;height:2600px;margin:-1300px 0 0 -1300px;background:repeating-conic-gradient(rgba(255,213,90,.22) 0 8deg,transparent 8deg 18deg);animation:boRays 5.5s linear both}
+@keyframes boRays{0%{opacity:0;transform:rotate(0)}10%{opacity:1}100%{opacity:1;transform:rotate(60deg)}}
+.bo-main{left:0;right:0;top:20%;animation:boMain .9s cubic-bezier(.2,1.6,.4,1) both}
+.bo-en{font:900 230px/1 var(--disp,sans-serif);letter-spacing:.04em;background:linear-gradient(180deg,#FFF6CF,#FFD55A 45%,#E39B12 60%,#FFE9A0);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 10px 0 rgba(0,0,0,.6)) drop-shadow(0 0 40px rgba(255,200,60,.6))}
+.bo-jp{font:900 96px var(--lux,serif);color:#fff;text-shadow:0 6px 0 rgba(0,0,0,.6);margin-top:10px}
+@keyframes boMain{0%{opacity:0;transform:scale(3)}100%{opacity:1;transform:none}}
+.bo-sub,.bo-sub2{left:0;right:0;font:900 70px var(--lux,serif);text-shadow:0 5px 0 rgba(0,0,0,.6);animation:boIn .6s ease both}
+.bo-sub{top:66%}.bo-sub2{top:79%;font-size:60px}.bo-sub b,.bo-sub2 b{color:#FFD55A}
+@keyframes boIn{0%{opacity:0;transform:translateY(40px)}100%{opacity:1;transform:none}}
+.bo-conf{inset:0;opacity:1}.bo-conf i{position:absolute;top:-30px;width:16px;height:26px;border-radius:3px;opacity:0;animation:boConf 3.2s linear both}
+@keyframes boConf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:1;transform:translate(var(--dx),1200px) rotate(var(--rt))}}
+.bnr2{gap:18px}.bnr2 .bn-k small{font-size:.5em;opacity:.85;margin-left:10px}
+.bnr2 .tv-champ{font-size:48px;padding:10px 34px}.bnr2 .tv-champ b{font-size:60px}
+.tv-top.bn-rk{grid-auto-flow:column;gap:10px 28px;width:min(1700px,94%)}
+.tv-top.bn-rk li{font-size:34px;padding:6px 20px;gap:14px}.tv-top.bn-rk .no{min-width:76px}.tv-top.bn-rk .tm{font-size:28px}
+.bn-wrap.bnr2{inset:40px 60px 120px;gap:12px}.bnr2 .bn-k{font-size:64px}.bnr2 .bn-d{font-size:30px;margin-top:-6px}
+.bnr2 .tv-champ{font-size:42px;padding:6px 34px}.bnr2 .tv-champ b{font-size:54px}
+.tv-top.bn-rk{gap:8px 28px}.tv-top.bn-rk li{font-size:32px;padding:4px 20px}.tv-top.bn-rk .tn{text-align:left}
+.bn-wrap.bnr2{inset:-135px 0 -25px;padding-top:0}
+.bn-wrap.bnst{justify-content:flex-start;inset:-120px 0 -20px;gap:14px}.bnst .bn-k{font-size:76px}.bnst .bn-d{font-size:34px}
+.bnst-row{display:flex;gap:36px;justify-content:center;align-items:stretch;margin-top:20px;width:100%}
+.bnst-c{flex:0 1 520px;background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.06));border:2px solid rgba(255,213,90,.7);border-radius:28px;padding:26px 20px;box-shadow:0 14px 40px rgba(0,0,0,.4);animation:bnstIn .7s cubic-bezier(.2,1.4,.4,1) both}
+.bnst-c .m{font-size:90px;line-height:1}.bnst-c .s{font-size:34px;color:#CFE0FF;margin-top:6px}.bnst-c .n{font:900 72px/1.15 var(--lux,serif);color:#fff;margin:6px 0;white-space:nowrap}
+.bnst-c .h{font-size:36px;color:#FFE9A8}.bnst-c .h b{color:#FFD55A}.bnst-c .c{margin-top:14px;font-size:36px}.bnst-c .c b{font:900 80px var(--disp,sans-serif);color:#FFD55A}.bnst-c .c small{font-size:24px;opacity:.8}
+.bnst.lo .bnst-c{border-color:rgba(130,200,255,.8)}.bnst.lo .bnst-c .c b{color:#8FD3FF}
+@keyframes bnstIn{0%{opacity:0;transform:translateY(60px) scale(.6)}100%{opacity:1;transform:none}}
+.noanim .tv .bnst-c{animation:none}
+.bn-wrap.bnst{justify-content:center;inset:-60px 0 0}.bnst .bnst-c{padding:34px 20px}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -1381,6 +1443,47 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
 .bto input{width:52px;padding:3px 4px;border-radius:6px;background:#fff;color:#0B1748;-webkit-text-fill-color:#0B1748;font-weight:700}
 #hostV7.qedit .bto{display:inline-flex}
 #qeditOff,#qeditOn{white-space:nowrap}.bto input::placeholder{color:#9aa3c7;-webkit-text-fill-color:#9aa3c7}
+/* 受付台帳（本部） */
+.rvqr{display:flex;gap:12px;align-items:center}.rvqr .qr{width:120px;flex:none;background:#fff;padding:6px;border-radius:10px;line-height:0}.rvqr .qr svg,.rvqr .qr img{width:100%;height:auto}
+#rvURL{width:100%;font-size:13px}
+.rvst{margin-top:8px;border:1.5px solid rgba(128,140,180,.3);border-radius:12px;padding:6px 8px}
+.rvsh{display:flex;gap:8px;align-items:baseline;margin-bottom:4px}
+.rvrow{display:flex;align-items:center;gap:6px;padding:4px 0;border-top:1px solid rgba(128,140,180,.15)}
+.rvrow.ok .rvck{color:#15803D}
+.rvck{display:flex;align-items:center;gap:6px;min-width:130px;font-weight:800}.rvck input,.rvex input{width:18px;height:18px;margin:0}
+.rvh{flex:1;min-width:80px;padding:5px 8px;border-radius:8px;background:#fff!important;color:#0B1748!important;-webkit-text-fill-color:#0B1748}
+.rvex{display:flex;align-items:center;gap:3px;font-size:12px;white-space:nowrap}
+.rvpt{font-weight:900;color:#C8102E}
+.bnt{width:100%;margin-top:8px}.bnt td{padding:4px 6px;border-bottom:1px solid rgba(128,140,180,.2)}
+/* 受付用の画面 */
+body.v-recv>*:not(#vRecv):not(#toast):not(.toast){display:none!important}
+#vRecv{max-width:720px;margin:0 auto;padding:12px}
+#vRecv input{padding:10px 12px;font-size:17px;border-radius:10px;border:1.5px solid #c7cde3;width:100%;box-sizing:border-box;background:#fff;color:#0B1748}
+#vRecv .row input{width:auto}
+.rvsum{font-size:18px;margin:6px 0}.rvsum b{font-size:26px;color:#B7791F}
+.rvg{margin-top:10px}.rvgh{font-weight:900;margin:4px 0;color:#B7791F}
+.rvb{display:flex;justify-content:space-between;align-items:center;width:100%;padding:12px 14px;margin:4px 0;border-radius:12px;border:2px solid #c7cde3;background:#fff;color:#0B1748;font-size:18px;font-weight:800;text-align:left}
+.rvb small{font-size:13px;font-weight:700;opacity:.75}.rvb.ok{border-color:#16A34A;background:#ECFDF3}.rvb.ok small{color:#15803D;opacity:1}
+#rvSheet{position:fixed;inset:0;background:rgba(5,8,30,.55);display:flex;align-items:flex-end;justify-content:center;z-index:90}
+#rvSheet.hidden{display:none}
+#rvSheet .sbox{width:min(560px,100%);background:#fff;color:#0B1748;border-radius:18px 18px 0 0;padding:18px}
+#rvSheet .sname{font-size:26px;font-weight:900}.rvlab{display:block;margin:10px 0;font-weight:800}
+/* ボーナス（参加者スマホ） */
+.bnp .bnbig{font-size:34px;font-weight:900;margin:10px 0}.bnp .bnbig b{color:#C8102E;font-variant-numeric:tabular-nums}.bnp .bnbig small,.bnp .bnbig2 small{font-size:16px}
+.bnp .bnbig2{font-size:44px;font-weight:900;color:#C8102E}
+.bnin{text-align:left}.bnhd{display:flex;justify-content:space-between;align-items:center;font-size:18px}.bnhd b.js-bt{font-size:26px;color:#C8102E}
+#bnFind{width:100%;box-sizing:border-box;margin:8px 0;padding:10px;font-size:16px;border-radius:10px;border:1.5px solid #c7cde3}
+.bnr{padding:10px 8px;border-bottom:1px solid #e3e7f3}.bnr>span{display:flex;justify-content:space-between;font-weight:800;font-size:17px;cursor:pointer}.bnr small{opacity:.6;font-size:12px}
+.bnr.done{display:flex;justify-content:space-between;opacity:.6}.bnr.done b{color:#15803D;font-size:14px}
+.bno{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}.bno .btn{padding:12px 6px;font-size:15px;white-space:normal}
+.bno.bnsu{grid-template-columns:1fr auto}.bnsu .bnsel{grid-column:1/-1;font-size:17px;padding:10px;border-radius:10px;background:var(--card,#fff);color:inherit;border:1px solid #8886}.bnsu .bntx{font-size:17px;padding:10px;border-radius:10px;min-width:0}.bnsu .bnok{padding:10px 18px}
+.bnq{font-style:normal;color:#e0a000;font-weight:800;letter-spacing:2px}
+.rvfix{margin:8px 0;padding:6px 10px;border:1px dashed #8888;border-radius:10px}.rvfix summary{cursor:pointer;font-size:14px;color:#b06000;font-weight:700}
+.rvatt2{display:flex;align-items:center;justify-content:center;gap:10px;margin:10px 0;padding:12px;border:2px solid #2e9d5a;border-radius:12px;font-size:20px;font-weight:800;color:#2e9d5a}.rvatt2 input{width:28px;height:28px}
+.rvatt{display:inline-block;min-width:2.6em;margin-right:6px;padding:1px 6px;border-radius:6px;font-size:12px;text-align:center;background:#8883}.rvrow.ok .rvatt{background:#2e9d5a;color:#fff}
+.rvgate{display:block;margin:0 0 8px;padding:8px 10px;border-radius:10px;background:#2e9d5a18;font-size:14px}
+#vRecv .rvatt2,.rvatt2{display:flex!important;flex-direction:row!important;align-items:center;justify-content:center;width:auto}.rvatt2 span{writing-mode:horizontal-tb;white-space:nowrap}.rvatt2 input{flex:0 0 auto;margin:0}
+.rvatt2 input[type=checkbox]{width:30px!important;height:30px!important;min-width:0!important;padding:0!important}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -4254,9 +4357,9 @@ const LINKS = (() => {
   let bg = null, bgLv = 0, bgCur = 0, bgFadeT = null, bgLoopT = null, bgBusy = false;
   const bgSetVol = (v) => { bgCur = v; if (bg) setVol(bg.P, vol * v); };
   const bgFade = (to, done) => { clearInterval(bgFadeT); const from = bgCur, n = 10; let i = 0; bgFadeT = setInterval(() => { i++; bgSetVol(from + ((to - from) * i) / n); if (i >= n) { clearInterval(bgFadeT); done && done(); } }, 60); };
-  async function bgm(level) {
+  async function bgm(level, slot) {
     bgLv = level;
-    const L = links.bgm, p = L && parse(L.url);
+    const L = links[slot && links[slot] && parse(links[slot].url) ? slot : "bgm"], p = L && parse(L.url);
     if (!p || !on || level <= 0) { if (bg) { const P = bg.P; bg = null; clearInterval(bgLoopT); bgFade(0, () => { if (active !== P) halt(P); }); } return; }
     if (bg && bg.key === keyOf(p)) { if (Math.abs(bgCur - level) > 0.01) bgFade(level); return; }
     if (bgBusy) return; bgBusy = true;
@@ -4456,6 +4559,12 @@ const SFX = (() => {
     chime() { const t = now(), b = bus(0.45); [1568, 2093, 2637, 3136].forEach((f, i) => chimeTone(f, t + i * 0.06, 0.8, 0.16, b)); applause(t + 0.1, 2.5, 0.35, bus(0.3)); },
     // 「○位は…」の溜め
     tame() { const t = now(); riser(t, 1.6, bus(0.4)); },
+    bonusIntro() { // 警報 → ゴゴゴ… → ドラムロール → ジャン！ → ファンファーレ
+      const t = now(), b = bus(0.3);
+      for (let i = 0; i < 8; i++) { osc("square", i % 2 ? 660 : 880, t + 0.6 + i * 0.28, 0.26, 0.13, b, { hold: true, r: 0.02 }); }
+      riser(t + 2.6, 3.0, bus(0.4)); roll(t + 3.5, 2.1, b); hit(t + 5.6, b, 0.6);
+      setTimeout(() => { try { P.fanfare(); } catch (e) {} }, 5800);
+    },
     // ピリオド開始：「ジャン・ジャン・ジャーン！」＋大きな拍手
     period() {
       const t = now(), b = bus(0.4);
@@ -4537,7 +4646,7 @@ const SFX = (() => {
 })();
 // 差し替えできる場面
 const SFX_SLOTS = [
-  ["title", "オープニング（オープニング画面を出したとき）"], ["roll", "総合順位の発表（下からスクロール）"], ["cut", "予選落ちの発表"], ["think", "回答中のBGM（スタート〜締め切り）"], ["think15", "回答中のBGM：15秒の問題用（空欄なら上の曲）"], ["think20", "回答中のBGM：20秒の問題用（空欄なら上の曲）"], ["bgm", "待ち時間のBGM（参加受付・ルール説明・解答紹介でくり返し。受付中は普通、それ以外は小さめ）"],
+  ["title", "オープニング（オープニング画面を出したとき）"], ["roll", "総合順位の発表（下からスクロール）"], ["cut", "予選落ちの発表"], ["think", "回答中のBGM（スタート〜締め切り）"], ["think15", "回答中のBGM：15秒の問題用（空欄なら上の曲）"], ["think20", "回答中のBGM：20秒の問題用（空欄なら上の曲）"], ["bgm", "待ち時間のBGM（参加受付・ルール説明・解答紹介でくり返し。受付中は普通、それ以外は小さめ）"], ["bonusBgm", "ボーナスタイム歓談中のBGM（くり返し）"], ["bonusIntro", "ボーナスタイムの予告映像（モニターに全面で流す・YouTube）"],
   ["period", "ピリオド開始"], ["open", "出題"], ["countdown", "残り5秒のカウント（5秒の音声を1つ）"], ["close", "締め切り"], ["bell", "最終問題の鐘"],
   ["drum", "回答分布（ドラムロール）"], ["correct", "正解発表"], ["wrong", "不正解・該当者なし"], ["seat", "着席"],
   ["drumReveal", "最速正解者の発表"], ["chime", "正解者一覧"], ["tame", "表彰「○位は…」"], ["fanfare", "1位・チャンピオン"],
@@ -4580,6 +4689,7 @@ function bgmLevel(S) {
   const v = S.view || "q", st = S.stage || S.phase;
   if (v === "title" || v === "att") return 1;
   if (v === "rules") return 0.35;
+  if (v === "bonus") return S.bonus && S.bonus.ph === "talk" ? 0.6 : S.bonus && S.bonus.ph === "done" ? 0.35 : 0;
   if (v !== "q") return 0;
   if (S.phase === "idle" || !S.rid) return S.stage === "period" ? 0 : 1;
   if (["correct", "review", "list"].includes(st)) return 0.35;
@@ -4590,7 +4700,7 @@ function sfxWatcher() {
   return (S) => {
     if (S.snd) SFX.set(S.snd.vol, S.snd.on);
     const lk = JSON.stringify(S.links || {}); if (lk !== lastLinks) { lastLinks = lk; LINKS.set(S.links || {}); }
-    try { if (SFX.unlocked) LINKS.bgm(bgmLevel(S)); } catch (e) {}
+    try { if (SFX.unlocked) LINKS.bgm(bgmLevel(S), S.view === "bonus" && S.bonus && S.bonus.ph === "talk" ? "bonusBgm" : "bgm"); } catch (e) {}
     const x = S.sfx; if (!x) return;
     if (last === null) { last = x.seq; return; }   // 開いた直後は過去の音を鳴らさない
     if (x.seq !== last) { last = x.seq; SFX.play(x.name, x.name === "think" && S.phase === "open" && S.limit ? { endAt: Date.now() + S.limit * 1000 - ((S.snd && S.snd.adj != null ? +S.snd.adj : -1) || 0) * 1000, stopAt: Date.now() + S.limit * 1000, limit: S.limit } : undefined); }
@@ -4730,6 +4840,7 @@ function monHTML(S, list, joinURL) {
   if (view === "game") return gameMonHTML(S);
   if (view === "rules") return rulesMonHTML(S);
   if (view === "lot") return lotMonHTML(S);
+  if (view === "bonus") return bonusMonHTML(S);
   if (view === "roll") {
     const R = S.roll || [], hide = S.rollHide || 0, N = R.length;
     const rows = R.map((r) => { const h = r.rank <= hide; return `<li class="${r.rank <= 3 ? "top" : ""}${h ? " hid" : ""}"><span class="no">${r.rank}<small>位</small></span><span class="tn">${h ? "？？？" : esc(r.n)}</span><span class="st">${h ? "" : esc(r.s)}</span><span class="pt">${h ? "" : r.p + "<small>pt</small>"}</span></li>`; }).join("");
@@ -4861,14 +4972,14 @@ function fitTexts(root) {
 function renderMonitor(el, S, list, joinURL) {
   if (!el) return;
   const { key, html } = monHTML(S, list, joinURL);
-  if (el._html === html) { camSync(el); return vidSync(el, S); }
+  if (el._html === html) { camSync(el); ytvSync(el, S); return vidSync(el, S); }
   const same = el._key === key;
   el._key = key; el._html = html;
   el.classList.add("tvhost");
   el.classList.toggle("noanim", same);
   el.innerHTML = `<div class="tv deep">${html}</div>`;
   qrInto(el.querySelector(".js-qr"), joinURL);
-  vidSync(el, S); camSync(el); lotRun(el); shPrep(el);
+  vidSync(el, S); camSync(el); lotRun(el); shPrep(el); ytvSync(el, S);
   fitTV(el); fitTexts(el); if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitTexts(el)); setTimeout(() => fitTexts(el), 400);
   if (!tvObs.has(el) && window.ResizeObserver) { const o = new ResizeObserver(() => { fitTV(el); fitTexts(el); }); o.observe(el); tvObs.set(el, o); }
 }
@@ -5082,6 +5193,114 @@ function shPrep(root) {
   const cs = root && [...root.querySelectorAll(".sh-card[data-from]")]; if (!cs || !cs.length) return;
   cs.forEach((c) => { const f = cs[+c.dataset.from]; if (!f) return; c.style.setProperty("--x0", f.offsetLeft - c.offsetLeft + "px"); c.style.setProperty("--y0", f.offsetTop - c.offsetTop + "px"); });
 }
+
+// ================= 🎁 ボーナスタイム（モニター・共通） =================
+const BEND = {};
+function bonusEnd(b) { const k = b.ph + ":" + b.at; if (!BEND[k]) { const e = b.at + b.dur * 1000; BEND[k] = Math.abs(Date.now() - b.at) < 15 * 60 * 1000 ? e : Date.now() + b.dur * 1000; } return BEND[k]; }
+setInterval(() => { document.querySelectorAll(".js-bt[data-bend]").forEach((e) => { const r = Math.max(0, +e.dataset.bend - Date.now()), sec = Math.ceil(r / 1000); e.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`; e.classList.toggle("hurry", sec <= 10); }); }, 250);
+function bonusMonHTML(S) {
+  const b = S.bonus || {};
+  let body = "";
+  const nm = b.kind === "name", no = nm ? "第1回" : "第2回";
+  if (b.ph === "intro" && b.own) return { key: "bn-own-" + b.at, html: bonusOwnHTML(b) };
+  if (b.ph === "intro") return { key: "bn-intro-" + b.at, html: `<div class="bn-vid js-ytv" data-yt="${esc(b.yt || "")}" data-at="${b.at}"></div>`, chrome: false };
+  if (b.ph === "talk" && nm) body = `<div class="bn-wrap"><div class="bn-k">🎁 ボーナスタイム ${no}「名前当て」</div><div class="bn-t">スタッフの<b>フルネーム</b>を覚えよう！</div><div class="bn-time js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">このあとスマホに「下の名前＋店舗」が出ます → <b>苗字</b>を答えて（1分）<br>当たった数 × <b>0.1点</b> をクイズの得点に加点！</div></div>`;
+  else if (b.ph === "input" && nm) body = `<div class="bn-wrap"><div class="bn-k">📱 スマホで答えて！</div><div class="bn-t">この人の苗字は？</div><div class="bn-time big js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">名前をタップ → 苗字を選ぶ or 入力（1人1回）　スタッフ ${(b.qs || []).length}人</div></div>`;
+  else if (b.ph === "talk") body = `<div class="bn-wrap"><div class="bn-k">🎁 ボーナスタイム ${no}「趣味当て」</div><div class="bn-t">スタッフの<b>名前</b>と<b>趣味</b>を聞き出そう！</div><div class="bn-time js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">歓談のあと、スマホで「この人の趣味は？」に答えます（1分）<br>当たった数 × <b>0.1点</b> をクイズの得点に加点！</div></div>`;
+  else if (b.ph === "input") body = `<div class="bn-wrap"><div class="bn-k">📱 スマホで答えて！</div><div class="bn-t">この人の趣味は？</div><div class="bn-time big js-bt" data-bend="${bonusEnd(b)}"></div><div class="bn-d">名前をタップ → 趣味を選ぶ（1人1回）　スタッフ ${(b.people || []).length}人</div></div>`;
+  else if (b.ph === "staff") {
+    const lo = b.side === "low", L = b.list || [], md = ["🥇", "🥈", "🥉"];
+    body = `<div class="bn-wrap bnst${lo ? " lo" : ""}"><div class="bn-k">${lo ? "📢 もっと覚えてね！" : "🌟 みんなに覚えられたスタッフ"}</div><div class="bn-d">${no}「${nm ? "名前当て" : "趣味当て"}」　${lo ? "正解が少なかったスタッフ" : "正解が多かったスタッフ TOP3"}</div>
+      <div class="bnst-row">${L.map((x, i) => `<div class="bnst-c" style="animation-delay:${(0.5 + i * 1.3).toFixed(1)}s"><div class="m">${lo ? "🙋" : md[i] || ""}</div><div class="s">${esc(x.s)}</div><div class="n">${esc(x.n)}</div>${x.h ? `<div class="h">趣味：<b>${esc(x.h)}</b></div>` : ""}<div class="c"><b>${x.c}</b>人が正解${x.a ? `<small>（${x.a}人中）</small>` : ""}</div></div>`).join("") || '<div class="bn-d">データなし</div>'}</div></div>`;
+  }
+  else if (b.ph === "done") {
+    const T = (b.top || []).filter((x) => x.c > 0).map((x, i) => ({ ...x, rk: x.rk || i + 1 })), F = T.filter((x) => x.rk === 1), R = T.filter((x) => x.rk !== 1), pt = (c) => `+${Math.round(c * 0.1 * 10) / 10}`;
+    const half = Math.ceil(R.length / 2), d0 = 1.2;
+    body = `<div class="bn-wrap res bnr2"><div class="bn-k">🎁 ${no}「${nm ? "名前当て" : "趣味当て"}」結果</div><div class="bn-d">平均 +${b.avg || 0}点（参加${b.n || 0}人・全${b.q || 0}問）</div>`
+      + (F.length ? `<div class="tv-champ pop">👑 1位　<b>${F.map((x) => esc(x.n)).join("・")}</b>　${F[0].c}人正解 ${pt(F[0].c)}</div>` : `<div class="tv-center"><div class="giant dim">正解者なし</div></div>`)
+      + (R.length ? `<ol class="tv-top bn-rk" style="grid-template-rows:repeat(${half},auto)">${R.map((x, i) => `<li style="animation-delay:${(d0 + i * 0.08).toFixed(2)}s"><span class="no">${x.rk}<small>位</small></span><span class="tn">${esc(x.n)}</span><span class="tm">${x.c}人 ${pt(x.c)}</span></li>`).join("")}</ol>` : "") + `</div>`;
+  }
+  return { key: "bn-" + b.ph + "-" + b.at, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main">${body}</div>${telopHTML("ボーナス" + no, b.ph === "staff" ? (b.side === "low" ? "このスタッフの名前と顔、覚えて帰ってね！" : "たくさんの人に当てられたスタッフ！") : b.ph === "talk" ? (nm ? "歓談タイム！スタッフの名前を覚えよう" : "歓談タイム！スタッフの趣味を聞き出そう") : b.ph === "input" ? "スマホで回答中！" : "ボーナス点を加点しました")}` };
+}
+// ================= 受付用の画面（スマホ・PC 何台でも） =================
+function recvPage(room, bi) {
+  let pin = store.get("hq-pin-" + room, ""), roster = [], st = {}, q = "", who = store.get("hq-recv-by", "");
+  document.body.classList.add("v-recv");
+  const sec = document.createElement("section"); sec.id = "vRecv";
+  sec.innerHTML = `<div class="ctl rvctl"><h2>📝 受付</h2><p class="note" id="rvInfo">接続中…</p>
+    <div class="row" id="rvPinRow"><input id="rvPin" inputmode="numeric" maxlength="4" placeholder="PIN（4桁）" style="width:120px"><input id="rvBy" placeholder="受付担当（例：受付1）" style="flex:1" value="${esc(who)}"><button class="btn go" id="rvPinOk">開始</button></div>
+    <div id="rvMain" class="hidden"><div class="rvsum" id="rvSum"></div><input id="rvQ" placeholder="名前・ふりがな・店舗で探す" autocomplete="off"><div id="rvL"></div></div></div>
+    <div class="sheet hidden" id="rvSheet"><div class="sbox"><div class="sname" id="rvSN"></div><div class="note" id="rvSS"></div><label class="rvatt2"><input type="checkbox" id="rvAtt" checked><span>出席</span></label><details class="rvfix"><summary>✏️ 名前・店舗が名簿と違うとき</summary><label class="rvlab">正しい名前（苗字と名前の間にスペース）<input id="rvRn" maxlength="30"></label><label class="rvlab">店舗<input id="rvRs" maxlength="30"></label></details><label class="rvlab">趣味<input id="rvHob" placeholder="例：釣り、ゴルフ、推し活" maxlength="40"></label><div class="row"><button class="btn go" id="rvOk">✓ 保存</button><button class="btn" id="rvNo">やめる</button></div><button class="ghost hidden" id="rvUndo" style="margin-top:8px">受付を取り消す</button></div></div>`;
+  document.body.append(sec);
+  const cli = connectAny(bi, room, ["roster", "recvst"], (t, d) => {
+    if ("roster" === t) { roster = Array.isArray(d.list) ? d.list.filter((x) => x && typeof x.n === "string") : []; draw(); }
+    if (t === "recvst") { st = d && d.m && typeof d.m === "object" ? d.m : {}; draw(); }
+  }, null, (s, i) => { $("#rvInfo").textContent = s === "fail" ? "中継サーバーにつながりません。再試行しています…" : `ルーム ${room} ／ 接続中（中継 ${i + 1}）`; });
+  if (!cli) return;
+  const key = (x) => (typeof x === "object" && x && typeof x.id === "string" && x.id) || normName(typeof x === "string" ? x : x.n).slice(0, 60);
+  const start = () => { $("#rvPinRow").classList.add("hidden"); $("#rvMain").classList.remove("hidden"); draw(); };
+  $("#rvPinOk").onclick = () => { const v = $("#rvPin").value.trim(); if (!/^\d{4}$/.test(v)) return toast("4桁のPINを入れてください"); pin = v; who = $("#rvBy").value.trim(); store.set("hq-pin-" + room, v); store.set("hq-recv-by", who); start(); };
+  if (pin) { $("#rvPin").value = pin; }
+  $("#rvQ").oninput = () => { q = foldName($("#rvQ").value); draw(); };
+  let cur = null;
+  const open = (x) => { cur = x; const r = st[key(x)]; $("#rvSN").textContent = x.n; $("#rvSS").textContent = x.s + (r && r.att !== false ? "　（出席済み）" : ""); $("#rvAtt").checked = true; $("#rvHob").value = r ? r.h || "" : ""; $("#rvRn").value = x.n; $("#rvRs").value = x.s || ""; $(".rvfix").open = false; $("#rvUndo").classList.toggle("hidden", !r); $("#rvSheet").classList.remove("hidden"); setTimeout(() => $("#rvHob").focus(), 50); };
+  const close = () => $("#rvSheet").classList.add("hidden");
+  const send = (a) => { if (!cli.send("cmd", { pin, cmd: "recv", a: { ...a, by: who } })) return toast("接続が切れています"); };
+  $("#rvOk").onclick = () => { if (!cur) return; const h = $("#rvHob").value.trim(), rn = $("#rvRn").value.trim().replace(/\s+/g, " "), rs = $("#rvRs").value.trim(); const att = $("#rvAtt").checked; const a = { n: cur.n, id: cur.id, h, att }; if (rn && rn !== cur.n) a.rn = rn; if (rs !== (cur.s || "")) a.rs = rs; send(a); if (a.rn || a.rs !== undefined) toast("名前・店舗の修正を送りました"); st[key(cur)] = { h, at: Date.now(), att }; close(); draw(); toast(att ? `${cur.n} さん 出席${h ? "（" + h + "）" : ""}` : `${cur.n} さんは「未出席」で保存しました`); $("#rvQ").value = ""; q = ""; draw(); };
+  $("#rvNo").onclick = close;
+  $("#rvUndo").onclick = () => { if (!cur || !confirm(`${cur.n} さんの受付を取り消しますか？`)) return; send({ n: cur.n, id: cur.id, undo: true }); delete st[key(cur)]; close(); draw(); };
+  function draw() {
+    if ($("#rvMain").classList.contains("hidden")) return;
+    const ok = (x) => { const r = st[key(x)]; return !!(r && r.att !== false); }, done = roster.filter(ok).length;
+    $("#rvSum").innerHTML = `出席 <b>${done}</b> / ${roster.length}人`;
+    const list = roster.filter((x) => !q || foldName(x.n + (x.k || "") + x.s).includes(q));
+    const stores = []; list.forEach((x) => { const s2 = x.s || "店舗なし"; if (!stores.includes(s2)) stores.push(s2); });
+    $("#rvL").innerHTML = stores.map((s2) => `<div class="rvg"><div class="rvgh">${esc(s2)}</div>${list.filter((x) => (x.s || "店舗なし") === s2).map((x) => { const r = st[key(x)], a = ok(x); return `<button class="rvb${a ? " ok" : ""}" data-n="${esc(x.n)}"><span>${esc(x.n)}</span><small>${a ? "✓ 出席" + (r.h ? "・" + esc(r.h) : "") : r && r.h ? "未出席・" + esc(r.h) : "未出席"}</small></button>`; }).join("")}</div>`).join("") || '<p class="note">名簿がまだ届いていません</p>';
+    $("#rvL").querySelectorAll("[data-n]").forEach((b) => (b.onclick = () => open(roster.find((x) => x.n === b.dataset.n))));
+  }
+}
+
+// ================= モニターに映像（YouTube）を全面で流す（ボーナス前の予告など） =================
+const YTV = { div: null, pl: null, id: "", at: 0, ready: false, onEnd: null };
+function ytvLoad() { return new Promise((res) => { if (window.YT && window.YT.Player) return res(); const prev = window.onYouTubeIframeAPIReady; window.onYouTubeIframeAPIReady = () => { prev && prev(); res(); }; if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) { const sc = document.createElement("script"); sc.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(sc); } setTimeout(res, 6000); }); }
+function ytvSync(el, S) {
+  const slot = el.querySelector(".js-ytv");
+  const fullOpen = !!document.querySelector("#fullMon:not(.hidden)");
+  if (!slot) { if (YTV.div && YTV.div.parentNode && el.contains(YTV.div)) { try { YTV.pl && YTV.pl.stopVideo(); } catch (e) {} YTV.div.remove(); } return; }
+  if (el.id === "hMon" && fullOpen) { slot.innerHTML = '<div class="vmsg">🎬 全画面モニターで再生中</div>'; return; }
+  const id = slot.dataset.yt, at = +slot.dataset.at || 0; if (!id) return;
+  const muted = el.id === "hMon"; // 司会画面の小さいモニターは音なし（音は全画面・別PCモニターから）
+  if (!YTV.div) { YTV.div = document.createElement("div"); YTV.div.className = "ytvbox"; YTV.div.innerHTML = '<div id="ytvPl"></div>'; }
+  if (YTV.div.parentNode !== slot) slot.replaceChildren(YTV.div);
+  const start = () => { try { if (muted) YTV.pl.mute(); else { YTV.pl.unMute(); YTV.pl.setVolume(100); } YTV.pl.seekTo(0, true); YTV.pl.playVideo(); } catch (e) {} };
+  if (YTV.pl && YTV.ready) { try { if (muted) YTV.pl.mute(); else YTV.pl.unMute(); } catch (e) {} }
+  if (YTV.pl && YTV.id === id) { if (YTV.at !== at) { YTV.at = at; if (YTV.ready) start(); } else if (YTV.ready) { try { if (YTV.pl.getPlayerState() !== 1 && YTV.pl.getPlayerState() !== 0) YTV.pl.playVideo(); } catch (e) {} } return; }
+  YTV.id = id; YTV.at = at; YTV.ready = false;
+  ytvLoad().then(() => {
+    if (!window.YT || !window.YT.Player) { slot.innerHTML = '<div class="vmsg">映像を読み込めませんでした（ネットにつながっているか確認してください）</div>'; return; }
+    try { YTV.pl && YTV.pl.destroy(); } catch (e) {}
+    YTV.div.innerHTML = '<div id="ytvPl"></div>';
+    YTV.pl = new YT.Player("ytvPl", { width: "100%", height: "100%", videoId: id, playerVars: { autoplay: 1, controls: 0, rel: 0, modestbranding: 1, playsinline: 1, iv_load_policy: 3, disablekb: 1 },
+      events: { onReady: () => { YTV.ready = true; start(); }, onStateChange: (e) => { if (e.data === 0 && YTV.onEnd) YTV.onEnd(YTV.at); } } });
+  });
+}
+
+// オリジナル演出（約11秒）：暗転 → 警報 → スポットライト → 「BONUS TIME」ドン！ → ルール
+function bonusOwnHTML(b) {
+  const el = Math.max(0, (Date.now() - b.at) / 1000), d = (t) => `${(t - el).toFixed(2)}s`;
+  const conf = Array.from({ length: 70 }, (_, i) => `<i style="left:${(i * 37) % 100}%;background:${["#FFD55A", "#FF5A5A", "#5AC8FF", "#7CFF8A", "#fff"][i % 5]};animation-delay:${d(5.7 + (i % 10) * 0.08)};--dx:${((i * 53) % 200) - 100}px;--rt:${(i * 47) % 720}deg"></i>`).join("");
+  return `<div class="bo-wrap">
+    <div class="bo-warn" style="animation-delay:${d(0.6)}"><div class="bo-stripe"></div><div class="bo-wt">⚠ WARNING ⚠</div><div class="bo-ws">緊急速報</div><div class="bo-stripe b"></div></div>
+    <div class="bo-beam l" style="animation-delay:${d(2.6)}"></div><div class="bo-beam r" style="animation-delay:${d(2.6)}"></div>
+    <div class="bo-q" style="animation-delay:${d(2.8)}">なにかが…始まる…！</div>
+    <div class="bo-box" style="animation-delay:${d(3.4)}">🎁</div>
+    <div class="bo-flash" style="animation-delay:${d(5.6)}"></div>
+    <div class="bo-rays" style="animation-delay:${d(5.6)}"></div>
+    <div class="bo-main" style="animation-delay:${d(5.6)}"><div class="bo-en">BONUS TIME</div><div class="bo-jp">ボーナスタイム${b.kind === "name" ? "①" : b.kind === "hobby" ? "②" : ""}突入！</div></div>
+    <div class="bo-sub" style="animation-delay:${d(7.4)}">${b.kind === "name" ? "スタッフの<b>苗字</b>を当てろ！" : "スタッフの<b>名前</b>と<b>趣味</b>を聞き出せ！"}</div>
+    <div class="bo-sub2" style="animation-delay:${d(8.8)}">当てれば 1人につき <b>＋0.1点</b></div>
+    <div class="bo-conf">${conf}</div></div>`;
+}
 // ================= 司会・サブ司会の操作パネル（共通） =================
 let hostMode = "choice", pickedCorrect = [], preCorrect = [], curS = { ...DEF };
 const STAGE_LABEL = { review: "写真のふりかえり", cutshow: "予選落ちの発表", read: "問題を表示中（選択肢はまだ）", open: "回答受付中", closed: "締め切り", dist: "回答分布", correct: "正解発表", fast: "最速正解者", list: "正解者一覧", champ: "ピリオドチャンピオン" };
@@ -5225,6 +5444,8 @@ function hostPage() {
   if (!H.linksV10) { H.links = H.links || {}; const th = H.links.think; if (!th || !th.url || /TI3liav5eSY/.test(th.url)) H.links.think = { url: "https://youtu.be/tYNXv76ZtUY" }; H.linksV10 = true; }
   if (!H.linksV11) { H.links = H.links || {}; if (!H.links.think15 || !H.links.think15.url) H.links.think15 = { url: "https://youtu.be/d1LFCMMtGb8" }; if (!H.links.think20 || !H.links.think20.url) H.links.think20 = { url: "https://youtu.be/tYNXv76ZtUY" }; H.linksV11 = true; }
   if (!H.sndV2) { H.snd = H.snd || { vol: 0.8, on: true }; H.snd.adj = -1; H.sndV2 = true; }
+  if (!H.linksV14) { H.links = H.links || {}; if (!H.links.bonusBgm || !H.links.bonusBgm.url) H.links.bonusBgm = { url: "https://youtu.be/eslmQH0xPt8" }; H.linksV14 = true; }
+  if (!H.linksV15) { H.links = H.links || {}; if (!H.links.bonusIntro || !H.links.bonusIntro.url) H.links.bonusIntro = { url: "https://youtu.be/sWtavkaZJgk" }; H.linksV15 = true; }
   if (!H.linksV13) { H.links = H.links || {}; [["think", "tYNXv76ZtUY", 20], ["think20", "tYNXv76ZtUY", 20], ["think15", "d1LFCMMtGb8", 15]].forEach(([k, id, d]) => { const L = H.links[k]; if (L && L.url && L.url.includes(id) && !(+L.dur > 0)) { L.dur = d; L.start = +L.start || 0; } }); H.linksV13 = true; }
   if (!H.linksV12) { H.links = H.links || {}; if (!H.links.bgm || !H.links.bgm.url) H.links.bgm = { url: "https://youtu.be/tJOL_ii0LbY" }; H.linksV12 = true; }
   let saveT = null;
@@ -5243,10 +5464,11 @@ function hostPage() {
   const joinedKeys = () => Object.keys(H.claims).filter((k) => H.roster[k]);
   const playersCount = () => joinedKeys().length;
   const standKeys = () => Object.keys(H.period.stand).filter((k) => H.period.stand[k] && H.claims[k] && H.roster[k]);
-  const ranking = () => { const pr = (H.pairs || []).filter((x) => x.partner && H.roster[x.k] && H.roster[x.partner] && H.ever[x.partner]), gh = new Set(pr.map((x) => x.k));
-    return Object.keys(H.ever).filter((k) => H.roster[k] && !gh.has(k))
-    .map((k) => ({ key: k, n: H.roster[k], p: H.points[k] || 0, t: H.tsum[k] || 0, z: H.tie[k] ?? hashNum(k) }))
-    .concat(pr.map((x) => ({ key: x.k, n: `${H.roster[x.k]}（🤝${H.roster[x.partner]}）`, pair: H.roster[x.partner], p: H.points[x.partner] || 0, t: (H.tsum[x.partner] || 0) + 1000, z: H.tie[x.k] ?? hashNum(x.k) })))
+  const ranking = () => { const pr = (H.pairs || []).filter((x) => x.partner && H.roster[x.k] && H.roster[x.partner] && H.ever[x.partner] && (!window.__attOK || window.__attOK(x.partner))), gh = new Set(pr.map((x) => x.k));
+    const aok = (k) => !window.__attOK || window.__attOK(k);
+    return Object.keys(H.ever).filter((k) => H.roster[k] && !gh.has(k) && aok(k))
+    .map((k) => ({ key: k, n: H.roster[k], p: Math.round(((H.points[k] || 0) + ((H.bonusPts || {})[k] || 0)) * 10) / 10, t: H.tsum[k] || 0, z: H.tie[k] ?? hashNum(k) }))
+    .concat(pr.map((x) => ({ key: x.k, n: `${H.roster[x.k]}（🤝${H.roster[x.partner]}）`, pair: H.roster[x.partner], p: Math.round(((H.points[x.partner] || 0) + ((H.bonusPts || {})[x.partner] || 0)) * 10) / 10, t: (H.tsum[x.partner] || 0) + 1000, z: H.tie[x.k] ?? hashNum(x.k) })))
     .sort((a, b) => b.p - a.p || a.t - b.t || a.z - b.z).map((x, i) => ({ ...x, rank: i + 1 })); };
   const tieGroups = () => { const g = {}; ranking().forEach((r) => { const k = r.p + "|" + r.t; (g[k] = g[k] || []).push(r); }); return Object.values(g).filter((x) => x.length > 1); };
   function awards() {
@@ -5262,7 +5484,7 @@ function hostPage() {
     if (cr) {
       const rankWin = new Set(out.map((o) => o.key)), given = new Set();
       H.champs.slice().sort((a, b) => a.period - b.period).forEach((c) => {
-        const cands = c.cands && c.cands.length ? c.cands : [{ key: c.key, n: c.n, ms: c.ms }];
+        const cands = (c.cands && c.cands.length ? c.cands : [{ key: c.key, n: c.n, ms: c.ms }]).filter((x) => !window.__attOK || window.__attOK(x.key));
         const pick = H.opt.dup === "one" ? cands.find((x) => !rankWin.has(x.key) && !given.has(x.key)) : cands[0];
         if (!pick) return;
         given.add(pick.key);
@@ -5304,10 +5526,10 @@ function hostPage() {
   const pubLive = () => { if (liveT) return; liveT = setTimeout(() => { liveT = null; cli && cli.send("live", { rid: H.S.rid, list: answersList().map((a) => ({ n: a.n, ms: a.ms, c: a.c })) }, { qos: 0 }); }, 500); };
   const reply = (cid, o) => { if (typeof cid === "string" && /^[a-z0-9]{8,24}$/.test(cid)) cli.send("r/" + cid, o); };
   const announce = () => cli && cli.sendTo(LOBBY, "cur", { room: H.room, at: Date.now() }, { qos: 1, retain: true });
-  const pubRoster = () => { if (!cli) return; const list = Object.keys(H.roster).map((k) => ({ n: H.roster[k], s: H.rstore[k] || "", k: (H.rkana || {})[k] || "" })); cli.send("roster", { list, free: !!H.opt.freeJoin }, { qos: 1, retain: true }); };
+  const pubRoster = () => { if (!cli) return; const list = Object.keys(H.roster).map((k) => ({ n: H.roster[k], s: H.rstore[k] || "", k: (H.rkana || {})[k] || "", id: k })); cli.send("roster", { list, free: !!H.opt.freeJoin }, { qos: 1, retain: true }); };
   let lobbyCur, annT = null;
   const takeOver = () => { announce(); lobbyCur = H.room; render(); };
-  const cli = connectAll(H.room, ["join", "ans", "cmd", "ping", "leave", "cam", "@" + LOBBY + "/cur"], onMsg, () => { pubState(true); pubRoster(); pubImgs(H.S.img);
+  const cli = connectAll(H.room, ["join", "ans", "cmd", "ping", "leave", "cam", "bonus", "@" + LOBBY + "/cur"], onMsg, () => { pubState(true); pubRoster(); pubImgs(H.S.img);
     clearTimeout(annT); annT = setTimeout(() => { if (lobbyCur === undefined || !lobbyCur || lobbyCur === H.room) { announce(); lobbyCur = H.room; } render(); }, 1800); });
   if (!cli) return;
   const watchSfx = sfxWatcher(), watchCount = countWatcher();
@@ -5324,7 +5546,8 @@ function hostPage() {
     }
     if (t === "join") return onJoin(d);
     if (t === "ans") return onAns(d);
-    if (t === "cmd") { if (String(d.pin) === H.pin) act(d.cmd, d.a || {}, true); }
+    if (t === "bonus") return window.__onBonus && window.__onBonus(d);
+    if (t === "cmd") { if (String(d.pin) === H.pin) { if (d.cmd === "recv") return window.__onRecv && window.__onRecv(d.a || {}); act(d.cmd, d.a || {}, true); } }
   }
   function validTok(tok) { return typeof tok === "string" && /^[A-Za-z0-9]{16,40}$/.test(tok); }
   function onJoin(d) {
@@ -5334,6 +5557,7 @@ function hostPage() {
     if (key && !H.roster[key]) { const f = foldName(d.name); const hit = Object.keys(H.roster).filter((k) => foldName(H.roster[k]) === f); if (hit.length === 1) key = hit[0]; }
     if (key && !H.roster[key] && H.opt.freeJoin && Object.keys(H.roster).length < 300) { H.roster[key] = String(d.name).replace(/\s+/g, " ").trim().slice(0, 30); H.rstore[key] = H.rstore[key] || ""; pubRoster(); }
     if (!key || !H.roster[key]) return reply(d.cid, { t: "join", ok: false, reason: "notlisted" });
+    if (window.__attOK && !window.__attOK(key)) return reply(d.cid, { t: "join", ok: false, reason: "notatt" });
     if (H.claims[key] && H.claims[key] !== d.tok) {
       if (!d.force) return reply(d.cid, { t: "join", ok: false, reason: "taken", name: H.roster[key] });
       // 本人が端末を替えた・ブラウザが変わった：前の端末を外して引き継ぐ（得点はそのまま）
@@ -5974,15 +6198,17 @@ function hostPage() {
     const wrap = document.createElement("div");
     wrap.innerHTML = `
       <div class="htabs" id="hTabs2" role="tablist">
+        <button data-ht="recv"><b>⓪ 受付</b><small>受付台帳・ボーナス</small></button>
         <button data-ht="prep"><b>① 準備</b><small>名簿・問題・QR</small></button>
         <button data-ht="live"><b>② 本番</b><small>出題・進行</small></button>
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/26-1</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-7</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
+      <div class="hpanel" data-hp="recv"><div class="hgrid2"><div class="colA"></div><div class="colB"></div></div></div>
       <div class="hpanel" data-hp="prep"><div class="hgrid2"><div class="colA"></div><div class="colB"></div></div></div>
       <div class="hpanel" data-hp="live"><div class="hlive"><div class="colA"></div><div class="colB"></div></div></div>
       <div class="hpanel" data-hp="cere"><div class="hgrid2"><div class="colA"></div><div class="colB"></div></div></div>
@@ -6626,8 +6852,8 @@ function hostPage() {
   $("#camDev").onchange = () => camUseLocal($("#camDev").value);
   // ---- 別の司会PCへ引き継ぎ ----
   {
-    const SETUP = ["roster", "rstore", "rkana", "bank", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "linksV10", "linksV11", "linksV12", "linksV13", "sndV2", "snd", "pub", "exact", "game", "gameSets"];
-    const PROG = ["points", "tsum", "scored", "ever", "period", "champs", "handed", "tie", "bankIdx", "pairs", "lotUsed"];
+    const SETUP = ["roster", "rstore", "rkana", "bank", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "linksV10", "linksV11", "linksV12", "linksV13", "linksV14", "linksV15", "sndV2", "snd", "pub", "exact", "game", "gameSets", "recv", "bonusEx"];
+    const PROG = ["points", "tsum", "scored", "ever", "period", "champs", "handed", "tie", "bankIdx", "pairs", "lotUsed", "bonusPts", "bonusAns", "bonusR"];
     const b64e = (u8) => { let x = ""; for (let i = 0; i < u8.length; i += 0x8000) x += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(x); };
     const b64d = (x) => Uint8Array.from(atob(x), (c) => c.charCodeAt(0));
     const gz = async (u8, comp) => new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(comp ? new CompressionStream("gzip") : new DecompressionStream("gzip"))).arrayBuffer());
@@ -6743,7 +6969,7 @@ function hostPage() {
   const STEPS_C = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["dist", "分布"], ["correct", "正解"], ["review", "写真"], ["cutshow", "予選落ち"], ["fast", "最速"], ["list", "正解者"]];
   const STEPS_B = [["read", "問題"], ["open", "受付"], ["closed", "締切"], ["fast", "一番乗り"], ["list", "押した順"]];
   function renderExtra(S) {
-    try { renderLot(); } catch (x) {} try { window.__gSetRender && window.__gSetRender(); } catch (x) {} try { window.__gPoolRender && window.__gPoolRender(); } catch (x) {}
+    try { renderLot(); } catch (x) {} try { window.__recvRender && window.__recvRender(); } catch (x) {} try { window.__gSetRender && window.__gSetRender(); } catch (x) {} try { window.__gPoolRender && window.__gPoolRender(); } catch (x) {}
     // 準備チェック
     const why = H.exact && !localReason(H.exact) ? "" : localReason(pubBase());
     const nR = Object.keys(H.roster).length, nS = new Set(Object.values(H.rstore)).size, nB = H.bank.length;
@@ -6958,6 +7184,158 @@ function hostPage() {
       $("#qeditOff").onclick = () => set(false);
     }
   }
+
+  // ================= ⓪ 受付台帳 ＋ 🎁 ボーナスタイム（スタッフの趣味あて） =================
+  if (!H.recv) H.recv = {}; if (!H.bonusEx) H.bonusEx = {}; if (!H.bonusPts) H.bonusPts = {}; if (!H.bonusAns) H.bonusAns = {}; if (!H.bonusKey) H.bonusKey = {};
+  if (!H.bonusR) { H.bonusR = { name: { pts: {}, ans: {} }, hobby: { pts: Object.keys(H.bonusPts).length ? H.bonusPts : {}, ans: H.bonusAns || {} } }; }
+  if (!H.bonusKind) H.bonusKind = "name";
+  const BK = { name: { t: "名前当て", talk: 120, no: "第1回" }, hobby: { t: "趣味当て", talk: 300, no: "第2回" } };
+  const bnTotal = () => { const t = {}; ["name", "hobby"].forEach((kd) => Object.entries((H.bonusR[kd] || {}).pts || {}).forEach(([k, v]) => (t[k] = Math.round(((t[k] || 0) + v) * 10) / 10))); H.bonusPts = t; };
+  const splitName = (n) => { const m = String(n || "").trim().split(/[\s\u3000]+/); return m.length >= 2 ? { sur: m[0], giv: m.slice(1).join(" ") } : null; };
+  const kanaOf = (k) => { const r = String((H.rkana || {})[k] || "").trim().split(/[\s\u3000]+/); return r.length >= 2 ? r[0] : ""; };
+  const hira = (x) => String(x || "").normalize("NFKC").replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60)).replace(/\s/g, "");
+  const isPairK = (k) => (H.pairs || []).some((x) => x.k === k); // 楢原・川口など（ペア枠の人）：名前当てには出す（出席チェック不要）、趣味当てには出さない
+  const isAtt = (k) => !!(H.recv[k] && H.recv[k].att !== false);
+  const attOn = () => H.opt.attGate !== false && Object.keys(H.recv).some((k) => H.roster[k] && isAtt(k));
+  window.__attOK = (k) => !attOn() || isAtt(k);
+  const pubRecv = () => { if (!cli) return; const m = {}; Object.keys(H.recv).forEach((k) => { if (H.roster[k]) m[k] = { h: H.recv[k].h || "", at: H.recv[k].at || 0, att: isAtt(k) }; }); cli.send("recvst", { m, at: Date.now() }, { qos: 1, retain: true }); };
+  const findKey = (n) => { if (typeof n !== "string") return null; let k = normName(n).slice(0, 60); if (H.roster[k]) return k; const f = foldName(n); const hit = Object.keys(H.roster).filter((x) => foldName(H.roster[x]) === f); return hit.length === 1 ? hit[0] : null; };
+  const renameKey = (k, rn, rs) => { const nn = String(rn || "").replace(/[\s\u3000]+/g, " ").trim().slice(0, 30); if (nn && nn !== H.roster[k]) H.roster[k] = nn; if (typeof rs === "string" && rs.trim() && rs.trim() !== H.rstore[k]) H.rstore[k] = rs.trim().slice(0, 20); pubRoster(); };
+  window.__onRecv = (a) => { const k = typeof a.id === "string" && H.roster[a.id] ? a.id : findKey(a.n); if (!k) return; if (a.rn || a.rs) renameKey(k, a.rn, a.rs); const h = String(a.h || "").replace(/\s+/g, " ").trim().slice(0, 40);
+    if (a.undo) delete H.recv[k]; else H.recv[k] = { h, at: (H.recv[k] && H.recv[k].at) || Date.now(), by: String(a.by || "").slice(0, 20), att: a.att !== false };
+    save(); pubRecv(); render(); };
+  {
+    const P2 = (c) => document.querySelector(`#hostV7 [data-hp="recv"] .${c}`);
+    const rc = document.createElement("div"); rc.className = "ctl"; rc.id = "recvCard";
+    rc.innerHTML = `<h2>受付台帳 <span class="phase" id="rvCount"></span></h2>
+      <p class="note" style="margin:0 0 8px">受付用のスマホ・PC（何台でもOK）で下のQRを開き、PIN（${esc(H.pin)}）を入れると受付できます。受付で聞いた「趣味」は、ボーナスタイムの問題になります。</p>
+      <label class="chk2 rvgate"><input type="checkbox" id="rvGate"> <b>出席にチェックがある人だけ</b>クイズに参加・順位と賞品の対象にする（1人でも出席チェックが入ると有効）</label>
+      <div class="rvqr"><div class="qr" id="rvQR"></div><div style="flex:1;min-width:0"><input id="rvURL" readonly><div class="row" style="margin-top:6px"><button class="btn" id="rvCopy">URLをコピー</button><button class="btn" id="rvCsv">⬇ 台帳をCSVで保存</button></div></div></div>
+      <div class="row" style="margin-top:8px"><input id="rvFind" placeholder="名前・店舗で絞り込み" style="flex:1"><label class="chk2"><input type="checkbox" id="rvOnlyNo"> 未出席だけ</label></div>
+      <div id="rvList"></div>`;
+    P2("colA") && P2("colA").append(rc);
+    const bc = document.createElement("div"); bc.className = "ctl"; bc.id = "bonusCard";
+    bc.innerHTML = `<h2>🎁 ボーナスタイム <span class="phase" id="bnPhase"></span></h2>
+      <p class="note" style="margin:0 0 8px">歓談でスタッフのことを聞き出す → スマホで答える（1分） → 当たった数 × 0.1点 をクイズの得点に加点（2回分は合計）。<br>受付スタッフなど「対象外」にした人には、参加者全員の平均点を加点します。</p>
+      <div class="seg" id="bnKind"><button data-bk="name">第1回　名前当て</button><button data-bk="hobby">第2回　趣味当て</button></div>
+      <p class="note" id="bnKindNote" style="margin:6px 0"></p>
+      <div class="row"><button class="btn go" id="bnOwn">🎬 ボーナスタイム突入の演出（約11秒）</button><button class="btn" id="bnIntro">▶ YouTubeの予告映像</button><label class="chk2"><input type="checkbox" id="bnAuto" checked> 終わったら自動で①へ</label></div>
+      <div class="row"><button class="btn go" id="bnTalk">① 歓談スタート</button><button class="btn go" id="bnInput">② 記入スタート（1分）</button></div>
+      <div class="row"><button class="btn" id="bnFinish">③ 今すぐ締め切って結果を出す</button><button class="btn" id="bnBack">クイズの画面に戻る</button><button class="ghost" id="bnReset">この回のボーナスをリセット</button></div>
+      <div class="row"><button class="btn go" id="bnStTop">④ よく当てられたスタッフ TOP3</button><button class="btn go" id="bnStLow">⑤ あまり当てられなかったスタッフ 3名</button></div>
+      <div id="bnInfo" class="note" style="margin-top:6px"></div>
+      <div id="bnRes"></div>`;
+    P2("colB") && P2("colB").append(bc);
+    const rURL = () => pubBase() + `#r=${H.room}&view=recv`;
+    $("#rvCopy").onclick = () => { navigator.clipboard && navigator.clipboard.writeText(rURL()); toast("受付用URLをコピーしました"); };
+    $("#rvCsv").onclick = () => {
+      const rows = [["店舗", "名前", "出席", "受付時刻", "趣味", "ボーナス対象外", "ボーナス①名前", "ボーナス②趣味", "ボーナス合計"]].concat(Object.keys(H.roster).sort((a, b) => (H.rstore[a] || "").localeCompare(H.rstore[b] || "") || H.roster[a].localeCompare(H.roster[b])).map((k) => { const r = H.recv[k]; return [H.rstore[k] || "", H.roster[k], isAtt(k) ? "出席" : "", r && r.at ? new Date(r.at).toLocaleTimeString("ja-JP") : "", r ? r.h || "" : "", H.bonusEx[k] ? "対象外" : "", ((H.bonusR.name || {}).pts || {})[k] ?? "", ((H.bonusR.hobby || {}).pts || {})[k] ?? "", H.bonusPts[k] != null ? H.bonusPts[k] : ""]; }));
+      const csv = "﻿" + rows.map((r) => r.map((x) => `"${String(x).replace(/"/g, '""')}"`).join(",")).join("\r\n");
+      const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = `受付台帳_${new Date().toISOString().slice(0, 10)}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    };
+    $("#rvGate").onchange = () => { H.opt.attGate = $("#rvGate").checked; save(); pubState(); render(); };
+    $("#rvFind").oninput = () => render(); $("#rvOnlyNo").onchange = () => render();
+    window.__recvRender = () => {
+      const ks = Object.keys(H.roster), done = ks.filter((k) => isAtt(k)).length, hb = ks.filter((k) => H.recv[k] && H.recv[k].h).length;
+      $("#rvCount").textContent = `出席 ${done} / ${ks.length}人・趣味 ${hb}人`; $("#rvGate").checked = H.opt.attGate !== false;
+      const u = rURL(); if ($("#rvURL").value !== u) { $("#rvURL").value = u; qrInto($("#rvQR"), u); }
+      if ($("#rvList").contains(document.activeElement) && document.activeElement.tagName === "INPUT" && document.activeElement.type === "text") return;
+      const q = foldName($("#rvFind").value || ""), only = $("#rvOnlyNo").checked;
+      const stores = []; ks.forEach((k) => { const st = H.rstore[k] || "店舗なし"; if (!stores.includes(st)) stores.push(st); });
+      const h = stores.map((st) => { const its = ks.filter((k) => (H.rstore[k] || "店舗なし") === st).filter((k) => (!q || foldName(H.roster[k] + st).includes(q)) && (!only || !isAtt(k))); if (!its.length) return "";
+        const c = ks.filter((k) => (H.rstore[k] || "店舗なし") === st && isAtt(k)).length, n = ks.filter((k) => (H.rstore[k] || "店舗なし") === st).length;
+        return `<div class="rvst"><div class="rvsh"><b>${esc(st)}</b><span class="note">${c}/${n}人 出席</span></div>${its.map((k) => { const r = H.recv[k], at = isAtt(k);
+          return `<div class="rvrow${at ? " ok" : ""}"><label class="rvck" title="出席"><input type="checkbox" data-rvk="${esc(k)}" ${at ? "checked" : ""}><span class="rvatt">${at ? "出席" : "未"}</span>${esc(H.roster[k])}</label><button class="mini rved" data-rved="${esc(k)}" title="名前・店舗を修正">✏️</button><input type="text" class="rvh" data-rvh="${esc(k)}" value="${esc(r ? r.h || "" : "")}" placeholder="趣味"><label class="rvex" title="ボーナスの対象外（全体平均を加点）"><input type="checkbox" data-rvx="${esc(k)}" ${H.bonusEx[k] ? "checked" : ""}>対象外</label>${H.bonusPts[k] != null ? `<span class="rvpt">+${H.bonusPts[k]}</span>` : ""}</div>`; }).join("")}</div>`; }).join("");
+      const el = $("#rvList"); if (el._h === h) return; el._h = h; el.innerHTML = h || '<p class="note">名簿がありません（①準備で名簿を読み込んでください）</p>';
+      el.querySelectorAll("[data-rvk]").forEach((x) => (x.onchange = () => { const k = x.dataset.rvk; if (x.checked) H.recv[k] = { h: (H.recv[k] && H.recv[k].h) || "", at: Date.now(), by: "本部", att: true }; else if (H.recv[k] && H.recv[k].h) H.recv[k] = { ...H.recv[k], att: false }; else delete H.recv[k]; save(); pubRecv(); render(); }));
+      el.querySelectorAll("[data-rvh]").forEach((x) => (x.onchange = () => { const k = x.dataset.rvh, v = x.value.replace(/\s+/g, " ").trim().slice(0, 40); H.recv[k] = { ...(H.recv[k] || { at: Date.now(), by: "本部", att: false }), h: v }; save(); pubRecv(); render(); }));
+      el.querySelectorAll("[data-rved]").forEach((x) => (x.onclick = () => { const k = x.dataset.rved; const nn = prompt("名前を修正（苗字と名前の間はスペース）", H.roster[k]); if (nn == null) return; const ns = prompt("店舗を修正", H.rstore[k] || ""); if (ns == null) return; renameKey(k, nn, ns); save(); pubRecv(); render(); toast("名前・店舗を修正しました"); }));
+      el.querySelectorAll("[data-rvx]").forEach((x) => (x.onchange = () => { const k = x.dataset.rvx; if (x.checked) H.bonusEx[k] = true; else delete H.bonusEx[k]; save(); render(); }));
+      // ボーナス
+      const S = H.S, b = S.view === "bonus" && S.bonus ? S.bonus : null, kd = H.bonusKind, R0 = H.bonusR[kd] || { pts: {}, ans: {} };
+      document.querySelectorAll("#bnKind [data-bk]").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.bk === kd)));
+      $("#bnTalk").textContent = `① 歓談スタート（${BK[kd].talk / 60}分）`;
+      $("#bnPhase").textContent = b ? `${BK[b.kind || "hobby"].no} ` + ({ intro: "演出中", talk: "歓談中", input: "記入中", done: "結果発表" }[b.ph] || "") : "";
+      const nqName = ks.filter((k) => splitName(H.roster[k])).filter((k) => isAtt(k) || isPairK(k)).length, nqHob = ks.filter((k) => isAtt(k) && H.recv[k].h && !isPairK(k)).length, ex = ks.filter((k) => H.bonusEx[k]).map((k) => H.roster[k]);
+      $("#bnKindNote").innerHTML = kd === "name" ? `歓談2分 → スマホに「下の名前＋店舗」が出て、<b>苗字</b>をスクロールで選ぶか直接入力。問題は受付済みのスタッフ <b>${nqName}人</b>${nqName < 2 ? "（受付前は名簿の全員）" : ""}。` : `歓談5分 → スマホで「名前 → 趣味」を4択で選ぶ。問題は趣味が入っているスタッフ <b>${nqHob}人</b>。`;
+      $("#bnInfo").innerHTML = `対象外：${ex.length ? esc(ex.join("、")) : "なし（受付台帳の「対象外」にチェック）"}　／　加点済み：第1回 ${Object.keys(H.bonusR.name.pts || {}).length ? "○" : "—"}・第2回 ${Object.keys(H.bonusR.hobby.pts || {}).length ? "○" : "—"}`;
+      $("#bnInput").disabled = kd === "hobby" ? nqHob < 2 : false;
+      const res = Object.keys(R0.pts || {}).filter((k) => H.roster[k]).sort((a, c) => R0.pts[c] - R0.pts[a]);
+      $("#bnRes").innerHTML = res.length ? `<div class="note" style="margin-top:6px">${BK[kd].no} ${BK[kd].t} の結果（合計は 総合 = 2回分）</div><table class="bnt"><tbody>${res.slice(0, 40).map((k) => `<tr><td>${esc(H.roster[k])}</td><td>${H.bonusEx[k] ? "対象外（平均）" : `${Object.values((R0.ans || {})[k] || {}).filter(Boolean).length}人 正解`}</td><td><b>+${R0.pts[k]}</b></td><td class="note">合計 +${H.bonusPts[k] || 0}</td></tr>`).join("")}</tbody></table>` : "";
+    };
+    // ---- ボーナスタイムの進行 ----
+    const shuf = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    let bnT = null;
+    const ytId = (u) => { const m = String(u || "").match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : ""; };
+    $("#bnIntro").onclick = () => { const id = ytId((H.links.bonusIntro || {}).url); if (!id) return toast("設定の音のリンク「ボーナスタイムの予告映像」にYouTubeのURLを入れてください"); clearTimeout(bnT); setS({ view: "bonus", bonus: { ph: "intro", at: Date.now(), yt: id } }); };
+    document.querySelectorAll("#bnKind [data-bk]").forEach((x) => (x.onclick = () => { if (H.S.view === "bonus" && H.S.bonus && H.S.bonus.ph === "input") return toast("記入中は切り替えられません"); H.bonusKind = x.dataset.bk; save(); render(); }));
+    $("#bnOwn").onclick = () => { clearTimeout(bnT); const at = Date.now(); setS({ view: "bonus", bonus: { kind: H.bonusKind, ph: "intro", own: true, at }, ...sfx("bonusIntro") }); bnT = setTimeout(() => { const b = H.S.bonus; if (H.S.view === "bonus" && b && b.ph === "intro" && b.at === at && $("#bnAuto").checked) $("#bnTalk").click(); }, 12000); };
+    YTV.onEnd = (at) => { const b = H.S.bonus; if (H.S.view === "bonus" && b && b.ph === "intro" && b.at === at && $("#bnAuto").checked) $("#bnTalk").click(); };
+    $("#bnTalk").onclick = () => { clearTimeout(bnT); setS({ view: "bonus", bonus: { kind: H.bonusKind, ph: "talk", dur: BK[H.bonusKind].talk, at: Date.now() }, ...sfx("fanfare") }); };
+    $("#bnInput").onclick = () => {
+      const kd = H.bonusKind, R0 = (H.bonusR[kd] = H.bonusR[kd] || { pts: {}, ans: {} });
+      if (Object.keys(R0.pts).length && !confirm(`${BK[kd].no}（${BK[kd].t}）の結果をリセットして、記入をやり直します。よろしいですか？`)) return;
+      R0.pts = {}; R0.ans = {}; bnTotal(); H.bonusKey = {};
+      let bonus;
+      if (kd === "hobby") {
+        const ks = Object.keys(H.roster).filter((k) => isAtt(k) && H.recv[k].h && !isPairK(k));
+        if (ks.length < 2) return toast("趣味が入っているスタッフが2人以上必要です");
+        const all = [...new Set(ks.map((k) => H.recv[k].h))];
+        const people = shuf(ks.slice()).map((k) => { const h = H.recv[k].h; H.bonusKey[k] = h; const o = shuf(all.filter((x) => x !== h)).slice(0, 3); o.push(h); return { k, n: H.roster[k], s: H.rstore[k] || "", o: shuf(o) }; });
+        bonus = { people };
+      } else {
+        const named = Object.keys(H.roster).filter((k) => splitName(H.roster[k]));
+        let ks = named.filter((k) => isAtt(k) || isPairK(k)); if (ks.length < 2) ks = named;
+        if (ks.length < 2) return toast("名簿に「苗字 名前」の形の人が2人以上必要です");
+        ks.forEach((k) => (H.bonusKey[k] = { sur: splitName(H.roster[k]).sur, r: kanaOf(k) }));
+        const sur = {}; named.forEach((k) => { const sn = splitName(H.roster[k]).sur; if (!sur[sn]) sur[sn] = kanaOf(k) || sn; });
+        const surList = Object.entries(sur).map(([n, r]) => ({ n, r })).sort((a, c) => hira(a.r).localeCompare(hira(c.r), "ja"));
+        bonus = { qs: shuf(ks.slice()).map((k) => ({ k, g: splitName(H.roster[k]).giv, s: H.rstore[k] || "" })), sur: surList };
+      }
+      H.bonusRun = kd;
+      const at = Date.now(); setS({ view: "bonus", bonus: { kind: kd, ph: "input", dur: 60, at, ...bonus }, ...sfx("open") });
+      clearTimeout(bnT); bnT = setTimeout(() => bonusFinish(at), 62500);
+    };
+    const nameOk = (k, c) => { const key = H.bonusKey[k]; if (!key) return false; const t = String(c || "").trim(); if (!t) return false;
+      const S = H.S, q = (S.bonus.qs || []).find((x) => x.k === k), same = q ? Object.keys(H.bonusKey).filter((x) => { const sp = splitName(H.roster[x]); return sp && sp.giv === q.g && (H.rstore[x] || "") === q.s; }) : [k];
+      return same.some((x) => { const kk = H.bonusKey[x]; return foldName(t) === foldName(kk.sur) || (kk.r && hira(t) === hira(kk.r)); }); };
+    window.__onBonus = (d) => {
+      const S = H.S, b = S.bonus, p = H.players[d.tok];
+      if (!p || H.claims[p.key] !== d.tok || S.view !== "bonus" || !b || b.ph !== "input") return;
+      if (Date.now() - b.at > (b.dur + 3) * 1000) return;
+      const k = String(d.k || ""); if (!(k in H.bonusKey) || k === p.key) return;
+      const R0 = H.bonusR[b.kind || "hobby"], mine = (R0.ans[p.key] = R0.ans[p.key] || {});
+      if (!(k in mine)) { mine[k] = (b.kind === "name") ? nameOk(k, d.c) : String(d.c || "") === H.bonusKey[k]; save(); }
+      p.cid = d.cid; reply(d.cid, { t: "bonusack", k, n: Object.keys(mine).length });
+    };
+    function bonusFinish(at) {
+      const S = H.S; if (S.view !== "bonus" || !S.bonus || S.bonus.ph !== "input" || (at && S.bonus.at !== at)) return;
+      clearTimeout(bnT);
+      const kd = S.bonus.kind || "hobby", R0 = H.bonusR[kd];
+      const players = Object.keys(H.ever).filter((k) => H.roster[k]);
+      const cnt = (k) => Object.values(R0.ans[k] || {}).filter(Boolean).length;
+      const pts = {}; players.filter((k) => !H.bonusEx[k]).forEach((k) => (pts[k] = Math.round(cnt(k) * 0.1 * 10) / 10));
+      const vals = Object.values(pts), avg = vals.length ? Math.round((vals.reduce((a, c) => a + c, 0) / vals.length) * 10) / 10 : 0;
+      Object.keys(H.bonusEx).filter((k) => H.roster[k]).forEach((k) => (pts[k] = avg));
+      R0.pts = pts; R0.qk = Object.keys(H.bonusKey); R0.qv = {}; R0.qk.forEach((k) => (R0.qv[k] = typeof H.bonusKey[k] === "string" ? H.bonusKey[k] : "")); bnTotal(); save();
+      const top = Object.keys(pts).filter((k) => !H.bonusEx[k]).map((k) => ({ n: H.roster[k], c: cnt(k) })).filter((x) => x.c > 0).sort((a, c) => c.c - a.c || a.n.localeCompare(c.n, "ja")).slice(0, 20);
+      top.forEach((x, i) => (x.rk = i && top[i - 1].c === x.c ? top[i - 1].rk : i + 1));
+      players.forEach((k) => { const tok = H.claims[k], pl = tok && H.players[tok]; if (pl) reply(pl.cid, { t: "bonusres", kind: kd, pts: pts[k] || 0, c: H.bonusEx[k] ? null : cnt(k), ex: !!H.bonusEx[k], total: H.bonusPts[k] || 0 }); });
+      setS({ view: "bonus", bonus: { kind: kd, ph: "done", at: Date.now(), dur: 0, top, avg, n: vals.length, q: Object.keys(H.bonusKey).length }, ...sfx("fanfare") });
+      sendMe(); toast(`${BK[kd].no} ボーナス点を加点しました（平均 +${avg}点）`);
+    }
+    $("#bnFinish").onclick = () => { const b = H.S.bonus; if (H.S.view !== "bonus" || !b || b.ph !== "input") return toast("記入中のときに使えます"); bonusFinish(); };
+    const bnStaff = (kd) => { const R0 = H.bonusR[kd] || {}, ans = R0.ans || {}; let qk = R0.qk; if (!qk || !qk.length) { const st = new Set(); Object.values(ans).forEach((m) => Object.keys(m || {}).forEach((k) => st.add(k))); qk = [...st]; }
+      return qk.filter((k) => H.roster[k] && (kd === "name" || !isPairK(k))).map((k) => { let c = 0, a = 0; Object.keys(ans).forEach((p) => { const v = (ans[p] || {})[k]; if (v === undefined) return; a++; if (v) c++; }); return { k, n: H.roster[k], s: H.rstore[k] || "", h: kd === "hobby" ? ((R0.qv || {})[k] || (H.recv[k] || {}).h || "") : "", c, a }; }); };
+    const bnStShow = (side) => { const kd = H.bonusKind, L = bnStaff(kd); if (!L.length) return toast(`${BK[kd].no}（${BK[kd].t}）の回答データがありません`);
+      const hi = L.slice().sort((x, y) => y.c - x.c || y.a - x.a || x.n.localeCompare(y.n, "ja")).slice(0, 3), hk = new Set(hi.map((x) => x.k));
+      const lo = L.filter((x) => side !== "low" || !hk.has(x.k) || L.length <= 3).sort((x, y) => x.c - y.c || x.a - y.a || x.n.localeCompare(y.n, "ja")).slice(0, 3);
+      clearTimeout(bnT); setS({ view: "bonus", bonus: { kind: kd, ph: "staff", side, at: Date.now(), dur: 0, list: (side === "low" ? lo : hi).map(({ k, ...x }) => x), np: Object.keys((H.bonusR[kd] || {}).ans || {}).length }, ...sfx(side === "low" ? "open" : "fanfare") }); };
+    $("#bnStTop").onclick = () => bnStShow("top"); $("#bnStLow").onclick = () => bnStShow("low");
+    $("#bnBack").onclick = () => { clearTimeout(bnT); setS({ view: "q" }); };
+    $("#bnReset").onclick = () => { const kd = H.bonusKind; if (!confirm(`${BK[kd].no}（${BK[kd].t}）のボーナス点を消します（クイズの得点ともう1回分は残ります）。よろしいですか？`)) return; H.bonusR[kd] = { pts: {}, ans: {} }; bnTotal(); save(); sendMe(); pubState(); render(); toast("この回のボーナスをリセットしました"); };
+    setTimeout(pubRecv, 2500);
+  }
   document.querySelectorAll("#hostV7 [data-view]").forEach((b) => (b.onclick = () => act("view", { v: b.dataset.view })));
   function render() {
     const S = viewState(), l = answersList();
@@ -7073,7 +7451,7 @@ function playerPage(room, bi) {
   const P = store.get(ks, null) || { cid: rand(14, lower), tok: rand(24, "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"), name: "" };
   store.set(ks, P);
   let S = { ...DEF }, joined = false, t0 = null, t0rid = null, myAns = null, joinT = null, wasStanding = null, seatFx = 0, reviveFx = 0, place = {}, meInfo = null;
-  let up = false;
+  let up = false, bAns = {}, bKey = "", bRes = null, bQ = "";
   document.body.classList.add("v-player");
   let roster = [], pickStore = store.get("hq-pick-store", ""), pendingForce = null;
   const openedAt = Date.now();
@@ -7130,10 +7508,14 @@ function playerPage(room, bi) {
         sheet(d.name || "", "この名前は、別の端末（または別のブラウザ）で参加中になっています。<br>ご本人なら、この端末に切り替えられます。", "この端末に切り替えて参加", () => sendJoin(d.name, false, true));
       } else {
         joined = false; P.name = ""; store.set(ks, P); show("vJoin"); closeSheet();
-        $("#joinNote").textContent = d.reason === "notlisted" ? "名簿に登録されていない名前です。司会に登録した名前を確認してください。"
+        $("#joinNote").textContent = d.reason === "notatt" ? "まだ出席の受付がされていません。受付で名前を伝えてから、もう一度押してください。" : d.reason === "notlisted" ? "名簿に登録されていない名前です。司会に登録した名前を確認してください。"
           : d.reason === "taken" ? "この名前はすでに別の端末で参加中です。司会に「解除」を頼んでください。"
           : "まだ名簿が準備されていません。少し待ってからもう一度押してください。";
       }
+    } else if (d.t === "bonusack") {
+      if (typeof d.k === "string") { bAns[d.k] = bAns[d.k] || "?"; const c = document.querySelector("#bnCnt"); if (c) c.textContent = Object.keys(bAns).length; }
+    } else if (d.t === "bonusres") {
+      bRes = { pts: +d.pts || 0, c: d.c, ex: !!d.ex, kind: d.kind, total: +d.total || 0 }; render();
     } else if (d.t === "me") {
       if (typeof d.p === "number") { meInfo = { p: d.p, rank: d.rank, of: d.of }; render(); }
     } else if (d.t === "place") {
@@ -7237,7 +7619,7 @@ function playerPage(room, bi) {
     const me = meInfo || (b ? { p: b.p, rank: b.rank } : { p: 0, rank: null });
     $("#pScore").textContent = (me.p || 0) + "pt";
     // 得点0のうちは順位を出さない
-    $("#pRank").textContent = me.p > 0 && me.rank ? `総合${me.rank}位${me.of ? ` / ${me.of}人` : ""}` : "総合 —";
+    $("#pRank").textContent = "";
     const sn = standingNow();
     const badge = $("#pStand");
     badge.classList.toggle("hidden", sn === null);
@@ -7246,6 +7628,55 @@ function playerPage(room, bi) {
     if (reviveFx && Date.now() - reviveFx < 3500) { setTimeout(() => { if (Date.now() - reviveFx >= 3500) { reviveFx = 0; render(); } }, 3600); }
     let fx = reviveFx && Date.now() - reviveFx < 3500 ? `<div class="seatfx revfx"><div>🔥 復活！<small style="display:block;font-size:clamp(15px,4.6vw,22px);line-height:1.5;margin-top:14px;font-weight:800">起立に戻りました！<br>ピリオドチャンピオンを狙えます</small></div></div>` : seatFx && Date.now() - seatFx < 3000 ? `<div class="seatfx"><div>着席…<small style="display:block;font-size:clamp(15px,4.6vw,22px);line-height:1.5;margin-top:14px;font-weight:800">でも回答はこのまま続けられます！<br>正解すれば得点が入ります</small></div></div>` : "";
     if (fx) setTimeout(() => { if (Date.now() - seatFx >= 3000) { seatFx = 0; render(); } }, 3100);
+    if (S.view === "bonus" && S.bonus) {
+      const b = S.bonus, key = b.ph + ":" + b.at;
+      const bnm = b.kind === "name";
+      if (b.ph === "talk" && bnm) { el.innerHTML = `<div class="status bnp"><div class="h">🎁 ボーナス①　名前当て</div><div class="bnbig">歓談タイム <b class="js-bt" data-bend="${bonusEnd(b)}"></b></div><p>スタッフと話して、<b>フルネーム</b>を覚えよう！<br>このあと1分間で「下の名前＋店舗」を見て<b>苗字</b>を答えます。<br>当たった数 × <b>0.1点</b> がクイズの得点に加点されます。</p></div>`; bKey = key; return; }
+      if (b.ph === "talk") { el.innerHTML = `<div class="status bnp"><div class="h">🎁 ボーナス②　趣味当て</div><div class="bnbig">歓談タイム <b class="js-bt" data-bend="${bonusEnd(b)}"></b></div><p>スタッフと話して、<b>名前と趣味</b>を聞き出そう！<br>このあと1分間で、スマホで「この人の趣味は？」を答えます。<br>当たった数 × <b>0.1点</b> がクイズの得点に加点されます。</p></div>`; bKey = key; return; }
+      if (b.ph === "staff") { el.innerHTML = `<div class="status bnp"><div class="h">${b.side === "low" ? "📢 もっと覚えてね！" : "🌟 みんなに覚えられたスタッフ"}</div>${(b.list || []).map((x) => `<p><b>${esc(x.n)}</b>（${esc(x.s)}）${x.h ? "<br>趣味：" + esc(x.h) : ""}</p>`).join("")}<p class="note">モニターに注目！</p></div>`; bKey = key; return; }
+      if (b.ph === "done") { el.innerHTML = `<div class="status bnp"><div class="h">🎁 ${bnm ? "名前当て" : "趣味当て"}の結果</div>${bRes ? (bRes.ex ? `<div class="bnbig">+${bRes.pts}<small>pt</small></div><p>（受付スタッフなどは全体の平均点を加点）</p>` : `<div class="bnbig">${bRes.c ?? 0}<small>人 正解</small></div><div class="bnbig2">+${bRes.pts}<small>pt 加点！</small></div>`) + (bRes.total && bRes.total !== bRes.pts ? `<p>ボーナス合計 <b>+${bRes.total}pt</b></p>` : "") : "<p>結果を集計しています…</p>"}</div>`; bKey = key; return; }
+      if (b.ph === "input") {
+        if (bKey !== key) { bKey = key; bAns = {}; bRes = null; bQ = ""; }
+        if (bnm) {
+          const me = normName(P.name || "").slice(0, 60), qs = (b.qs || []).filter((x) => x.k !== me), sur = b.sur || [];
+          if (!el.querySelector(".bnin") || el.dataset.bk !== key) {
+            el.dataset.bk = key;
+            el.innerHTML = `<div class="status bnp bnin"><div class="bnhd"><b>🎁 この人の苗字は？</b><span>残り <b class="js-bt" data-bend="${bonusEnd(b)}"></b></span></div><div class="note">名前をタップ → 苗字を選ぶ or 入力して「決定」（1人1回・答えたのは <b id="bnCnt">0</b>人）</div><input id="bnFind" placeholder="下の名前・店舗で探す" autocomplete="off"><div id="bnList"></div></div>`;
+            const opts = `<option value="">▼ 苗字をえらぶ（スクロール）</option>` + sur.map((x) => `<option value="${esc(x.n)}">${esc(x.n)}${x.r && x.r !== x.n ? "（" + esc(x.r) + "）" : ""}</option>`).join("");
+            const draw = () => {
+              const q = foldName(el.querySelector("#bnFind").value || "");
+              el.querySelector("#bnList").innerHTML = qs.filter((x) => !q || foldName(x.g + x.s).includes(q)).map((x) => bAns[x.k] ? `<div class="bnr done"><span>${esc(bAns[x.k] === "?" ? "？？" : bAns[x.k])} ${esc(x.g)}<small>${esc(x.s)}</small></span><b>✓ 回答済み</b></div>`
+                : `<div class="bnr" data-bk="${esc(x.k)}"><span><em class="bnq">？？</em> ${esc(x.g)}<small>${esc(x.s)}</small></span><div class="bno bnsu hidden"><select class="bnsel">${opts}</select><input class="bntx" placeholder="または苗字を入力" autocomplete="off"><button class="btn go bnok">決定</button></div></div>`).join("") || '<p class="note">見つかりません</p>';
+              el.querySelectorAll(".bnr[data-bk]").forEach((r) => {
+                const box = r.querySelector(".bno"), sel = r.querySelector(".bnsel"), tx = r.querySelector(".bntx");
+                r.querySelector("span").onclick = () => { el.querySelectorAll(".bno").forEach((x) => x !== box && x.classList.add("hidden")); box.classList.toggle("hidden"); };
+                sel.onchange = () => { if (sel.value) tx.value = ""; };
+                tx.oninput = () => { if (tx.value.trim()) sel.value = ""; };
+                r.querySelector(".bnok").onclick = () => { const c = (tx.value.trim() || sel.value).replace(/\s+/g, "").slice(0, 20); if (!c) return toast("苗字を選ぶか入力してください"); if (bAns[r.dataset.bk]) return; bAns[r.dataset.bk] = c; cli.send("bonus", { tok: P.tok, cid: P.cid, k: r.dataset.bk, c }); el.querySelector("#bnCnt").textContent = Object.keys(bAns).length; draw(); };
+              });
+            };
+            el.querySelector("#bnFind").oninput = draw; draw();
+          }
+          return;
+        }
+        const ppl = (b.people || []).filter((x) => x.n !== P.name);
+        if (!el.querySelector(".bnin") || el.dataset.bk !== key) {
+          el.dataset.bk = key;
+          el.innerHTML = `<div class="status bnp bnin"><div class="bnhd"><b>🎁 この人の趣味は？</b><span>残り <b class="js-bt" data-bend="${bonusEnd(b)}"></b></span></div><div class="note">名前をタップ → 趣味を選ぶ（1人1回・答えたのは <b id="bnCnt">0</b>人）</div><input id="bnFind" placeholder="名前・店舗で探す" autocomplete="off"><div id="bnList"></div></div>`;
+          const draw = () => {
+            const q = foldName(el.querySelector("#bnFind").value || "");
+            el.querySelector("#bnList").innerHTML = ppl.filter((x) => !q || foldName(x.n + x.s).includes(q)).map((x) => bAns[x.k] ? `<div class="bnr done"><span>${esc(x.n)}<small>${esc(x.s)}</small></span><b>✓ ${esc(bAns[x.k] === "?" ? "回答済み" : bAns[x.k])}</b></div>`
+              : `<div class="bnr" data-bk="${esc(x.k)}"><span>${esc(x.n)}<small>${esc(x.s)}</small></span><div class="bno hidden">${x.o.map((o, i) => `<button class="btn" data-bo="${i}">${esc(o)}</button>`).join("")}</div></div>`).join("") || '<p class="note">見つかりません</p>';
+            el.querySelectorAll(".bnr[data-bk]").forEach((r) => {
+              r.querySelector("span").onclick = () => { el.querySelectorAll(".bno").forEach((x) => x !== r.querySelector(".bno") && x.classList.add("hidden")); r.querySelector(".bno").classList.toggle("hidden"); };
+              r.querySelectorAll("[data-bo]").forEach((bt) => (bt.onclick = () => { const x = ppl.find((y) => y.k === r.dataset.bk); if (!x || bAns[x.k]) return; const c = x.o[+bt.dataset.bo]; bAns[x.k] = c; cli.send("bonus", { tok: P.tok, cid: P.cid, k: x.k, c }); el.querySelector("#bnCnt").textContent = Object.keys(bAns).length; draw(); }));
+            });
+          };
+          el.querySelector("#bnFind").oninput = draw; draw();
+        }
+        return;
+      }
+    }
     if (S.view === "rules") {
       const L = rulesList(S), i = Math.max(0, Math.min(L.length - 1, S.ruleIdx || 0)), r = L[i];
       el.innerHTML = `<div class="status rlp"><div class="s">📖 ルール説明 ${i + 1} / ${L.length}</div><div class="h">${esc(r.t)}</div><div class="rlp-art">${RULE_ART[r.k] || ""}</div><ol>${r.d.map((x) => `<li>${esc(x)}</li>`).join("")}</ol></div>`;
@@ -7355,6 +7786,7 @@ window.__appStarted = true;
   if (isHost && !room) return hostPage();
   if (room && get("view") === "sub") return remotePage(room, bi);
   if (room && get("view") === "cam") return camPage(room, bi);
+  if (room && get("view") === "recv") return recvPage(room, bi);
   if (room) return playerPage(room, bi);
   lobby();
 })();
