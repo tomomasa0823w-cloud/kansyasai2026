@@ -1056,6 +1056,14 @@ body.v-player.offline #offBar{display:block}
 .sh-h.q .a{animation:shHOut .4s ease both}.sh-h.q .b{animation:shHIn .5s cubic-bezier(.2,1.5,.4,1) both}
 @keyframes shHOut{from{opacity:1}to{opacity:0}}
 @keyframes shHIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+/* 選手紹介（カメラあり）：カメラを大きく、名前は枠内に */
+.tv .g-intro.cam{grid-template-columns:56% minmax(0,1fr)}
+.tv .g-intro.cam .gi-plate{justify-content:center;align-items:flex-start;padding:30px 40px;overflow:hidden}
+.tv .g-intro.cam .gi-plate .gk{font-size:30px;letter-spacing:.06em}
+.tv .g-intro.cam .gi-plate .gst{font-size:56px}
+.tv .g-intro.cam .gi-plate .gnm{font-size:118px;line-height:1.12;max-width:100%;overflow-wrap:anywhere}
+.tv .g-intro.cam .gi-plate .gnm.long{font-size:92px}
+.tv .g-stage.cam{grid-template-columns:52% minmax(0,1fr)}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -4765,7 +4773,7 @@ function gameMonHTML(S) {
   }
   if (G.intro != null && P[G.intro]) {
     const p = P[G.intro];
-    return { key: `gi-${G.intro}-${camOn ? 1 : 0}`, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="g-intro${camOn ? " cam" : ""}"><div class="gcam js-cam"></div><div class="gi-plate"><div class="gk">${esc(ttl)}　選手紹介　<b>${G.intro + 1}</b> / ${P.length}</div><div class="gst">${esc(p.s || "")}</div><div class="gnm">${esc(p.n)}</div></div></div></div>${telopHTML("選手紹介", `${esc(p.s ? p.s + "　" : "")}${esc(p.n)} 選手！`)}` };
+    return { key: `gi-${G.intro}-${camOn ? 1 : 0}`, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="g-intro${camOn ? " cam" : ""}"><div class="gcam js-cam"></div><div class="gi-plate"><div class="gk">${esc(ttl)}　選手紹介　<b>${G.intro + 1}</b> / ${P.length}</div><div class="gst">${esc(p.s || "")}</div><div class="gnm${String(p.n).length > 7 ? " long" : ""}">${esc(p.n)}</div></div></div></div>${telopHTML("選手紹介", `${esc(p.s ? p.s + "　" : "")}${esc(p.n)} 選手！`)}` };
   }
   const cur = P[G.cur], last = G.last;
   const pop = last && last.seq ? (() => {
