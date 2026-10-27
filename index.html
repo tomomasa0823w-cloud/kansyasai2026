@@ -1224,6 +1224,13 @@ body.v-player.offline #offBar{display:block}
 @keyframes boZip{0%{opacity:0;transform:rotate(-30deg) scaleX(0)}40%{opacity:1;transform:rotate(-30deg) scaleX(1)}100%{opacity:0;transform:rotate(-30deg) scaleX(1.4) translateY(-30px)}}
 .noanim .tv .tv-cu .cu-win{opacity:0!important}.noanim .tv .tv-cu.win .cu-win{opacity:1!important;animation:none}
 .noanim .tv .cu-fx{opacity:0!important}.noanim .tv .cu-fx.on{opacity:1!important}
+/* BONUS TIME 画面の文字かぶり対策 */
+.bo-main{top:16%!important}
+.bo-en{white-space:nowrap;font-family:"Arial Black","Helvetica Neue",Arial,sans-serif!important;font-weight:900;font-size:190px!important;letter-spacing:.02em!important}
+.bo-jp,.bo-sub,.bo-sub2{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic","Meiryo",sans-serif!important;font-weight:900!important;white-space:nowrap}
+.bo-jp{font-size:84px!important}
+.bo-sub{top:63%!important;font-size:66px!important;color:#fff}.bo-sub2{top:76%!important;font-size:56px!important;color:#fff}
+.bo-sub,.bo-sub2{background:rgba(0,0,0,.55);padding:6px 0}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -4656,6 +4663,7 @@ const SFX = (() => {
     chime() { const t = now(), b = bus(0.45); [1568, 2093, 2637, 3136].forEach((f, i) => chimeTone(f, t + i * 0.06, 0.8, 0.16, b)); applause(t + 0.1, 2.5, 0.35, bus(0.3)); },
     // 「○位は…」の溜め
     tame() { const t = now(); riser(t, 1.6, bus(0.4)); },
+    bonusOwn() { P.bonusIntro(); }, // オリジナル演出は常にこの合成音（リンク差し替えの影響を受けない）
     bonusIntro() { // 10→1 カウント（ドン・ドン…）→ ちゅいぃーん → ジャン！ → ファンファーレ
       const t = now(), b = bus(0.32);
       for (let i = 0; i < 10; i++) { const tt = t + i, hot = i >= 7; timpani(hot ? 73 : 55, tt, hot ? 0.55 : 0.4, b); noise(tt, 0.35, hot ? 0.22 : 0.14, b, "bandpass", 1800, 0.8, 0.005); osc("sine", hot ? 1320 : 880, tt, 0.18, hot ? 0.16 : 0.1, b); }
@@ -6343,7 +6351,7 @@ function hostPage() {
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-22</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-23</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -7412,7 +7420,7 @@ function hostPage() {
     const ytId = (u) => { const m = String(u || "").match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : ""; };
     $("#bnIntro").onclick = () => { const id = ytId((H.links.bonusIntro || {}).url); if (!id) return toast("設定の音のリンク「ボーナスタイムの予告映像」にYouTubeのURLを入れてください"); clearTimeout(bnT); setS({ view: "bonus", bonus: { ph: "intro", at: Date.now(), yt: id } }); };
     document.querySelectorAll("#bnKind [data-bk]").forEach((x) => (x.onclick = () => { if (H.S.view === "bonus" && H.S.bonus && H.S.bonus.ph === "input") return toast("記入中は切り替えられません"); H.bonusKind = x.dataset.bk; save(); render(); }));
-    $("#bnOwn").onclick = () => { clearTimeout(bnT); const at = Date.now(); setS({ view: "bonus", bonus: { kind: H.bonusKind, ph: "intro", own: true, at }, ...sfx("bonusIntro") }); bnT = setTimeout(() => { const b = H.S.bonus; if (H.S.view === "bonus" && b && b.ph === "intro" && b.at === at && $("#bnAuto").checked) $("#bnTalk").click(); }, 17500); };
+    $("#bnOwn").onclick = () => { clearTimeout(bnT); const at = Date.now(); setS({ view: "bonus", bonus: { kind: H.bonusKind, ph: "intro", own: true, at }, ...sfx("bonusOwn") }); bnT = setTimeout(() => { const b = H.S.bonus; if (H.S.view === "bonus" && b && b.ph === "intro" && b.at === at && $("#bnAuto").checked) $("#bnTalk").click(); }, 17500); };
     YTV.onEnd = (at) => { const b = H.S.bonus; if (H.S.view === "bonus" && b && b.ph === "intro" && b.at === at && $("#bnAuto").checked) $("#bnTalk").click(); };
     $("#bnTalk").onclick = () => { clearTimeout(bnT); setS({ view: "bonus", bonus: { kind: H.bonusKind, ph: "talk", dur: BK[H.bonusKind].talk, at: Date.now() }, ...sfx("fanfare") }); };
     $("#bnInput").onclick = () => {
