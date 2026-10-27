@@ -1153,6 +1153,27 @@ body.v-player.offline #offBar{display:block}
 .tv-cutl ol{gap:calc(30px / var(--n))}
 .tv-cutl li{font-size:calc(min(40px, 340px / var(--n) + 4px));padding:calc(30px / var(--n) + 3px) 30px}
 .tv-cutl .stp{right:230px}
+/* 早押しワースト10（テレビ風） */
+.tv-cutl{flex-direction:row!important;align-items:stretch!important;justify-content:center!important;gap:16px!important;padding:14px 22px!important;background:linear-gradient(180deg,#20C4DE,#0EA3C2)!important;border-radius:22px!important;box-shadow:0 0 0 4px #7BE6F5,0 14px 40px rgba(0,0,0,.45)!important}
+.tv-cutl .vt{writing-mode:vertical-rl;text-orientation:upright;font:900 56px/1 var(--disp,sans-serif);color:#2A3D8F;-webkit-text-stroke:2px #E8F7FF;letter-spacing:4px;background:linear-gradient(180deg,#1495AE,#0A7C93);border-radius:18px;padding:16px 10px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 3px rgba(255,255,255,.35)}
+.tv-cutl ol{flex:1;width:auto!important;display:flex;flex-direction:column;gap:calc(50px / var(--n))!important;justify-content:center}
+.tv-cutl li{position:relative;flex:1;max-height:92px;padding:0!important;background:linear-gradient(180deg,#3FD9EE,#1BB7D3)!important;border:2px solid rgba(255,255,255,.55)!important;border-radius:14px!important;box-shadow:inset 0 -4px 0 rgba(0,0,0,.12)!important;animation:none!important;font-size:calc(min(52px, 420px / var(--n) + 8px))!important}
+.tv-cutl li .rw{position:absolute;inset:0;display:flex;align-items:stretch;gap:8px;animation:cutFlip .28s ease-out both;transform-origin:center}
+.tv-cutl li .no,.tv-cutl li .tn,.tv-cutl li .tm{display:flex;align-items:center;color:#fff;font-weight:900;border-radius:12px;box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.25)}
+.tv-cutl li .no{min-width:0!important;padding:0 .35em;background:linear-gradient(180deg,#3C5BC4,#22378F);font-variant-numeric:tabular-nums;color:#fff!important}
+.tv-cutl li .tn{flex:1;padding:0 .4em;background:linear-gradient(180deg,#3C5BC4,#1D2F80);white-space:nowrap;overflow:hidden}
+.tv-cutl li .tm{width:4.2em;justify-content:flex-end;padding:0 .35em;background:linear-gradient(180deg,#2B3A86,#151F55);font-variant-numeric:tabular-nums;color:#FFF6D8!important}
+.tv-cutl li.last .no,.tv-cutl li.last .tn{background:linear-gradient(180deg,#FF5AC8,#E0109A)}.tv-cutl li.last .tm{background:linear-gradient(180deg,#F0306A,#B5103F);color:#fff!important}
+.tv-cutl li.last{box-shadow:0 0 30px rgba(255,40,160,.8)!important}
+.tv-cutl li.last .rw{animation:cutFlip .28s ease-out both,cutGlow 1s ease-in-out 2}
+.tv-cutl .stp{right:5.2em!important;font-size:.85em!important;z-index:3}
+@keyframes cutFlip{0%{opacity:0;transform:scaleY(0)}100%{opacity:1;transform:scaleY(1)}}
+@keyframes cutGlow{50%{filter:brightness(1.35)}}
+.noanim .tv .tv-cutl li .rw{animation:none}
+.tv-cutl .vt{font-size:42px;letter-spacing:2px;padding:12px 8px;white-space:nowrap}.tv-cutl .vt .tcu{text-combine-upright:all;-webkit-text-combine:horizontal}
+.tv-cutl .vt{-webkit-text-stroke:0;color:#fff;text-shadow:0 3px 0 #1D2F80;font-size:38px;line-height:1.05}
+.tv-cutl .vt{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;font-weight:900;letter-spacing:0;line-height:1.15}
+.tv-cutl .vt{writing-mode:horizontal-tb;flex-direction:column;gap:2px}.tv-cutl .vt i{font-style:normal;display:block;line-height:1.05;text-align:center}.tv-cutl .vt i.nn{margin-top:6px;font-size:1.1em}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -4755,7 +4776,7 @@ function logoHTML(S) {
 }
 function standHTML(S) {
   const kan = S.rule === "kanshasai" && S.period && S.period.active;
-  if (kan) return `<div class="tv-stand${S.seatedNow && S.seatedNow.length && S.stage === "correct" ? " drop" : ""}"><span class="l">起立</span><b>${S.standCount || 0}</b><span class="r">人<br><small>参加 ${S.players || 0}人</small></span></div>`;
+  if (kan) return `<div class="tv-stand${S.seatedNow && S.seatedNow.length && S.stage === "correct" ? " drop" : ""}"><span class="l">起立</span><b>${(S.standCount || 0) + (S.cut && ["dist", "correct", "review"].includes(S.stage || S.phase) ? 1 : 0)}</b><span class="r">人<br><small>参加 ${S.players || 0}人</small></span></div>`;
   return `<div class="tv-stand"><span class="l">参加</span><b>${S.players || 0}</b><span class="r">人</span></div>`;
 }
 function telopHTML(tag, main, extra) {
@@ -4940,8 +4961,10 @@ function monHTML(S, list, joinURL) {
           body += `<div class="tv-seat rv">🔥 敗者復活！　<b>${rv.length}</b>人が復活</div>`;
           if (rv.length) ex = "復活：" + rv.slice(0, 40).map((x) => esc(x) + "さん").join("　");
         } else {
-        body += `<div class="tv-seat">${sn.length ? `着席 <b>${sn.length}</b>人` : "着席者なし！"}${S.cut ? `　／　予選落ち：<b class="r">${esc(S.cut)}</b>` : ""}</div>`;
-        if (sn.length) ex = "着席：" + sn.slice(0, 40).map((x) => esc(x) + "さん").join("　");
+        const hideCut = S.cut && ["dist", "correct", "review"].includes(S.stage || S.phase);
+        const sn2 = hideCut ? (() => { const a = sn.slice(), j = a.lastIndexOf(S.cut); if (j >= 0) a.splice(j, 1); return a; })() : sn;
+        body += `<div class="tv-seat">${sn2.length ? `着席 <b>${sn2.length}</b>人` : "着席者なし！"}${S.cut ? (hideCut ? `　／　予選落ちは…このあと発表！` : `　／　予選落ち：<b class="r">${esc(S.cut)}</b>`) : ""}</div>`;
+        if (sn2.length) ex = "着席：" + sn2.slice(0, 40).map((x) => esc(x) + "さん").join("　");
         }
       }
       if (showC && S.ansNote) body += `<div class="tv-ansnote"><span>正解</span><b>${esc(S.ansNote)}</b></div>`;
@@ -4951,7 +4974,7 @@ function monHTML(S, list, joinURL) {
       const CL = Array.isArray(S.cutList) ? S.cutList : [];
       if (CL.length >= 2) {
         const N = CL.length, step = Math.min(0.45, 3.2 / (N - 1)), tEnd = 0.4 + (N - 1) * step;
-        body = `<div class="tv-cutl"><div class="k">正解したけど…遅かった順に発表！</div><ol style="--n:${N}">${CL.map((a, i) => { const last = i === N - 1; return `<li class="${last ? "last" : ""}" style="animation-delay:${(0.4 + i * step).toFixed(2)}s"><span class="no">${a.r}<small>位</small></span><span class="tn">${esc(a.n)}</span><span class="tm">${sec(a.ms)}</span>${last ? `<b class="stp" style="animation-delay:${(tEnd + 0.5).toFixed(2)}s">予選落ち・着席</b>` : ""}</li>`; }).join("")}</ol></div>`;
+        body = `<div class="tv-cutl"><div class="vt">${[..."早押しワースト"].map((c) => `<i>${c === "ー" ? "｜" : c}</i>`).join("")}<i class="nn">${N}</i></div><ol style="--n:${N}">${CL.map((a, i) => { const last = i === N - 1, dl = (0.4 + i * step).toFixed(2); return `<li class="${last ? "last" : ""}"><div class="rw" style="animation-delay:${dl}s"><span class="no">${a.r}</span><span class="tn">${esc(a.n)}</span><span class="tm">${(a.ms / 1000).toFixed(2)}</span></div>${last ? `<b class="stp" style="animation-delay:${(tEnd + 0.6).toFixed(2)}s">予選落ち</b>` : ""}</li>`; }).join("")}</ol></div>`;
       } else
       body = `<div class="tv-cut"><div class="k">正解したけど、いちばん遅かったのは…</div><div class="t">予選落ち</div><div class="n late">${esc(S.cut || "")}</div><div class="s late">着席です</div></div>`;
       tel = telopHTML(per, CL.length >= 2 ? `${kind}　予選落ちになるのは…？` : `${kind}　予選落ち：${esc(S.cut || "")}さん`);
@@ -6243,7 +6266,7 @@ function hostPage() {
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-13</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-14</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -7778,7 +7801,7 @@ function playerPage(room, bi) {
     else if (mine) {
       if (showC && S.mode === "choice") {
         const rk = st === "list" || st === "champ" ? (S.winners || []).findIndex((w) => w.n === P.name) : -1;
-        const cutMe = S.cut === P.name && (st === "correct" || st === "review" || st === "cutshow");
+        const cutMe = S.cut === P.name && st === "cutshow";
         const corr = pl.corr || (rk >= 0 ? { p: rk + 1, of: (S.winners || []).length } : null);
         res = isHit(S, mine.c)
           ? `<div class="h okc">${S.predict ? "的中！" : "正解！"}</div>${S.predict ? `<div>+${S.pts}点</div>` : ""}<div>${sec(mine.ms)}</div>${st === "list" || st === "champ" ? placeBox(corr, S.predict ? "的中者" : "正解者") : ""}${placeBox(pl.all, "回答した")}${cutMe ? '<div class="ngc"><b>ただし一番遅かったため「予選落ち」で着席です</b></div>' : ""}`
