@@ -1484,6 +1484,14 @@ body.v-recv>*:not(#vRecv):not(#toast):not(.toast){display:none!important}
 .rvgate{display:block;margin:0 0 8px;padding:8px 10px;border-radius:10px;background:#2e9d5a18;font-size:14px}
 #vRecv .rvatt2,.rvatt2{display:flex!important;flex-direction:row!important;align-items:center;justify-content:center;width:auto}.rvatt2 span{writing-mode:horizontal-tb;white-space:nowrap}.rvatt2 input{flex:0 0 auto;margin:0}
 .rvatt2 input[type=checkbox]{width:30px!important;height:30px!important;min-width:0!important;padding:0!important}
+.rvaddh{margin-top:6px;padding:6px 8px;border:1px dashed #8888;border-radius:10px;align-items:center}
+.rvchips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.rvchip{border:2px solid #b07a0055;background:#fff;color:#0B2A5A;border-radius:999px;padding:8px 14px;font-size:17px;font-weight:800;cursor:pointer}.rvchip small{margin-left:6px;font-size:12px;opacity:.7;font-weight:600}.rvchip.on{background:#b07a00;border-color:#b07a00;color:#fff}
+@media (prefers-color-scheme:dark){.rvchip{background:#1d2a52;color:#fff}}
+#bankList tr.bnrow{background:linear-gradient(90deg,#FFE9A8,#FFF6D6);border-radius:10px}#bankList tr.bnrow td{color:#3a2500}
+#bankList tr.bnrow .blim,#bankList tr.bnrow .bchk,#bankList tr.bnrow [data-bedit],#bankList tr.bnrow [data-load]{display:none!important}
+.bnbank{color:#8a5a00}.bnins{margin-top:8px;align-items:center}
+#bankList tr.bnrow td:nth-child(3){display:none!important}#bankList tr.bnrow td:nth-child(4) button:not([data-mv]):not([data-bdel]){display:none!important}
+#bankList tr.bnrow [data-photo]{display:none!important}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5224,12 +5232,12 @@ function bonusMonHTML(S) {
 }
 // ================= 受付用の画面（スマホ・PC 何台でも） =================
 function recvPage(room, bi) {
-  let pin = store.get("hq-pin-" + room, ""), roster = [], st = {}, q = "", who = store.get("hq-recv-by", "");
+  let pin = store.get("hq-pin-" + room, ""), roster = [], st = {}, q = "", sf = store.get("hq-recv-sf", ""), who = store.get("hq-recv-by", "");
   document.body.classList.add("v-recv");
   const sec = document.createElement("section"); sec.id = "vRecv";
   sec.innerHTML = `<div class="ctl rvctl"><h2>📝 受付</h2><p class="note" id="rvInfo">接続中…</p>
     <div class="row" id="rvPinRow"><input id="rvPin" inputmode="numeric" maxlength="4" placeholder="PIN（4桁）" style="width:120px"><input id="rvBy" placeholder="受付担当（例：受付1）" style="flex:1" value="${esc(who)}"><button class="btn go" id="rvPinOk">開始</button></div>
-    <div id="rvMain" class="hidden"><div class="rvsum" id="rvSum"></div><input id="rvQ" placeholder="名前・ふりがな・店舗で探す" autocomplete="off"><div id="rvL"></div></div></div>
+    <div id="rvMain" class="hidden"><div class="rvsum" id="rvSum"></div><div class="rvchips" id="rvChips"></div><input id="rvQ" placeholder="名前・ふりがな・店舗で探す" autocomplete="off"><details class="rvfix rvadd"><summary>＋ 名簿にない方を追加</summary><label class="rvlab">名前（苗字と名前の間にスペース）<input id="rvAN" maxlength="30"></label><label class="rvlab">店舗<input id="rvAS" maxlength="20"></label><button class="btn go" id="rvAOk">次へ（出席・趣味の入力）</button></details><div id="rvL"></div></div></div>
     <div class="sheet hidden" id="rvSheet"><div class="sbox"><div class="sname" id="rvSN"></div><div class="note" id="rvSS"></div><label class="rvatt2"><input type="checkbox" id="rvAtt" checked><span>出席</span></label><details class="rvfix"><summary>✏️ 名前・店舗が名簿と違うとき</summary><label class="rvlab">正しい名前（苗字と名前の間にスペース）<input id="rvRn" maxlength="30"></label><label class="rvlab">店舗<input id="rvRs" maxlength="30"></label></details><label class="rvlab">趣味<input id="rvHob" placeholder="例：釣り、ゴルフ、推し活" maxlength="40"></label><div class="row"><button class="btn go" id="rvOk">✓ 保存</button><button class="btn" id="rvNo">やめる</button></div><button class="ghost hidden" id="rvUndo" style="margin-top:8px">受付を取り消す</button></div></div>`;
   document.body.append(sec);
   const cli = connectAny(bi, room, ["roster", "recvst"], (t, d) => {
@@ -5243,17 +5251,22 @@ function recvPage(room, bi) {
   if (pin) { $("#rvPin").value = pin; }
   $("#rvQ").oninput = () => { q = foldName($("#rvQ").value); draw(); };
   let cur = null;
-  const open = (x) => { cur = x; const r = st[key(x)]; $("#rvSN").textContent = x.n; $("#rvSS").textContent = x.s + (r && r.att !== false ? "　（出席済み）" : ""); $("#rvAtt").checked = true; $("#rvHob").value = r ? r.h || "" : ""; $("#rvRn").value = x.n; $("#rvRs").value = x.s || ""; $(".rvfix").open = false; $("#rvUndo").classList.toggle("hidden", !r); $("#rvSheet").classList.remove("hidden"); setTimeout(() => $("#rvHob").focus(), 50); };
+  const open = (x) => { cur = x; const r = st[key(x)]; $("#rvSN").textContent = x.n; $("#rvSS").textContent = x.s + (r && r.att !== false ? "　（出席済み）" : ""); $("#rvAtt").checked = true; $("#rvHob").value = r ? r.h || "" : ""; $("#rvRn").value = x.n; $("#rvRs").value = x.s || ""; $("#rvSheet .rvfix").open = false; $("#rvUndo").classList.toggle("hidden", !r); $("#rvSheet").classList.remove("hidden"); setTimeout(() => $("#rvHob").focus(), 50); };
   const close = () => $("#rvSheet").classList.add("hidden");
   const send = (a) => { if (!cli.send("cmd", { pin, cmd: "recv", a: { ...a, by: who } })) return toast("接続が切れています"); };
-  $("#rvOk").onclick = () => { if (!cur) return; const h = $("#rvHob").value.trim(), rn = $("#rvRn").value.trim().replace(/\s+/g, " "), rs = $("#rvRs").value.trim(); const att = $("#rvAtt").checked; const a = { n: cur.n, id: cur.id, h, att }; if (rn && rn !== cur.n) a.rn = rn; if (rs !== (cur.s || "")) a.rs = rs; send(a); if (a.rn || a.rs !== undefined) toast("名前・店舗の修正を送りました"); st[key(cur)] = { h, at: Date.now(), att }; close(); draw(); toast(att ? `${cur.n} さん 出席${h ? "（" + h + "）" : ""}` : `${cur.n} さんは「未出席」で保存しました`); $("#rvQ").value = ""; q = ""; draw(); };
+  $("#rvOk").onclick = () => { if (!cur) return; const h = $("#rvHob").value.trim(), rn = $("#rvRn").value.trim().replace(/\s+/g, " "), rs = $("#rvRs").value.trim(); const att = $("#rvAtt").checked; const a = { n: cur.n, id: cur.id, h, att }; if (cur.add) { a.add = true; a.s = cur.s || ""; } if (rn && rn !== cur.n) a.rn = rn; if (rs !== (cur.s || "")) a.rs = rs; send(a); if (a.rn || a.rs !== undefined) toast("名前・店舗の修正を送りました"); st[key(cur)] = { h, at: Date.now(), att }; close(); draw(); toast(att ? `${cur.n} さん 出席${h ? "（" + h + "）" : ""}` : `${cur.n} さんは「未出席」で保存しました`); $("#rvQ").value = ""; q = ""; draw(); };
   $("#rvNo").onclick = close;
+  $("#rvAOk").onclick = () => { const n = $("#rvAN").value.trim().replace(/[\s\u3000]+/g, " "); if (!n) return toast("名前を入れてください"); const f = foldName(n), hit = roster.find((x) => foldName(x.n) === f); if (hit) { toast(`${hit.n} さんは名簿にいます`); return open(hit); } open({ n, s: $("#rvAS").value.trim(), add: true }); $("#rvAN").value = ""; $("#rvAS").value = ""; $(".rvadd").open = false; };
   $("#rvUndo").onclick = () => { if (!cur || !confirm(`${cur.n} さんの受付を取り消しますか？`)) return; send({ n: cur.n, id: cur.id, undo: true }); delete st[key(cur)]; close(); draw(); };
   function draw() {
     if ($("#rvMain").classList.contains("hidden")) return;
     const ok = (x) => { const r = st[key(x)]; return !!(r && r.att !== false); }, done = roster.filter(ok).length;
     $("#rvSum").innerHTML = `出席 <b>${done}</b> / ${roster.length}人`;
-    const list = roster.filter((x) => !q || foldName(x.n + (x.k || "") + x.s).includes(q));
+    const all = []; roster.forEach((x) => { const s2 = x.s || "店舗なし"; if (!all.includes(s2)) all.push(s2); });
+    if (sf && !all.includes(sf)) sf = "";
+    const ch = ["", ...all].map((s2) => { const n = roster.filter((x) => !s2 || (x.s || "店舗なし") === s2), d = n.filter(ok).length; return `<button class="rvchip${s2 === sf ? " on" : ""}" data-sf="${esc(s2)}">${s2 ? esc(s2) : "すべて"}<small>${d}/${n.length}</small></button>`; }).join("");
+    if ($("#rvChips")._h !== ch) { $("#rvChips")._h = ch; $("#rvChips").innerHTML = ch; $("#rvChips").querySelectorAll("[data-sf]").forEach((b) => (b.onclick = () => { sf = b.dataset.sf; store.set("hq-recv-sf", sf); draw(); window.scrollTo({ top: 0 }); })); }
+    const list = roster.filter((x) => (!sf || (x.s || "店舗なし") === sf) && (!q || foldName(x.n + (x.k || "") + x.s).includes(q)));
     const stores = []; list.forEach((x) => { const s2 = x.s || "店舗なし"; if (!stores.includes(s2)) stores.push(s2); });
     $("#rvL").innerHTML = stores.map((s2) => `<div class="rvg"><div class="rvgh">${esc(s2)}</div>${list.filter((x) => (x.s || "店舗なし") === s2).map((x) => { const r = st[key(x)], a = ok(x); return `<button class="rvb${a ? " ok" : ""}" data-n="${esc(x.n)}"><span>${esc(x.n)}</span><small>${a ? "✓ 出席" + (r.h ? "・" + esc(r.h) : "") : r && r.h ? "未出席・" + esc(r.h) : "未出席"}</small></button>`; }).join("")}</div>`).join("") || '<p class="note">名簿がまだ届いていません</p>';
     $("#rvL").querySelectorAll("[data-n]").forEach((b) => (b.onclick = () => open(roster.find((x) => x.n === b.dataset.n))));
@@ -5307,7 +5320,9 @@ const STAGE_LABEL = { review: "写真のふりかえり", cutshow: "予選落ち
 function nextLabel(S) {
   if (S.view === "cere") { const c = S.cere || {}; return c.step === "end" ? "表彰式は終わりました" : `次へ ▶（${c.step === "intro" ? "最初の賞" : c.step === "rank" ? "名前を発表" : "次の賞"}）`; }
   if (S.view === "rules") { const n = S.ruleN || 1, i = (S.ruleIdx || 0) + 1; return i < n ? `次の説明へ ▶（${i}/${n}）` : `ルール説明を終わる ▶（${i}/${n}）`; }
+  if (S.view === "bonus") { const b = S.bonus || {}, nb = window.__nbInfo; return b.ph === "intro" ? "① 歓談スタート ▶" : b.ph === "talk" ? "② 記入スタート ▶" : b.ph === "input" ? "③ 締め切って結果発表 ▶" : b.ph === "done" ? "④ よく当てられたスタッフ TOP3 ▶" : b.ph === "staff" && b.side !== "low" ? "⑤ あまり当てられなかった3名 ▶" : nb && nb.has ? (nb.bonus ? "🎁 次のボーナスゲームへ ▶" : `クイズに戻る（次は ${nb.i}/${nb.n}問目） ▶`) : "クイズに戻る ▶"; }
   if (S.view && S.view !== "q") return "問題の表示に戻る ▶";
+  { const nb = window.__nbInfo, st0 = S.stage || S.phase; if (nb && nb.has && nb.bonus && (S.phase === "idle" || !S.rid || st0 === "champ" || (st0 === "list" && !(S.last && S.rule === "kanshasai" && S.period && S.period.active)))) return `🎁 ボーナスゲーム（${nb.bonus === "name" ? "名前当て" : "趣味当て"}）へ ▶`; }
   const st = S.stage || S.phase;
   { const nb = window.__nbInfo; if ((S.phase === "idle" || !S.rid) && nb && nb.has) return `次の問題（${nb.i}/${nb.n}問目）を出す ▶`; }
   if (S.phase === "idle" || !S.rid) return "（問題を出題してください）";
@@ -5682,6 +5697,7 @@ function hostPage() {
       if (mode === "buzzer" && kan() && H.period.active) { toast("感謝祭ルールのピリオド中は4択（5択）で出題してください"); return; }
       const choices = mode === "choice" ? (Array.isArray(a.choices) ? a.choices : []).slice(0, nch).map((x) => String(x || "").slice(0, 60)) : ["", "", "", ""];
       if (mode === "choice" && (choices.length < nch || choices.some((x) => !x))) return;
+      if (kan() && !H.period.active && !predict && mode === "choice") { startPeriod((H.period.no || 0) + 1, false); toast(`第${H.period.no}ピリオドを自動で開始しました（全員起立）`); }
       const rid = "r" + Date.now().toString(36);
       H.hist = []; H.redo = [];
       pubImgs(cleanImg(a.img));
@@ -5725,6 +5741,7 @@ function hostPage() {
       setS({ ...prev, sfx: H.S.sfx }); toast("1つ前の画面に戻しました（得点や着席はそのままです）");
     }
     else if (cmd === "advance") {
+      if (S.view === "bonus" && window.__bonusNext) return window.__bonusNext();
       if (S.view === "q" && S.rid && H.redo && H.redo.length && H.redo[H.redo.length - 1].rid === S.rid) {
         H.hist = (H.hist || []).filter((x) => x.rid === S.rid); H.hist.push({ ...H.S });
         const nx = H.redo.pop(); return setS({ ...nx, sfx: H.S.sfx });
@@ -5902,6 +5919,7 @@ function hostPage() {
   $("#bankClear").onclick = () => { if (!confirm("登録した問題をすべて消しますか？")) return; H.bank = []; H.bankIdx = 0; save(); render(); };
   function loadBank(i) {
     const b = H.bank[i]; if (!b) return toast("登録された問題はもうありません");
+    if (b.bonus) { H.bankIdx = i + 1; save(); if (window.__startBonus) window.__startBonus(b.bonus); render(); return; }
     H.bankIdx = i + 1; save(); window.__pendImg = b.img || null; window.__pendVid = b.vid || null; window.__pendRevive = !!b.revive; window.__pendAns = b.ans || ""; window.__pendCans = Array.isArray(b.cans) ? b.cans.slice() : null;
     hostMode = b.mode === "buzzer" ? "buzzer" : b.nch === 5 ? "choice5" : b.nch === 3 ? "choice3" : "choice";
     preCorrect = Array.isArray(b.correct) ? b.correct.slice() : b.correct == null ? [] : [b.correct];
@@ -5913,7 +5931,7 @@ function hostPage() {
   $("#bankNext").onclick = () => loadBank(H.bankIdx || 0);
   function renderBank() {
     $("#bankCount").textContent = H.bank.length ? `${H.bank.length}問（次は ${Math.min((H.bankIdx || 0) + 1, H.bank.length + 1)}問目）` : "未登録";
-    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td><select class="blim" data-blim="${i}" title="回答時間">${[5, 10, 15, 20, 30, 60].map((s) => `<option value="${s}"${+b.limit === s ? " selected" : ""}>${s}秒</option>`).join("")}</select> ${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td style="white-space:nowrap">${b.predict ? `予想${b.pts || 1}点` : b.mode === "choice" ? `<label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label><label class="bchk rv${b.revive ? " on" : ""}"><input type="checkbox" data-brev="${i}" ${b.revive ? "checked" : ""}>🔥復活</label>` : ""}</td><td style="white-space:nowrap"><button class="mini mv" data-mv="${i}:-1" ${i ? "" : "disabled"} title="上へ">▲</button><button class="mini mv" data-mv="${i}:1" ${i < H.bank.length - 1 ? "" : "disabled"} title="下へ">▼</button> <button class="mini" data-bedit="${i}">✏️編集</button> <button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button> <button class="mini" data-bdel="${i}" title="この問題を消す">🗑</button><label class="bto">→<input type="number" min="1" max="${H.bank.length}" data-bto="${i}" placeholder="${i + 1}">番へ</label></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
+    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}${b.bonus ? " bnrow" : ""}"><td>${b.bonus ? "🎁" : i + 1}</td><td class="wrap">${b.bonus ? `<b class="bnbank">🎁 ${esc(b.q)}</b><span class="note">（ここでボーナスカットイン → 歓談 → 記入 → 結果。「次へ」で進みます）</span>` : esc(b.q)}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td><select class="blim" data-blim="${i}" title="回答時間">${[5, 10, 15, 20, 30, 60].map((s) => `<option value="${s}"${+b.limit === s ? " selected" : ""}>${s}秒</option>`).join("")}</select> ${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td style="white-space:nowrap">${b.predict ? `予想${b.pts || 1}点` : b.mode === "choice" ? `<label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label><label class="bchk rv${b.revive ? " on" : ""}"><input type="checkbox" data-brev="${i}" ${b.revive ? "checked" : ""}>🔥復活</label>` : ""}</td><td style="white-space:nowrap"><button class="mini mv" data-mv="${i}:-1" ${i ? "" : "disabled"} title="上へ">▲</button><button class="mini mv" data-mv="${i}:1" ${i < H.bank.length - 1 ? "" : "disabled"} title="下へ">▼</button> <button class="mini" data-bedit="${i}">✏️編集</button> <button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button> <button class="mini" data-bdel="${i}" title="この問題を消す">🗑</button><label class="bto">→<input type="number" min="1" max="${H.bank.length}" data-bto="${i}" placeholder="${i + 1}">番へ</label></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
     $("#bankList").querySelectorAll("[data-load]").forEach((x) => (x.onclick = () => loadBank(+x.dataset.load)));
     $("#bankList").querySelectorAll("[data-blast]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.blast]; if (!b) return; b.last = x.checked; save(); render(); }));
     $("#bankList").querySelectorAll("[data-brev]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.brev]; if (!b) return; b.revive = x.checked; save(); render(); }));
@@ -6204,7 +6222,7 @@ function hostPage() {
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-8</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-11</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -6652,6 +6670,7 @@ function hostPage() {
     if (H.S.phase === "open") return toast("回答受付中です");
     if (H.S.rid && H.S.phase !== "idle" && H.S.stage !== "list" && H.S.stage !== "champ") return toast("今の問題を最後まで進めてから出題してください（「次へ」）");
     if (H.S.rid) act("next");
+    if (H.bank[i].bonus) return loadBank(i);
     loadBank(i); $("#bOpen").click();
   };
   $("#bEndHere").onclick = () => { if (!confirm("この問題でピリオドを終わりにして、ピリオドチャンピオンを発表します。よろしいですか？")) return; act("endHere"); };
@@ -6986,7 +7005,7 @@ function hostPage() {
       if (other) $("#takeTxt").textContent = `（この端末のルーム ${H.room} ／ 参加者のいるルーム ${lobbyCur}）このままでは、ここで出題しても参加者には届きません。`; }
     // 次の問題
     const i = bankI(), b = H.bank[i];
-    window.__nbInfo = { has: !!b, i: i + 1, n: nB };
+    window.__nbInfo = { has: !!b, i: H.bank.slice(0, i).filter((x) => !x.bonus).length + 1, n: H.bank.filter((x) => !x.bonus).length, bonus: b && b.bonus ? b.bonus : "" };
     window.__goNextBank = () => { if (!H.bank[bankI()] || H.S.view === "cere") return false; $("#nqGo").click(); return true; };
     $("#nqNo").textContent = nB ? `${Math.min(i + 1, nB)} / ${nB}問目` : "未登録";
     $("#imgCount").textContent = `（このPCに保存済み：${Object.keys(window.__hostImgs || {}).length}枚）`;
@@ -7201,7 +7220,8 @@ function hostPage() {
   const pubRecv = () => { if (!cli) return; const m = {}; Object.keys(H.recv).forEach((k) => { if (H.roster[k]) m[k] = { h: H.recv[k].h || "", at: H.recv[k].at || 0, att: isAtt(k) }; }); cli.send("recvst", { m, at: Date.now() }, { qos: 1, retain: true }); };
   const findKey = (n) => { if (typeof n !== "string") return null; let k = normName(n).slice(0, 60); if (H.roster[k]) return k; const f = foldName(n); const hit = Object.keys(H.roster).filter((x) => foldName(H.roster[x]) === f); return hit.length === 1 ? hit[0] : null; };
   const renameKey = (k, rn, rs) => { const nn = String(rn || "").replace(/[\s\u3000]+/g, " ").trim().slice(0, 30); if (nn && nn !== H.roster[k]) H.roster[k] = nn; if (typeof rs === "string" && rs.trim() && rs.trim() !== H.rstore[k]) H.rstore[k] = rs.trim().slice(0, 20); pubRoster(); };
-  window.__onRecv = (a) => { const k = typeof a.id === "string" && H.roster[a.id] ? a.id : findKey(a.n); if (!k) return; if (a.rn || a.rs) renameKey(k, a.rn, a.rs); const h = String(a.h || "").replace(/\s+/g, " ").trim().slice(0, 40);
+  const addPerson = (n, st) => { const nn = String(n || "").replace(/[\s\u3000]+/g, " ").trim().slice(0, 30), key = normName(nn).slice(0, 60); if (!key) return null; if (!H.roster[key]) { if (Object.keys(H.roster).length >= 500) return null; H.roster[key] = nn; H.rstore[key] = String(st || "").trim().slice(0, 20); pubRoster(); } return key; };
+  window.__onRecv = (a) => { let k = typeof a.id === "string" && H.roster[a.id] ? a.id : findKey(a.n); if (!k && a.add && !a.undo) k = addPerson(a.n, a.s); if (!k) return; if (a.rn || a.rs) renameKey(k, a.rn, a.rs); const h = String(a.h || "").replace(/\s+/g, " ").trim().slice(0, 40);
     if (a.undo) delete H.recv[k]; else H.recv[k] = { h, at: (H.recv[k] && H.recv[k].at) || Date.now(), by: String(a.by || "").slice(0, 20), att: a.att !== false };
     save(); pubRecv(); render(); };
   {
@@ -7212,6 +7232,7 @@ function hostPage() {
       <label class="chk2 rvgate"><input type="checkbox" id="rvGate"> <b>出席にチェックがある人だけ</b>クイズに参加・順位と賞品の対象にする（1人でも出席チェックが入ると有効）</label>
       <div class="rvqr"><div class="qr" id="rvQR"></div><div style="flex:1;min-width:0"><input id="rvURL" readonly><div class="row" style="margin-top:6px"><button class="btn" id="rvCopy">URLをコピー</button><button class="btn" id="rvCsv">⬇ 台帳をCSVで保存</button></div></div></div>
       <div class="row" style="margin-top:8px"><input id="rvFind" placeholder="名前・店舗で絞り込み" style="flex:1"><label class="chk2"><input type="checkbox" id="rvOnlyNo"> 未出席だけ</label></div>
+      <div class="row rvaddh"><b>＋ 名簿にない方</b><input id="rvAddN" placeholder="名前（苗字 名前）" style="flex:1"><input id="rvAddS" placeholder="店舗" style="width:110px"><button class="btn" id="rvAddOk">追加して出席</button></div>
       <div id="rvList"></div>`;
     P2("colA") && P2("colA").append(rc);
     const bc = document.createElement("div"); bc.className = "ctl"; bc.id = "bonusCard";
@@ -7234,6 +7255,7 @@ function hostPage() {
       const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = `受付台帳_${new Date().toISOString().slice(0, 10)}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     };
     $("#rvGate").onchange = () => { H.opt.attGate = $("#rvGate").checked; save(); pubState(); render(); };
+    $("#rvAddOk").onclick = () => { const n = $("#rvAddN").value.trim(); if (!n) return toast("名前を入れてください"); const ex = findKey(n); if (ex) { toast(`${H.roster[ex]} さんは名簿にいます`); return; } const k = addPerson(n, $("#rvAddS").value); if (!k) return toast("追加できませんでした"); H.recv[k] = { h: "", at: Date.now(), by: "本部", att: true }; save(); pubRecv(); pubState(); render(); $("#rvAddN").value = ""; $("#rvAddS").value = ""; toast(`${H.roster[k]} さんを名簿に追加して出席にしました`); };
     $("#rvFind").oninput = () => render(); $("#rvOnlyNo").onchange = () => render();
     window.__recvRender = () => {
       const ks = Object.keys(H.roster), done = ks.filter((k) => isAtt(k)).length, hb = ks.filter((k) => H.recv[k] && H.recv[k].h).length;
@@ -7331,6 +7353,17 @@ function hostPage() {
       const hi = L.slice().sort((x, y) => y.c - x.c || y.a - x.a || x.n.localeCompare(y.n, "ja")).slice(0, 3), hk = new Set(hi.map((x) => x.k));
       const lo = L.filter((x) => side !== "low" || !hk.has(x.k) || L.length <= 3).sort((x, y) => x.c - y.c || x.a - y.a || x.n.localeCompare(y.n, "ja")).slice(0, 3);
       clearTimeout(bnT); setS({ view: "bonus", bonus: { kind: kd, ph: "staff", side, at: Date.now(), dur: 0, list: (side === "low" ? lo : hi).map(({ k, ...x }) => x), np: Object.keys((H.bonusR[kd] || {}).ans || {}).length }, ...sfx(side === "low" ? "open" : "fanfare") }); };
+    window.__startBonus = (kd) => { if (!BK[kd]) return; H.bonusKind = kd; save(); $("#bnOwn").click(); };
+    window.__bonusNext = () => { const b = H.S.bonus || {}; if (b.kind && BK[b.kind]) H.bonusKind = b.kind;
+      if (b.ph === "intro") return $("#bnTalk").click();
+      if (b.ph === "talk") return $("#bnInput").click();
+      if (b.ph === "input") return $("#bnFinish").click();
+      if (b.ph === "done") return bnStShow("top");
+      if (b.ph === "staff" && b.side !== "low") return bnStShow("low");
+      clearTimeout(bnT); const nb = window.__nbInfo; if (nb && nb.has && nb.bonus) { setS({ view: "q" }); return window.__goNextBank(); } setS({ view: "q" }); };
+    { const bl = document.querySelector("#bankList"), card = bl && bl.closest(".ctl");
+      if (card && !card.querySelector(".bnins")) { const d = document.createElement("div"); d.className = "row bnins"; d.innerHTML = `<button class="btn" data-bnins="name">🎁 ボーナス①名前当て を差し込む</button><button class="btn" data-bnins="hobby">🎁 ボーナス②趣味当て を差し込む</button><span class="note">最後に追加されます。▲▼やドラッグで好きな位置へ</span>`; card.append(d);
+        d.querySelectorAll("[data-bnins]").forEach((x) => (x.onclick = () => { const kd = x.dataset.bnins; if (H.bank.some((y) => y.bonus === kd) && !confirm(`${BK[kd].no}（${BK[kd].t}）はもう入っています。もう1つ追加しますか？`)) return; H.bank.push({ q: `ボーナスゲーム${kd === "name" ? "①" : "②"}　${BK[kd].t}`, bonus: kd, mode: "choice", nch: 4, ch: ["", "", "", ""], correct: [], limit: 20 }); save(); render(); toast(`${BK[kd].no}（${BK[kd].t}）を問題の最後に追加しました。並べ替えで位置を決めてください`); })); } }
     $("#bnStTop").onclick = () => bnStShow("top"); $("#bnStLow").onclick = () => bnStShow("low");
     $("#bnBack").onclick = () => { clearTimeout(bnT); setS({ view: "q" }); };
     $("#bnReset").onclick = () => { const kd = H.bonusKind; if (!confirm(`${BK[kd].no}（${BK[kd].t}）のボーナス点を消します（クイズの得点ともう1回分は残ります）。よろしいですか？`)) return; H.bonusR[kd] = { pts: {}, ans: {} }; bnTotal(); save(); sendMe(); pubState(); render(); toast("この回のボーナスをリセットしました"); };
