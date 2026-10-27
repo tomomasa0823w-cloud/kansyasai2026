@@ -1231,6 +1231,13 @@ body.v-player.offline #offBar{display:block}
 .bo-jp{font-size:84px!important}
 .bo-sub{top:63%!important;font-size:66px!important;color:#fff}.bo-sub2{top:76%!important;font-size:56px!important;color:#fff}
 .bo-sub,.bo-sub2{background:rgba(0,0,0,.55);padding:6px 0}
+/* BONUS TIME：縦に積んで絶対に重ならない */
+.bo-wrap>.bo-stack{inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;opacity:1!important;animation:none!important;padding:40px 0}
+.bo-stack>*{position:static!important;top:auto!important;opacity:0;animation-fill-mode:both;width:100%}
+.bo-stack .bo-main{animation:boMain .9s cubic-bezier(.2,1.6,.4,1) both;margin-bottom:20px}
+.bo-stack .bo-sub,.bo-stack .bo-sub2{animation:boIn .6s ease both;padding:8px 0}
+@keyframes boCd{0%{opacity:0;transform:scale(1.5);filter:blur(10px)}8%{opacity:1;transform:scale(1);filter:blur(0)}80%{opacity:1;transform:scale(.94)}100%{opacity:0;transform:scale(.9)}}
+@keyframes boCdLast{0%{opacity:0;transform:scale(1.5);filter:blur(10px)}5%{opacity:1;transform:scale(1);filter:blur(0)}55%{opacity:1;transform:scale(.95) rotate(0)}70%{opacity:1;transform:scale(.6) rotate(-8deg);filter:blur(0)}100%{opacity:0;transform:scale(9) rotate(25deg);filter:blur(30px)}}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -1588,6 +1595,18 @@ body.v-recv>*:not(#vRecv):not(#toast):not(.toast){display:none!important}
 .bnsu{grid-template-columns:1fr auto!important}
 .bnsu .bntx,#bnFind{background:#fff!important;color:#0B1748!important;-webkit-text-fill-color:#0B1748!important;caret-color:#0B1748;border:2px solid #E8B740!important;font-size:18px!important}
 .bnsu .bntx::placeholder,#bnFind::placeholder{color:#8a90a8!important;-webkit-text-fill-color:#8a90a8!important}
+/* 景品の編集モード */
+#peditBar{display:none}
+#hostV7.pedit .monSlot,#hostV7.pedit .hpanel[data-hp="cere"] .colA>*:not(.pecard),#hostV7.pedit .hpanel[data-hp="cere"] .colB>*:not(.pecard){display:none!important}
+#hostV7.pedit .hpanel[data-hp="cere"] .hgrid2{display:block!important}
+#hostV7.pedit .pecard{max-width:1200px;margin:0 auto}
+#hostV7.pedit #peditBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:120px;z-index:20;margin:-4px -4px 10px;padding:10px 14px;border-radius:12px;background:#E8B740;color:#1A1400}
+#hostV7.pedit #peditBar .note{color:#3A2600}
+#hostV7.pedit #peditOn{display:none}
+#hostV7.pedit .pecard .tbl-wrap{max-height:none!important}
+#hostV7.pedit .pecard .przt{font-size:16px}
+#hostV7.pedit .pecard .przt input,#hostV7.pedit .pecard .przt select{font-size:16px;padding:8px}
+#peditOff,#peditOn{white-space:nowrap}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -4666,7 +4685,7 @@ const SFX = (() => {
     bonusOwn() { P.bonusIntro(); }, // オリジナル演出は常にこの合成音（リンク差し替えの影響を受けない）
     bonusIntro() { // 10→1 カウント（ドン・ドン…）→ ちゅいぃーん → ジャン！ → ファンファーレ
       const t = now(), b = bus(0.32);
-      for (let i = 0; i < 10; i++) { const tt = t + i, hot = i >= 7; timpani(hot ? 73 : 55, tt, hot ? 0.55 : 0.4, b); noise(tt, 0.35, hot ? 0.22 : 0.14, b, "bandpass", 1800, 0.8, 0.005); osc("sine", hot ? 1320 : 880, tt, 0.18, hot ? 0.16 : 0.1, b); }
+      for (let i = 0; i < 10; i++) { const tt = t + i + 0.04, hot = i >= 7; timpani(hot ? 73 : 55, tt, hot ? 0.55 : 0.4, b); noise(tt, 0.35, hot ? 0.22 : 0.14, b, "bandpass", 1800, 0.8, 0.005); osc("sine", hot ? 1320 : 880, tt, 0.18, hot ? 0.16 : 0.1, b); }
       riser(t + 6.2, 3.8, bus(0.35));
       osc("sine", 380, t + 9.95, 0.75, 0.3, b, { to: 3600, glide: 0.7, hold: true, a: 0.05 }); osc("sawtooth", 190, t + 9.95, 0.75, 0.08, b, { to: 1800, glide: 0.7, hold: true, a: 0.05 });
       { const f = noise(t + 9.95, 0.75, 0.5, b, "bandpass", 600, 3, 0.05); f.frequency.setValueAtTime(600, t + 9.95); f.frequency.exponentialRampToValueAtTime(9000, t + 10.6); }
@@ -5422,8 +5441,7 @@ function ytvSync(el, S) {
 
 // オリジナル演出（約17秒）：10→1 カウントダウン → ちゅいーん → 「BONUS TIME」ドン！ → ルール
 function bonusOwnHTML(b) {
-  const B0 = (window.__BO0 = window.__BO0 || {}); if (!B0[b.at]) B0[b.at] = Date.now(); // 表示がちらつかないよう、最初に見た時刻で固定
-  const el = Math.max(0, (B0[b.at] - b.at) / 1000), d = (t) => `${(t - el).toFixed(2)}s`, T = 10.6;
+  const el = 0, d = (t) => `${(t - el).toFixed(2)}s`, T = 10.6;
   const conf = Array.from({ length: 70 }, (_, i) => `<i style="left:${(i * 37) % 100}%;background:${["#FFD55A", "#FF5A5A", "#5AC8FF", "#7CFF8A", "#fff"][i % 5]};animation-delay:${d(T + 0.1 + (i % 10) * 0.08)};--dx:${((i * 53) % 200) - 100}px;--rt:${(i * 47) % 720}deg"></i>`).join("");
   const nums = Array.from({ length: 10 }, (_, i) => `<div class="bo-cd${i === 9 ? " last" : ""}${i >= 7 ? " hot" : ""}" style="animation-delay:${d(i)}"><span class="fl" style="animation-delay:${d(i)}"></span><b>${10 - i}</b></div>`).join("");
   return `<div class="bo-wrap">
@@ -5432,9 +5450,9 @@ function bonusOwnHTML(b) {
     <div class="bo-zip" style="animation-delay:${d(9.95)}"></div>
     <div class="bo-flash" style="animation-delay:${d(T)}"></div>
     <div class="bo-rays" style="animation-delay:${d(T)}"></div>
-    <div class="bo-main" style="animation-delay:${d(T)}"><div class="bo-en">BONUS TIME</div><div class="bo-jp">ボーナスタイム${b.kind === "name" ? "①" : b.kind === "hobby" ? "②" : ""}突入！</div></div>
+    <div class="bo-stack"><div class="bo-main" style="animation-delay:${d(T)}"><div class="bo-en">BONUS TIME</div><div class="bo-jp">ボーナスタイム${b.kind === "name" ? "①" : b.kind === "hobby" ? "②" : ""}突入！</div></div>
     <div class="bo-sub" style="animation-delay:${d(T + 1.8)}">${b.kind === "name" ? "スタッフの<b>フルネーム</b>を覚えろ！" : "スタッフの<b>名前</b>と<b>趣味</b>を聞き出せ！"}</div>
-    <div class="bo-sub2" style="animation-delay:${d(T + 3.2)}">当てれば 1人につき <b>＋0.1点</b></div>
+    <div class="bo-sub2" style="animation-delay:${d(T + 3.2)}">当てれば 1人につき <b>＋0.1点</b></div></div>
     <div class="bo-conf">${conf}</div></div>`;
 }
 // ================= 司会・サブ司会の操作パネル（共通） =================
@@ -6351,7 +6369,7 @@ function hostPage() {
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-23</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-25</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -7319,6 +7337,19 @@ function hostPage() {
     el.querySelectorAll("[data-gpx]").forEach((x) => (x.onclick = () => { const i = +x.dataset.gpx; if (!confirm(`${g.pool[i].n} さんを候補から消しますか？`)) return; g.pool.splice(i, 1); g.log = []; gSync(g); gPub(); }));
   }
 
+  // ---- 景品の編集モード（モニターを隠して景品表を広く） ----
+  {
+    const card = $("#przList") && $("#przList").closest(".ctl");
+    if (card) {
+      const h2 = card.querySelector("h2");
+      h2 && h2.insertAdjacentHTML("beforeend", ` <button class="btn mini2" id="peditOn" style="float:right">🗂 景品の編集モード</button>`);
+      const bar = document.createElement("div"); bar.id = "peditBar"; bar.innerHTML = `<b>🗂 景品の編集モード</b><span class="note">賞の名前・景品メモの入力、▲▼で並べ替え、追加・削除ができます。</span><span style="flex:1"></span><button class="btn go" id="peditOff">✓ 編集を終わる</button>`;
+      card.prepend(bar);
+      const set = (on) => { document.getElementById("hostV7").classList.toggle("pedit", on); card.classList.toggle("pecard", on); if (on) { setTab("cere"); window.scrollTo(0, 0); card.scrollIntoView({ block: "start" }); } render(); };
+      $("#peditOn").onclick = (e) => { e.stopPropagation(); set(true); };
+      $("#peditOff").onclick = () => set(false);
+    }
+  }
   // ---- 問題の並べ替え・編集モード（モニターを隠して一覧を広く） ----
   {
     const card = $("#bankList") && $("#bankList").closest(".ctl");
