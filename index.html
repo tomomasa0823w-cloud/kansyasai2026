@@ -939,9 +939,9 @@ body.v-player.offline #offBar{display:block}
 .sh-grid{flex:1;display:grid;grid-template-columns:repeat(var(--cols),1fr);grid-auto-rows:minmax(0,1fr);gap:18px;min-height:0;align-content:center}
 .sh-card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:14px 10px;border-radius:22px;background:linear-gradient(180deg,#fff,#E6EEFF);color:#0B2A5A;box-shadow:0 0 0 4px #E8B740,0 14px 30px rgba(0,0,0,.45);animation:shMove 4.2s cubic-bezier(.45,0,.2,1) both;max-height:230px}
 @keyframes shMove{
-  0%{transform:translate(0,0) rotate(0)}
-  12%{transform:translate(var(--x1),var(--y1)) rotate(var(--r1)) scale(.9)}
-  30%{transform:translate(var(--x2),var(--y2)) rotate(var(--r2)) scale(.85)}
+  0%,10%{transform:translate(var(--x0,0px),var(--y0,0px)) rotate(0)}
+  20%{transform:translate(var(--x1),var(--y1)) rotate(var(--r1)) scale(.9)}
+  34%{transform:translate(var(--x2),var(--y2)) rotate(var(--r2)) scale(.85)}
   48%{transform:translate(var(--x3),var(--y3)) rotate(var(--r3)) scale(.9)}
   64%{transform:translate(var(--x1),var(--y2)) rotate(var(--r2)) scale(.85)}
   80%{transform:translate(calc(var(--x3) * .3),calc(var(--y1) * .3)) rotate(calc(var(--r1) * .3))}
@@ -4728,7 +4728,7 @@ function renderMonitor(el, S, list, joinURL) {
   el.classList.toggle("noanim", same);
   el.innerHTML = `<div class="tv deep">${html}</div>`;
   qrInto(el.querySelector(".js-qr"), joinURL);
-  vidSync(el, S); camSync(el); lotRun(el);
+  vidSync(el, S); camSync(el); lotRun(el); shPrep(el);
   fitTV(el); fitTexts(el); if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitTexts(el)); setTimeout(() => fitTexts(el), 400);
   if (!tvObs.has(el) && window.ResizeObserver) { const o = new ResizeObserver(() => { fitTV(el); fitTexts(el); }); o.observe(el); tvObs.set(el, o); }
 }
@@ -4743,7 +4743,7 @@ function gameMonHTML(S) {
     const rnd = (i, k) => hashNum(G.shuf + ":" + i + ":" + k);
     const cards = P.map((p, i) => {
       const v = (k, m) => Math.round((rnd(i, k) * 2 - 1) * m);
-      return `<div class="sh-card" style="--x1:${v("x1", 620)}px;--y1:${v("y1", 260)}px;--r1:${v("r1", 40)}deg;--x2:${v("x2", 620)}px;--y2:${v("y2", 260)}px;--r2:${v("r2", 40)}deg;--x3:${v("x3", 500)}px;--y3:${v("y3", 260)}px;--r3:${v("r3", 30)}deg;animation-delay:-${Math.min(el, D)}s"><span class="sh-no" style="animation-delay:${Math.max(0, D - 0.4 - el)}s">${i + 1}</span><span class="sh-st">${esc(p.s || "")}</span><span class="sh-nm">${esc(p.n)}</span></div>`;
+      return `<div class="sh-card" data-from="${G.shufFrom && G.shufFrom[i] != null && G.shufFrom[i] >= 0 ? G.shufFrom[i] : i}" style="--x1:${v("x1", 620)}px;--y1:${v("y1", 260)}px;--r1:${v("r1", 40)}deg;--x2:${v("x2", 620)}px;--y2:${v("y2", 260)}px;--r2:${v("r2", 40)}deg;--x3:${v("x3", 500)}px;--y3:${v("y3", 260)}px;--r3:${v("r3", 30)}deg;animation-delay:-${Math.min(el, D)}s"><span class="sh-no" style="animation-delay:${Math.max(0, D - 0.4 - el)}s">${i + 1}</span><span class="sh-st">${esc(p.s || "")}</span><span class="sh-nm">${esc(p.n)}</span></div>`;
     }).join("");
     return { key: "gs-" + G.shuf, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="sh-wrap"><div class="sh-h"><span class="a" style="animation-delay:-${Math.min(el, D)}s">🔀 順番を決めています…</span><span class="b" style="animation-delay:-${Math.min(el, D)}s">この順番で${isM ? "投げます" : "射ます"}！</span></div><div class="sh-grid n${Math.min(n, 30)}" style="--cols:${cols}">${cards}</div></div></div>${telopHTML(isM ? "モルック" : "アーチェリー", "順番シャッフル！")}` };
   }
@@ -4926,6 +4926,12 @@ function lotRun(root) {
   if (few) { e.textContent = pool.length ? "？？？" : "？"; e.classList.add("tame"); setTimeout(() => { e.classList.remove("tame"); fin(); }, T); return; }
   const step = () => { if (!document.body.contains(e)) return; const k = (performance.now() - t0) / T; if (k >= 1) return fin(); let v = pick(); if (pool.length > 1 || mx > mn) { let g = 0; while (v === res && g++ < 5) v = pick(); } e.textContent = v; setTimeout(step, 45 + 380 * k * k * k); };
   step();
+}
+
+// シャッフル：最初は「前の順番」の位置から始めて、ごちゃまぜ → 新しい順番へ
+function shPrep(root) {
+  const cs = root && [...root.querySelectorAll(".sh-card[data-from]")]; if (!cs || !cs.length) return;
+  cs.forEach((c) => { const f = cs[+c.dataset.from]; if (!f) return; c.style.setProperty("--x0", f.offsetLeft - c.offsetLeft + "px"); c.style.setProperty("--y0", f.offsetTop - c.offsetTop + "px"); });
 }
 // ================= 司会・サブ司会の操作パネル（共通） =================
 let hostMode = "choice", pickedCorrect = [], preCorrect = [], curS = { ...DEF };
@@ -6312,7 +6318,7 @@ function hostPage() {
   window.__gameView = () => { const g = G(), d = gDerive(), o = g.opts; return { type: g.type, mode: g.mode || "normal", round: d.round, inRound: d.inRound, title: g.title, max: +o.max, back: +o.back, missOut: +o.missOut, ends: +o.ends, arrows: +o.arrows,
     thr: d.thr, team: !!(g.team && g.mode !== "qual"),
     players: d.P.map((p) => ({ n: p.n2 ? `${p.n}・${p.n2}` : p.n, s: p.s, score: p.score, miss: p.miss, out: p.out, win: p.win, rank: p.rank, hist: g.type === "archery" || g.mode === "qual" ? p.hist : undefined })),
-    cur: d.cur, last: d.last, done: d.done, end: d.end, arrowNo: d.arrowNo, intro: g.introOn ? g.intro : null, shuf: g.shufOn ? g.shufAt : null }; };
+    cur: d.cur, last: d.last, done: d.done, end: d.end, arrowNo: d.arrowNo, intro: g.introOn ? g.intro : null, shuf: g.shufOn ? g.shufAt : null, shufFrom: g.shufOn ? g.shufFrom || null : null }; };
   const gPts = () => { const g = G(); if (g.type === "molkky") return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0]; const a = String(g.opts.pts || "").split(/[,、\s]+/).map((x) => parseInt(x, 10)).filter((x) => Number.isInteger(x) && x >= 0 && x <= 1000); return a.length ? a : [1, 0]; };
   const gPub = (extra) => { save(); setS({ view: "game", ...(extra || {}) }); };
   function gScore(v) {
@@ -6407,7 +6413,8 @@ function hostPage() {
     if (g.stage && g.stage !== "free") { if (g.log.length && !confirm("スコアの記録は消えます。よろしいですか？")) return; g.log = []; gSync(g); } else gJoin(n, st); $("#gFind").value = ""; gPub(); if (!key) toast("名簿にない名前なので、自由入力で追加しました");
   };
   $("#gAdd").onclick = gAddName; $("#gFind").addEventListener("keydown", (e) => { if (e.key === "Enter") gAddName(); });
-  $("#gShuffle").onclick = () => { const g = G(); if (g.log.length && !confirm("スコアは最初からになります。よろしいですか？")) return; g.log = []; for (let i = g.players.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [g.players[i], g.players[j]] = [g.players[j], g.players[i]]; }
+  $("#gShuffle").onclick = () => { const g = G(); if (g.log.length && !confirm("スコアは最初からになります。よろしいですか？")) return; g.log = []; const old = g.players.slice(); let tries = 0; do { for (let i = g.players.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [g.players[i], g.players[j]] = [g.players[j], g.players[i]]; } } while (g.players.length > 1 && g.players.every((p, i) => p === old[i]) && ++tries < 20);
+    g.shufFrom = g.players.map((p) => old.indexOf(p));
     g.introOn = false; if (g.players.length > 1) { g.shufOn = true; g.shufAt = Date.now(); gPub(sfx("drumReveal")); } else gPub(); };
   $("#gClear").onclick = () => { if (!confirm("出場する選手を全部外します（候補には残ります）。よろしいですか？")) return; const g = G(); g.players = []; g.log = []; gPub(); };
   $("#gPoolAll").onclick = () => { const g = G(); (g.pool || []).forEach((p) => { if (!g.players.some((x) => x.n === p.n || x.n2 === p.n)) gJoin(p.n, p.s, true); }); gPub(); };
