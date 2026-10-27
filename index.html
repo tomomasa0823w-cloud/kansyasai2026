@@ -1238,6 +1238,9 @@ body.v-player.offline #offBar{display:block}
 .bo-stack .bo-sub,.bo-stack .bo-sub2{animation:boIn .6s ease both;padding:8px 0}
 @keyframes boCd{0%{opacity:0;transform:scale(1.5);filter:blur(10px)}8%{opacity:1;transform:scale(1);filter:blur(0)}80%{opacity:1;transform:scale(.94)}100%{opacity:0;transform:scale(.9)}}
 @keyframes boCdLast{0%{opacity:0;transform:scale(1.5);filter:blur(10px)}5%{opacity:1;transform:scale(1);filter:blur(0)}55%{opacity:1;transform:scale(.95) rotate(0)}70%{opacity:1;transform:scale(.6) rotate(-8deg);filter:blur(0)}100%{opacity:0;transform:scale(9) rotate(25deg);filter:blur(30px)}}
+.tv-cu .cut.js-cu2{min-width:0;font-size:70px;padding:4px 20px;animation:tvblink .5s infinite}.tv-cu .cut.js-cu2.done{animation:none}
+.tv-cu li.top.on .rw{animation:cuTop .7s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes cuTop{0%{opacity:0;transform:scale(1.6)}100%{opacity:1;transform:none}}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -1607,6 +1610,7 @@ body.v-recv>*:not(#vRecv):not(#toast):not(.toast){display:none!important}
 #hostV7.pedit .pecard .przt{font-size:16px}
 #hostV7.pedit .pecard .przt input,#hostV7.pedit .pecard .przt select{font-size:16px;padding:8px}
 #peditOff,#peditOn{white-space:nowrap}
+.bnchips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.bnchip{border:2px solid #E8B74088;background:#fff;color:#0B1748;border-radius:999px;padding:7px 12px;font-size:15px;font-weight:800;cursor:pointer}.bnchip small{margin-left:5px;font-size:11px;opacity:.7}.bnchip.on{background:#E8B740;border-color:#E8B740;color:#1A1400}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5076,10 +5080,10 @@ function monHTML(S, list, joinURL) {
     } else if (st === "champ") {
       const c = S.champ, CU = c && Array.isArray(c.cands) ? c.cands.slice(0, 10) : []; let cuFx = "";
       if (c && CU.length) {
-        const last = Math.max(...CU.map((x) => +x.ms || 0)), sp = Math.max(1, last / 6000), at = Math.abs(Date.now() - (c.at || 0)) < 60000 ? c.at : Date.now(), endS = last / sp / 1000, el = 0;
+        const N = CU.length, at = Math.abs(hostNow() - (c.at || 0)) < 60000 ? c.at : hostNow(), step = N > 6 ? 450 : 600, tOf = (i) => (i === 0 ? 600 + (N - 1) * step + (N > 1 ? 1600 : 600) : 600 + (N - 1 - i) * step), winT = tOf(0) + 1400, el = 0;
         const CF = (window.__CUF = window.__CUF || {}); if (!CF[at]) CF[at] = confetti(130);
         cuFx = `<div class="cu-fx">${CF[at]}</div>`;
-        body = `<div class="tv-cu"><div class="cuh"><span class="k">第${c.period}ピリオド　チャンピオンは…</span><span class="cut js-cu" data-t0="${at}" data-sp="${sp}" data-end="${last}">0.00</span></div><ol style="--n:${CU.length}">${CU.map((x, i) => `<li class="${i === 0 ? "top" : ""}" data-ms="${+x.ms || 0}"><div class="rw"><span class="no">${i === 0 ? "👑" : i + 1}</span><span class="tn">${esc(x.n)}</span><span class="tm">${((+x.ms || 0) / 1000).toFixed(2)}</span></div></li>`).join("")}</ol>
+        body = `<div class="tv-cu"><div class="cuh"><span class="k">第${c.period}ピリオド　チャンピオンは…</span><span class="cut js-cu2" data-t0="${at}" data-win="${winT}" data-champ="${tOf(0)}">🥁</span></div><ol style="--n:${CU.length}">${CU.map((x, i) => `<li class="${i === 0 ? "top" : ""}" data-ts="${tOf(i)}"><div class="rw"><span class="no">${i === 0 ? "👑" : i + 1}</span><span class="tn">${esc(x.n)}</span><span class="tm">${((+x.ms || 0) / 1000).toFixed(2)}</span></div></li>`).join("")}</ol>
           <div class="cu-win"><div class="crown">👑</div><div class="kick">第${c.period}ピリオド チャンピオン</div><div class="winner">${esc(c.n)}</div><div class="time">${sec(c.ms)}</div></div></div>`;
         tel = telopHTML(per, `第${c.period}ピリオド　最速の正解者がチャンピオン！`);
       } else
@@ -5338,13 +5342,21 @@ function shPrep(root) {
 
 // ================= 🎁 ボーナスタイム（モニター・共通） =================
 const BEND = {};
-function bonusEnd(b) { const k = b.ph + ":" + b.at; if (!BEND[k]) { const e = b.at + b.dur * 1000; BEND[k] = Math.abs(Date.now() - b.at) < 15 * 60 * 1000 ? e : Date.now() + b.dur * 1000; } return BEND[k]; }
-setInterval(() => { document.querySelectorAll(".js-cu[data-t0]").forEach((e) => { const raw = (Date.now() - +e.dataset.t0 - 300) * +e.dataset.sp, v = Math.min(+e.dataset.end, Math.max(0, raw)), box = e.closest(".tv-cu"), tv = e.closest(".tv");
+// 司会PCの時計に合わせる（各端末の時計のずれを補正）：司会PCが数秒おきに "clock" を送る
+const HCLK = { s: [] };
+function hostClock(now) { if (typeof now !== "number" || !isFinite(now)) return; const m = now - Date.now(); HCLK.s.push(m); if (HCLK.s.length > 12) HCLK.s.shift(); window.__hoff = Math.max(...HCLK.s); }
+function hostNow() { return Date.now() + (typeof window.__hoff === "number" ? window.__hoff : 0); }
+function bonusEnd(b) { const e = b.at + b.dur * 1000; if (typeof window.__hoff !== "number" && Math.abs(Date.now() - b.at) > 15 * 60 * 1000) { const k = b.ph + ":" + b.at; return BEND[k] || (BEND[k] = Date.now() + b.dur * 1000); } return e; }
+setInterval(() => { document.querySelectorAll(".js-cu2[data-t0]").forEach((e) => { const t = hostNow() - +e.dataset.t0, box = e.closest(".tv-cu"), tv = e.closest(".tv"); if (!box) return;
+  box.querySelectorAll("li[data-ts]").forEach((li) => { if (!li.classList.contains("on") && t >= +li.dataset.ts) li.classList.add("on"); });
+  const ch = t >= +e.dataset.champ; if (e.dataset.st !== String(ch)) { e.dataset.st = String(ch); e.textContent = ch ? "👑" : "🥁"; e.classList.toggle("done", ch); }
+  if (t >= +e.dataset.win && !box.classList.contains("win")) { box.classList.add("win"); tv && tv.querySelector(".cu-fx") && tv.querySelector(".cu-fx").classList.add("on"); } }); }, 60);
+setInterval(() => { document.querySelectorAll(".js-cu[data-t0]").forEach((e) => { const raw = (hostNow() - +e.dataset.t0 - 300) * +e.dataset.sp, v = Math.min(+e.dataset.end, Math.max(0, raw)), box = e.closest(".tv-cu"), tv = e.closest(".tv");
   e.textContent = (v / 1000).toFixed(2); e.classList.toggle("done", v >= +e.dataset.end);
   if (box) { box.querySelectorAll("li[data-ms]").forEach((li) => { if (!li.classList.contains("on") && +li.dataset.ms <= v) li.classList.add("on"); }); if (raw >= +e.dataset.end + 1200 * +e.dataset.sp && !box.classList.contains("win")) { box.classList.add("win"); tv && tv.querySelector(".cu-fx") && tv.querySelector(".cu-fx").classList.add("on"); } } }); }, 40);
-setInterval(() => { document.querySelectorAll(".js-bt[data-bend]").forEach((e) => { const r = Math.max(0, +e.dataset.bend - Date.now()), sec = Math.ceil(r / 1000); e.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`; e.classList.toggle("hurry", sec <= 10); }); }, 250);
+setInterval(() => { document.querySelectorAll(".js-bt[data-bend]").forEach((e) => { const r = Math.max(0, +e.dataset.bend - hostNow()), sec = Math.ceil(r / 1000); e.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`; e.classList.toggle("hurry", sec <= 10); }); }, 250);
 function bnCdHTML(b) { return `<div class="bn-cd" data-bend="${bonusEnd(b)}"></div>`; }
-setInterval(() => { document.querySelectorAll(".bn-cd[data-bend]").forEach((e) => { const r = +e.dataset.bend - Date.now(), sec = Math.ceil(r / 1000), v = sec >= 1 && sec <= 10 ? String(sec) : r <= 0 && r > -2500 ? "END" : "";
+setInterval(() => { document.querySelectorAll(".bn-cd[data-bend]").forEach((e) => { const r = +e.dataset.bend - hostNow(), sec = Math.ceil(r / 1000), v = sec >= 1 && sec <= 10 ? String(sec) : r <= 0 && r > -2500 ? "END" : "";
   if (e.dataset.v === v) return; e.dataset.v = v; e.classList.toggle("on", !!v);
   e.innerHTML = v ? `<div class="cdx${v === "END" ? " end" : ""}"><span class="flare"></span><b>${v === "END" ? "TIME UP!" : v}</b></div>` : ""; }); }, 100);
 function bonusMonHTML(S) {
@@ -5369,7 +5381,7 @@ function bonusMonHTML(S) {
       + (F.length ? `<div class="tv-champ pop">👑 1位　<b>${F.map((x) => esc(x.n)).join("・")}</b>　${F[0].c}人正解 ${pt(F[0].c)}</div>` : `<div class="tv-center"><div class="giant dim">正解者なし</div></div>`)
       + (R.length ? `<ol class="tv-top bn-rk" style="grid-template-rows:repeat(${half},auto)">${R.map((x, i) => `<li style="animation-delay:${(d0 + i * 0.08).toFixed(2)}s"><span class="no">${x.rk}<small>位</small></span><span class="tn">${esc(x.n)}</span><span class="tm">${x.c}人 ${pt(x.c)}</span></li>`).join("")}</ol>` : "") + `</div>`;
   }
-  return { key: "bn-" + b.ph + "-" + b.at, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main">${body}</div>${b.ph === "talk" || b.ph === "input" ? bnCdHTML(b) : ""}${telopHTML("ボーナス" + no, b.ph === "staff" ? (b.side === "low" ? "このスタッフの名前と顔、覚えて帰ってね！" : "たくさんの人に当てられたスタッフ！") : b.ph === "talk" ? (nm ? "歓談タイム！スタッフのフルネームを覚えよう" : "歓談タイム！スタッフの趣味を聞き出そう") : b.ph === "input" ? "スマホで回答中！" : "ボーナス点を加点しました")}` };
+  return { key: "bn-" + b.ph + "-" + b.at, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main">${body}</div>${telopHTML("ボーナス" + no, b.ph === "staff" ? (b.side === "low" ? "このスタッフの名前と顔、覚えて帰ってね！" : "たくさんの人に当てられたスタッフ！") : b.ph === "talk" ? (nm ? "歓談タイム！スタッフのフルネームを覚えよう" : "歓談タイム！スタッフの趣味を聞き出そう") : b.ph === "input" ? "スマホで回答中！" : "ボーナス点を加点しました")}` };
 }
 // ================= 受付用の画面（スマホ・PC 何台でも） =================
 function recvPage(room, bi) {
@@ -6369,7 +6381,7 @@ function hostPage() {
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-25</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-28</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -7528,6 +7540,7 @@ function hostPage() {
     $("#bnBack").onclick = () => { clearTimeout(bnT); setS({ view: "q" }); };
     $("#bnReset").onclick = () => { const kd = H.bonusKind; if (!confirm(`${BK[kd].no}（${BK[kd].t}）のボーナス点を消します（クイズの得点ともう1回分は残ります）。よろしいですか？`)) return; H.bonusR[kd] = { pts: {}, ans: {} }; bnTotal(); save(); sendMe(); pubState(); render(); toast("この回のボーナスをリセットしました"); };
     setTimeout(pubRecv, 2500);
+    setInterval(() => { if (cli) cli.send("clock", { now: Date.now() }); }, 3000); // スマホ・別PCの時計合わせ用
   }
   document.querySelectorAll("#hostV7 [data-view]").forEach((b) => (b.onclick = () => act("view", { v: b.dataset.view })));
   function render() {
@@ -7573,7 +7586,8 @@ function remotePage(room, bi) {
   let pin = store.get("hq-pin-" + room, "");
   const pURL = baseOf(BASE);
   const watchSfx = sfxWatcher(), watchCount = countWatcher();
-  const cli = connectAny(bi, room, ["state", "live", "img/+", "cam"], (t, d) => {
+  const cli = connectAny(bi, room, ["state", "live", "img/+", "cam", "clock"], (t, d) => {
+    if (t === "clock") return hostClock(d && d.now);
     if (t === "cam") return camMsg(d);
     if (t.startsWith("img/")) { if (typeof d.id === "string" && typeof d.d === "string" && /^data:image\//.test(d.d)) { IMG[d.id] = d.d; render(); } return; }
     if (t === "state") {
@@ -7644,11 +7658,14 @@ function playerPage(room, bi) {
   const P = store.get(ks, null) || { cid: rand(14, lower), tok: rand(24, "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"), name: "" };
   store.set(ks, P);
   let S = { ...DEF }, joined = false, t0 = null, t0rid = null, myAns = null, joinT = null, wasStanding = null, seatFx = 0, reviveFx = 0, place = {}, meInfo = null;
-  let up = false, bAns = {}, bKey = "", bRes = null, bQ = "";
+  let up = false, bAns = {}, bKey = "", bRes = null, bQ = "", bSf = "";
+  const bnChipDraw = (el, L, redraw) => { const box = el.querySelector("#bnChips"); if (!box) return; const st = []; L.forEach((x) => { const s2 = x.s || "店舗なし"; if (!st.includes(s2)) st.push(s2); }); if (bSf && !st.includes(bSf)) bSf = "";
+    const h = ["", ...st].map((s2) => { const n = L.filter((x) => !s2 || (x.s || "店舗なし") === s2), d = n.filter((x) => bAns[x.k]).length; return `<button class="bnchip${s2 === bSf ? " on" : ""}" data-sf="${esc(s2)}">${s2 ? esc(s2) : "すべて"}<small>${d}/${n.length}</small></button>`; }).join("");
+    if (box._h === h) return; box._h = h; box.innerHTML = h; box.querySelectorAll("[data-sf]").forEach((x) => (x.onclick = () => { bSf = x.dataset.sf; redraw(); })); };
   document.body.classList.add("v-player");
   let roster = [], pickStore = store.get("hq-pick-store", ""), pendingForce = null;
   const openedAt = Date.now();
-  const cli = connectAny(bi, room, ["state", "roster", "img/+", "r/" + P.cid, "@" + LOBBY + "/cur"], onMsg, () => {
+  const cli = connectAny(bi, room, ["state", "roster", "img/+", "r/" + P.cid, "clock", "@" + LOBBY + "/cur"], (t, d) => (t === "clock" ? hostClock(d && d.now) : onMsg(t, d)), () => {
     if (!up) { up = true; if (!P.name) show("vJoin"); else loading("参加の確認をしています", ""); }
     if (P.name && !joined) sendJoin(P.name, true);
   }, (s, i) => {
@@ -7834,11 +7851,12 @@ function playerPage(room, bi) {
           const me = normName(P.name || "").slice(0, 60), qs = (b.qs || []).filter((x) => x.k !== me), sur = b.sur || [];
           if (!el.querySelector(".bnin") || el.dataset.bk !== key) {
             el.dataset.bk = key;
-            el.innerHTML = `<div class="status bnp bnin"><div class="bnhd"><b>🎁 この人の苗字は？</b><span>残り <b class="js-bt" data-bend="${bonusEnd(b)}"></b></span></div><div class="note">名前をタップ → 苗字を入力して「決定」（1人1回・答えたのは <b id="bnCnt">0</b>人）</div><input id="bnFind" placeholder="下の名前・店舗で探す" autocomplete="off"><div id="bnList"></div></div>`;
+            el.innerHTML = `<div class="status bnp bnin"><div class="bnhd"><b>🎁 この人の苗字は？</b><span>残り <b class="js-bt" data-bend="${bonusEnd(b)}"></b></span></div><div class="note">名前をタップ → 苗字を入力して「決定」（1人1回・答えたのは <b id="bnCnt">0</b>人）</div><div class="bnchips" id="bnChips"></div><input id="bnFind" placeholder="下の名前で探す" autocomplete="off"><div id="bnList"></div></div>`;
             const opts = `<option value="">▼ 苗字をえらぶ（スクロール）</option>` + sur.map((x) => `<option value="${esc(x.n)}">${esc(x.n)}${x.r && x.r !== x.n ? "（" + esc(x.r) + "）" : ""}</option>`).join("");
             const draw = () => {
               const q = foldName(el.querySelector("#bnFind").value || "");
-              el.querySelector("#bnList").innerHTML = qs.filter((x) => !q || foldName(x.g + x.s).includes(q)).map((x) => bAns[x.k] ? `<div class="bnr done"><span>${esc(bAns[x.k] === "?" ? "？？" : bAns[x.k])} ${esc(x.g)}<small>${esc(x.s)}</small></span><b>✓ 回答済み</b></div>`
+              bnChipDraw(el, qs, draw);
+              el.querySelector("#bnList").innerHTML = qs.filter((x) => (!bSf || (x.s || "店舗なし") === bSf) && (!q || foldName(x.g + x.s).includes(q))).map((x) => bAns[x.k] ? `<div class="bnr done"><span>${esc(bAns[x.k] === "?" ? "？？" : bAns[x.k])} ${esc(x.g)}<small>${esc(x.s)}</small></span><b>✓ 回答済み</b></div>`
                 : `<div class="bnr" data-bk="${esc(x.k)}"><span><em class="bnq">？？</em> ${esc(x.g)}<small>${esc(x.s)}</small></span><div class="bno bnsu hidden"><input class="bntx" placeholder="苗字を入力" autocomplete="off" autocapitalize="off" enterkeyhint="done"><button class="btn go bnok">決定</button></div></div>`).join("") || '<p class="note">見つかりません</p>';
               el.querySelectorAll(".bnr[data-bk]").forEach((r) => {
                 const box = r.querySelector(".bno"), tx = r.querySelector(".bntx");
@@ -7854,10 +7872,11 @@ function playerPage(room, bi) {
         const ppl = (b.people || []).filter((x) => x.n !== P.name);
         if (!el.querySelector(".bnin") || el.dataset.bk !== key) {
           el.dataset.bk = key;
-          el.innerHTML = `<div class="status bnp bnin"><div class="bnhd"><b>🎁 この人の趣味は？</b><span>残り <b class="js-bt" data-bend="${bonusEnd(b)}"></b></span></div><div class="note">名前をタップ → 趣味を選ぶ（1人1回・答えたのは <b id="bnCnt">0</b>人）</div><input id="bnFind" placeholder="名前・店舗で探す" autocomplete="off"><div id="bnList"></div></div>`;
+          el.innerHTML = `<div class="status bnp bnin"><div class="bnhd"><b>🎁 この人の趣味は？</b><span>残り <b class="js-bt" data-bend="${bonusEnd(b)}"></b></span></div><div class="note">名前をタップ → 趣味を選ぶ（1人1回・答えたのは <b id="bnCnt">0</b>人）</div><div class="bnchips" id="bnChips"></div><input id="bnFind" placeholder="名前で探す" autocomplete="off"><div id="bnList"></div></div>`;
           const draw = () => {
             const q = foldName(el.querySelector("#bnFind").value || "");
-            el.querySelector("#bnList").innerHTML = ppl.filter((x) => !q || foldName(x.n + x.s).includes(q)).map((x) => bAns[x.k] ? `<div class="bnr done"><span>${esc(x.n)}<small>${esc(x.s)}</small></span><b>✓ ${esc(bAns[x.k] === "?" ? "回答済み" : bAns[x.k])}</b></div>`
+            bnChipDraw(el, ppl, draw);
+            el.querySelector("#bnList").innerHTML = ppl.filter((x) => (!bSf || (x.s || "店舗なし") === bSf) && (!q || foldName(x.n + x.s).includes(q))).map((x) => bAns[x.k] ? `<div class="bnr done"><span>${esc(x.n)}<small>${esc(x.s)}</small></span><b>✓ ${esc(bAns[x.k] === "?" ? "回答済み" : bAns[x.k])}</b></div>`
               : `<div class="bnr" data-bk="${esc(x.k)}"><span>${esc(x.n)}<small>${esc(x.s)}</small></span><div class="bno hidden">${x.o.map((o, i) => `<button class="btn" data-bo="${i}">${esc(o)}</button>`).join("")}</div></div>`).join("") || '<p class="note">見つかりません</p>';
             el.querySelectorAll(".bnr[data-bk]").forEach((r) => {
               r.querySelector("span").onclick = () => { el.querySelectorAll(".bno").forEach((x) => x !== r.querySelector(".bno") && x.classList.add("hidden")); r.querySelector(".bno").classList.toggle("hidden"); };
