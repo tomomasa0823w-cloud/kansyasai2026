@@ -1348,6 +1348,39 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
   #hostV7 .hgrid2.withMon>.monSlot>.monCol{position:sticky;top:150px;z-index:5}
 }
 #bankList .blim{padding:3px 4px;font-size:13px;border-radius:6px;background:#fff;color:#0B1748;-webkit-text-fill-color:#0B1748;font-weight:700}
+/* 問題一覧：1問を「問題文」「時間・形式・最終/復活」「ボタン」の行に分けて重ならないように */
+#bankList tr{display:grid;grid-template-columns:30px auto 1fr;column-gap:8px;row-gap:6px;padding:8px 4px;border-bottom:1px solid rgba(128,140,180,.25);align-items:center}
+#bankList td{display:block;padding:0!important;border:0!important;min-width:0}
+#bankList td:nth-child(1){grid-row:1 / span 3;align-self:start;font-weight:800;color:#E8B740}
+#bankList td:nth-child(2){grid-column:2 / -1;font-weight:700}
+#bankList td:nth-child(3){grid-column:2;white-space:nowrap;display:flex;align-items:center;gap:6px;font-size:13px}
+#bankList td:nth-child(4){grid-column:3;white-space:nowrap}
+#bankList td:nth-child(5){grid-column:2 / -1;white-space:normal!important;display:flex;flex-wrap:wrap;gap:4px}
+#bankList td:nth-child(5) .mini{margin:0}
+#bankList .blim{width:auto}
+#bankList tr.nextq{background:rgba(232,183,64,.14);border-radius:10px}
+#bankList td .note{font-size:12px}
+#bankList tr.nextq td{background:transparent!important}#bankList tr.nextq{box-shadow:inset 3px 0 0 #E8B740}
+/* 並べ替え・編集モード */
+#qeditBar{display:none}
+#hostV7.qedit .monSlot,#hostV7.qedit .hpanel[data-hp="prep"] .colA>*:not(.qecard),#hostV7.qedit .hpanel[data-hp="prep"] .colB>*:not(.qecard){display:none!important}
+#hostV7.qedit .hpanel[data-hp="prep"] .hgrid2{display:block!important}
+#hostV7.qedit .qecard{max-width:1100px;margin:0 auto}
+#hostV7.qedit .qecard>*:not(#qeditBar):not(h2):not(.tbl-wrap):not(.row:has(#bankNext)){display:none}
+#hostV7.qedit #qeditBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:120px;z-index:20;margin:-4px -4px 10px;padding:10px 14px;border-radius:12px;background:#E8B740;color:#1A1400}
+#hostV7.qedit #qeditBar .note{color:#3A2600}
+#hostV7.qedit #qeditOn{display:none}
+#hostV7.qedit .qecard .tbl-wrap{max-height:none!important}
+#hostV7.qedit #bankList tr{grid-template-columns:44px minmax(260px,1fr) auto auto;grid-template-rows:auto auto;font-size:16px}
+#hostV7.qedit #bankList td:nth-child(1){grid-row:1 / span 2;font-size:22px}
+#hostV7.qedit #bankList td:nth-child(2){grid-column:2 / -1;font-size:17px}
+#hostV7.qedit #bankList td:nth-child(3){grid-column:2}
+#hostV7.qedit #bankList td:nth-child(4){grid-column:3}
+#hostV7.qedit #bankList td:nth-child(5){grid-column:4;flex-wrap:nowrap;justify-content:flex-end}
+.bto{display:none;align-items:center;gap:2px;font-size:13px;font-weight:700;margin-left:6px}
+.bto input{width:52px;padding:3px 4px;border-radius:6px;background:#fff;color:#0B1748;-webkit-text-fill-color:#0B1748;font-weight:700}
+#hostV7.qedit .bto{display:inline-flex}
+#qeditOff,#qeditOn{white-space:nowrap}.bto input::placeholder{color:#9aa3c7;-webkit-text-fill-color:#9aa3c7}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -1530,6 +1563,7 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
           <div class="opts">
             <label class="chk2"><input type="checkbox" id="sndOn"> 音を鳴らす（すべてのモニター）</label>
             <label>音量 <input type="range" id="sndVol" min="0" max="100" value="80"></label>
+            <label>回答中BGMのタイミング <button class="mini" id="sndAdjM">−</button> <b id="sndAdjV">+1.0</b>秒 <button class="mini" id="sndAdjP">＋</button><small class="note">（＋で曲を早める。カウントより曲が遅れるときは＋）</small></label>
             <label>試し聞き <select id="sndPick"><option value="period">ピリオド開始</option><option value="open">出題（デデン）</option><option value="countdown">残り5秒のカウント</option><option value="close">締め切り</option><option value="drum">ドラムロール→ジャン</option><option value="drumReveal">最速正解者の発表</option><option value="chime">正解者一覧（拍手）</option><option value="tame">溜め（○位は…）</option><option value="correct">正解（ピンポン）</option><option value="wrong">不正解（ブー）</option><option value="bell">鐘（カーン）</option><option value="seat">着席</option><option value="fanfare">ファンファーレ</option></select>
               <button class="mini" id="sndTest">▶</button></label>
           </div>
@@ -1551,7 +1585,7 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
             <textarea id="bankIn" rows="5" placeholder="日本一高い山は？ | 富士山 | 北岳 | 槍ヶ岳 | 立山 | A | 10 |&#10;1+1は？ | 1 | 2 | 3 | 4 | B | 5 | 最終&#10;予選A、勝ち進むチームは？ | 赤坂店 | 新宿店 | 渋谷店 | 池袋店 | 上野店 |  | 30 | 予想1&#10;モルック優勝は？ | ○○店 | △△店 | □□店 | ◇◇店 | 本社 |  | 30 | 予想3"></textarea></div>
           <p class="note" style="margin:0 0 8px">書き方：<b>4択</b>は「問題 | A | B | C | D | 正解 | 秒数 | 最終」、<b>5択</b>は「問題 | A | B | C | D | E | 正解 | 秒数 | 印」。正解は「AC」「A,C」のように複数書けます（空欄なら当日選ぶ）。最後の欄に「最終」でピリオド最終問題、「予想3」で配点3点の予想問題。選択肢を空にすると早押し問題です。</p>
           <div class="row"><button class="btn go" id="bankAdd">登録</button><button class="btn" id="bankNext">次の問題をフォームに読み込む</button><button class="ghost" id="bankClear">全部消す</button></div>
-          <div class="tbl-wrap" style="max-height:260px;overflow:auto;margin-top:10px"><table><tbody id="bankList"></tbody></table></div>
+          <div class="tbl-wrap" style="max-height:480px;overflow:auto;margin-top:10px"><table style="width:100%"><tbody id="bankList"></tbody></table></div>
         </div>
 
         <div class="ctl" style="margin-top:12px">
@@ -4558,7 +4592,7 @@ function sfxWatcher() {
     try { if (SFX.unlocked) LINKS.bgm(bgmLevel(S)); } catch (e) {}
     const x = S.sfx; if (!x) return;
     if (last === null) { last = x.seq; return; }   // 開いた直後は過去の音を鳴らさない
-    if (x.seq !== last) { last = x.seq; SFX.play(x.name, x.name === "think" && S.phase === "open" && S.limit ? { endAt: Date.now() + S.limit * 1000, limit: S.limit } : undefined); }
+    if (x.seq !== last) { last = x.seq; SFX.play(x.name, x.name === "think" && S.phase === "open" && S.limit ? { endAt: Date.now() + S.limit * 1000 - ((S.snd && S.snd.adj != null ? +S.snd.adj : 1) || 0) * 1000, limit: S.limit } : undefined); }
   };
 }
 
@@ -5576,6 +5610,8 @@ function hostPage() {
   // ---- 音 ----
   $("#sndUnlock").onclick = () => { if (SFX.unlock()) { SFX.play("chime"); render(); } };
   $("#sndVol").oninput = () => { H.snd.vol = +$("#sndVol").value / 100; SFX.set(H.snd.vol, H.snd.on); save(); pubState(); };
+  const adjSet = (d) => { H.snd.adj = Math.round(Math.max(-5, Math.min(5, (H.snd.adj ?? 1) + d)) * 10) / 10; save(); pubState(); render(); };
+  $("#sndAdjM").onclick = () => adjSet(-0.5); $("#sndAdjP").onclick = () => adjSet(0.5);
   $("#sndOn").onchange = () => { H.snd.on = $("#sndOn").checked; SFX.set(H.snd.vol, H.snd.on); save(); pubState(); };
   $("#sndTest").onclick = () => { if (!SFX.unlocked) SFX.unlock(); SFX.preview($("#sndPick").value); };
   sfxCustomUI($("#sfxCustom"));
@@ -5649,13 +5685,14 @@ function hostPage() {
   $("#bankNext").onclick = () => loadBank(H.bankIdx || 0);
   function renderBank() {
     $("#bankCount").textContent = H.bank.length ? `${H.bank.length}問（次は ${Math.min((H.bankIdx || 0) + 1, H.bank.length + 1)}問目）` : "未登録";
-    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td><select class="blim" data-blim="${i}" title="回答時間">${[5, 10, 15, 20, 30, 60].map((s) => `<option value="${s}"${+b.limit === s ? " selected" : ""}>${s}秒</option>`).join("")}</select> ${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td style="white-space:nowrap">${b.predict ? `予想${b.pts || 1}点` : b.mode === "choice" ? `<label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label><label class="bchk rv${b.revive ? " on" : ""}"><input type="checkbox" data-brev="${i}" ${b.revive ? "checked" : ""}>🔥復活</label>` : ""}</td><td style="white-space:nowrap"><button class="mini mv" data-mv="${i}:-1" ${i ? "" : "disabled"} title="上へ">▲</button><button class="mini mv" data-mv="${i}:1" ${i < H.bank.length - 1 ? "" : "disabled"} title="下へ">▼</button> <button class="mini" data-bedit="${i}">✏️編集</button> <button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button> <button class="mini" data-bdel="${i}" title="この問題を消す">🗑</button></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
+    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}"><td>${i + 1}</td><td class="wrap">${esc(b.q)}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td><select class="blim" data-blim="${i}" title="回答時間">${[5, 10, 15, 20, 30, 60].map((s) => `<option value="${s}"${+b.limit === s ? " selected" : ""}>${s}秒</option>`).join("")}</select> ${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td style="white-space:nowrap">${b.predict ? `予想${b.pts || 1}点` : b.mode === "choice" ? `<label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label><label class="bchk rv${b.revive ? " on" : ""}"><input type="checkbox" data-brev="${i}" ${b.revive ? "checked" : ""}>🔥復活</label>` : ""}</td><td style="white-space:nowrap"><button class="mini mv" data-mv="${i}:-1" ${i ? "" : "disabled"} title="上へ">▲</button><button class="mini mv" data-mv="${i}:1" ${i < H.bank.length - 1 ? "" : "disabled"} title="下へ">▼</button> <button class="mini" data-bedit="${i}">✏️編集</button> <button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button> <button class="mini" data-bdel="${i}" title="この問題を消す">🗑</button><label class="bto">→<input type="number" min="1" max="${H.bank.length}" data-bto="${i}" placeholder="${i + 1}">番へ</label></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
     $("#bankList").querySelectorAll("[data-load]").forEach((x) => (x.onclick = () => loadBank(+x.dataset.load)));
     $("#bankList").querySelectorAll("[data-blast]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.blast]; if (!b) return; b.last = x.checked; save(); render(); }));
     $("#bankList").querySelectorAll("[data-brev]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.brev]; if (!b) return; b.revive = x.checked; save(); render(); }));
     $("#bankList").querySelectorAll("[data-bedit]").forEach((x) => (x.onclick = () => bankEditor(+x.dataset.bedit)));
     $("#bankList").querySelectorAll("[data-bdel]").forEach((x) => (x.onclick = () => { const i = +x.dataset.bdel, b = H.bank[i]; if (!b || !confirm(`第${i + 1}問「${b.q.slice(0, 30)}」を消しますか？`)) return; H.bank.splice(i, 1); if ((H.bankIdx || 0) > i) H.bankIdx--; save(); render(); toast("問題を消しました"); }));
     $("#bankList").querySelectorAll("[data-blim]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.blim]; if (!b) return; b.limit = +x.value; save(); render(); toast(`第${+x.dataset.blim + 1}問を ${b.limit}秒にしました`); }));
+    $("#bankList").querySelectorAll("[data-bto]").forEach((x) => (x.onchange = () => { const i = +x.dataset.bto, j = Math.max(1, Math.min(H.bank.length, parseInt(x.value, 10) || 0)) - 1; if (!(j >= 0) || i === j) return; const [it] = H.bank.splice(i, 1); H.bank.splice(j, 0, it); save(); render(); toast(`${j + 1}番目に移動しました`); }));
     const bankMove = (i, j) => { if (i === j || i < 0 || j < 0 || i >= H.bank.length || j >= H.bank.length) return; const [it] = H.bank.splice(i, 1); H.bank.splice(j, 0, it); save(); render(); };
     $("#bankList").querySelectorAll("[data-mv]").forEach((x) => (x.onclick = () => { const [i, d] = x.dataset.mv.split(":").map(Number); bankMove(i, i + d); }));
     $("#bankList").querySelectorAll("tr").forEach((tr, i) => {
@@ -6901,6 +6938,20 @@ function hostPage() {
     }));
     el.querySelectorAll("[data-gpx]").forEach((x) => (x.onclick = () => { const i = +x.dataset.gpx; if (!confirm(`${g.pool[i].n} さんを候補から消しますか？`)) return; g.pool.splice(i, 1); g.log = []; gSync(g); gPub(); }));
   }
+
+  // ---- 問題の並べ替え・編集モード（モニターを隠して一覧を広く） ----
+  {
+    const card = $("#bankList") && $("#bankList").closest(".ctl");
+    if (card) {
+      const h2 = card.querySelector("h2");
+      h2.insertAdjacentHTML("beforeend", ` <button class="btn mini2" id="qeditOn" style="float:right">🗂 並べ替え・編集モード</button>`);
+      const bar = document.createElement("div"); bar.id = "qeditBar"; bar.innerHTML = `<b>🗂 問題の並べ替え・編集モード</b><span class="note">行をドラッグ、または ▲▼／「○番へ」で順番を入れ替えられます。</span><span style="flex:1"></span><button class="btn go" id="qeditOff">✓ 編集を終わる</button>`;
+      card.prepend(bar);
+      const set = (on) => { document.getElementById("hostV7").classList.toggle("qedit", on); card.classList.toggle("qecard", on); if (on) { setTab("prep"); window.scrollTo(0, 0); card.scrollIntoView({ block: "start" }); } render(); };
+      $("#qeditOn").onclick = (e) => { e.stopPropagation(); set(true); };
+      $("#qeditOff").onclick = () => set(false);
+    }
+  }
   document.querySelectorAll("#hostV7 [data-view]").forEach((b) => (b.onclick = () => act("view", { v: b.dataset.view })));
   function render() {
     const S = viewState(), l = answersList();
@@ -6918,7 +6969,7 @@ function hostPage() {
     $("#oNoCut").checked = !!H.opt.noCutIfOne; $("#oCutOff").checked = !!H.opt.noCut; $("#oNoCut").disabled = !!H.opt.noCut; $("#oChamp").value = H.opt.champFrom; $("#oDup").value = H.opt.dup; $("#oVerify").checked = !!H.opt.verify; $("#oRead").checked = H.opt.readFirst !== false;
     $("#hLastRow").classList.toggle("hidden", !kan());
     $("#sndUnlock").textContent = SFX.unlocked ? "🔊 音は有効です（テスト再生）" : "🔊 音を有効にする";
-    $("#sndVol").value = Math.round(H.snd.vol * 100); $("#sndOn").checked = !!H.snd.on;
+    $("#sndVol").value = Math.round(H.snd.vol * 100); $("#sndOn").checked = !!H.snd.on; { const a = H.snd.adj ?? 1; $("#sndAdjV").textContent = (a > 0 ? "+" : "") + a.toFixed(1); }
     $("#champHist").innerHTML = H.champs.length ? H.champs.map((c) => `<li>第${c.period}ピリオド：<b>${esc(c.n)}</b>（${sec(c.ms)}）</li>`).join("") : '<li class="note">まだいません</li>';
     $("#secretInfo").textContent = S.rid && S.phase !== "idle" ? `この問題：${S.predict ? `予想問題（${S.pts}点）・` : ""}正解 ${(H.secret.correct || []).length ? H.secret.correct.map((c) => L[c]).join("・") : "未定"}${kan() && H.secret.last ? "・ピリオド最終問題（締め切りまで非公開）" : ""}` : "";
     renderRoster(); renderBank(); renderPrizes(); renderWinners();
