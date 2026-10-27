@@ -6204,7 +6204,7 @@ function hostPage() {
         <button data-ht="cere"><b>③ 表彰</b><small>景品・受賞者</small></button>
         <button data-ht="game"><b>④ ゲーム</b><small>モルック・弓・選手紹介</small></button>
         <button data-ht="set"><b>設定</b><small>ルール・音・データ</small></button>
-        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-7</small></span>
+        <span class="hkeys">スペースキー／→ で「次へ」<small style="display:block;text-align:right;opacity:.6">ver 10/28-8</small></span>
       </div>
       <div class="takebar hidden" id="takeBar"><div><b>⚠ 参加者は今、別の司会端末につながっています</b><span id="takeTxt"></span></div><button class="btn go" id="takeBtn">この端末に参加者を集める</button></div>
       <div class="phonehint">📱 スマホで司会中：この画面を開いたままにしてください。画面ロックや他のアプリへの切り替えをすると、その間は回答を受け取れません。</div>
@@ -6337,7 +6337,7 @@ function hostPage() {
   })();
   const setTab = (k) => { H.tab = k; save(); { const mc = $(".monCol"); let dst;
       if (k === "game" || k === "live") dst = document.querySelector(`#hostV7 .hpanel[data-hp="${k}"] .colA`);
-      else if (window.innerWidth >= 900) { const gr = document.querySelector(`#hostV7 .hpanel[data-hp="${k}"] .hgrid2`); if (gr) { let sl = gr.querySelector(":scope > .monSlot"); if (!sl) { sl = document.createElement("div"); sl.className = "monSlot"; gr.prepend(sl); gr.classList.add("withMon"); } dst = sl; } }
+      else if (k !== "recv" && window.innerWidth >= 900) { const gr = document.querySelector(`#hostV7 .hpanel[data-hp="${k}"] .hgrid2`); if (gr) { let sl = gr.querySelector(":scope > .monSlot"); if (!sl) { sl = document.createElement("div"); sl.className = "monSlot"; gr.prepend(sl); gr.classList.add("withMon"); } dst = sl; } }
       if (!dst) dst = document.querySelector('#hostV7 .hpanel[data-hp="live"] .colA');
       if (mc && dst && mc.parentNode !== dst) dst.prepend(mc); } document.querySelectorAll("#hTabs2 [data-ht]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.ht === k))); document.querySelectorAll("#hostV7 .hpanel").forEach((p) => p.classList.toggle("on", p.dataset.hp === k)); };
   document.querySelectorAll("#hTabs2 [data-ht]").forEach((b) => (b.onclick = () => setTab(b.dataset.ht)));
