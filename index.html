@@ -1043,6 +1043,19 @@ body.v-player.offline #offBar{display:block}
 .tv-qs.js-fit{white-space:normal;height:150px;display:flex;align-items:center;justify-content:center;line-height:1.3;flex:none}
 .tv-bars .lab .T.js-fit{max-height:100px;overflow:hidden;flex:1;min-width:0}
 .g-plate .gtm{font-size:.8em;opacity:.9}
+/* シャッフル：？？？で消えてから新しい順番で出る */
+.sh-card.q{animation:none;height:170px;perspective:800px}
+.sh-card.q .sh-f{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:10px;backface-visibility:hidden}
+.sh-card.q .old{animation:shFlipOut .35s ease-in both}
+.sh-card.q .qq{font:900 70px/1 var(--disp,sans-serif);color:#9AA6CF;letter-spacing:.06em;opacity:0;animation-name:shFlipIn,shFlipOut2;animation-duration:.35s,.3s;animation-timing-function:ease-out,ease-in;animation-fill-mode:both,forwards}
+.sh-card.q .new{opacity:0;animation:shFlipIn .45s cubic-bezier(.2,1.5,.4,1) both}
+.sh-card.q .sh-no{animation:shNo .5s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes shFlipOut{from{opacity:1;transform:none}to{opacity:0;transform:rotateY(90deg)}}
+@keyframes shFlipOut2{from{opacity:1;transform:none}to{opacity:0;transform:rotateY(90deg)}}
+@keyframes shFlipIn{from{opacity:0;transform:rotateY(-90deg) scale(.9)}to{opacity:1;transform:none}}
+.sh-h.q .a{animation:shHOut .4s ease both}.sh-h.q .b{animation:shHIn .5s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes shHOut{from{opacity:1}to{opacity:0}}
+@keyframes shHIn{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -4739,13 +4752,16 @@ function gameMonHTML(S) {
   const isM = G.type === "molkky", isQ = G.mode === "qual", ttl = G.title || (isQ ? (isM ? "モルック予選" : "アーチェリー予選") : isM ? "モルック対決" : "アーチェリー対決");
   const camOn = !!(CAM && CAM.stream);
   if (G.shuf && P.length) {
-    const n = P.length, cols = n <= 3 ? n : n <= 8 ? 4 : n <= 15 ? 5 : 6, el = Math.max(0, (Date.now() - G.shuf) / 1000), D = 4.2;
-    const rnd = (i, k) => hashNum(G.shuf + ":" + i + ":" + k);
-    const cards = P.map((p, i) => {
-      const v = (k, m) => Math.round((rnd(i, k) * 2 - 1) * m);
-      return `<div class="sh-card" data-from="${G.shufFrom && G.shufFrom[i] != null && G.shufFrom[i] >= 0 ? G.shufFrom[i] : i}" style="--x1:${v("x1", 620)}px;--y1:${v("y1", 260)}px;--r1:${v("r1", 40)}deg;--x2:${v("x2", 620)}px;--y2:${v("y2", 260)}px;--r2:${v("r2", 40)}deg;--x3:${v("x3", 500)}px;--y3:${v("y3", 260)}px;--r3:${v("r3", 30)}deg;animation-delay:-${Math.min(el, D)}s"><span class="sh-no" style="animation-delay:${Math.max(0, D - 0.4 - el)}s">${i + 1}</span><span class="sh-st">${esc(p.s || "")}</span><span class="sh-nm">${esc(p.n)}</span></div>`;
+    // 前の順番 → ？？？で消える → 新しい順番で1枚ずつ出る
+    const n = P.length, cols = n <= 3 ? n : n <= 8 ? 4 : n <= 15 ? 5 : 6, el = Math.max(0, (Date.now() - G.shuf) / 1000);
+    const from = P.map((_, i) => (G.shufFrom && G.shufFrom[i] != null && G.shufFrom[i] >= 0 ? G.shufFrom[i] : i));
+    const oldP = []; P.forEach((p, i) => { oldP[from[i]] = p; });
+    const T_OUT = 0.9, T_Q = 1.25, T_R = 3.2, STEP = Math.max(0.35, Math.min(0.7, 3.2 / n)), D = T_R + STEP * (n - 1) + 0.5;
+    const dl = (t) => (t - el).toFixed(2) + "s";
+    const cards = P.map((p, i) => { const o = oldP[i] || p, tr = T_R + STEP * i;
+      return `<div class="sh-card q"><div class="sh-f old" style="animation-delay:${dl(T_OUT)}"><span class="sh-st">${esc(o.s || "")}</span><span class="sh-nm">${esc(o.n)}</span></div><div class="sh-f qq" style="animation-delay:${dl(T_Q)},${dl(tr)}">？？？</div><div class="sh-f new" style="animation-delay:${dl(tr)}"><span class="sh-st">${esc(p.s || "")}</span><span class="sh-nm">${esc(p.n)}</span></div><span class="sh-no" style="animation-delay:${dl(tr + 0.15)}">${i + 1}</span></div>`;
     }).join("");
-    return { key: "gs-" + G.shuf, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="sh-wrap"><div class="sh-h"><span class="a" style="animation-delay:-${Math.min(el, D)}s">🔀 順番を決めています…</span><span class="b" style="animation-delay:-${Math.min(el, D)}s">この順番で${isM ? "投げます" : "射ます"}！</span></div><div class="sh-grid n${Math.min(n, 30)}" style="--cols:${cols}">${cards}</div></div></div>${telopHTML(isM ? "モルック" : "アーチェリー", "順番シャッフル！")}` };
+    return { key: "gs-" + G.shuf, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="sh-wrap"><div class="sh-h q"><span class="a" style="animation-delay:${dl(D)}">🔀 順番を決めています…</span><span class="b" style="animation-delay:${dl(D)}">この順番で${isM ? "投げます" : "射ます"}！</span></div><div class="sh-grid n${Math.min(n, 30)}" style="--cols:${cols}">${cards}</div></div></div>${telopHTML(isM ? "モルック" : "アーチェリー", "順番シャッフル！")}` };
   }
   if (G.intro != null && P[G.intro]) {
     const p = P[G.intro];
