@@ -1288,6 +1288,11 @@ input[type=number]{background:var(--stage);color:var(--ink);border:1.5px solid v
 .gpc input{width:18px;height:18px;margin:0}.gpc span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gpc small{opacity:.7;font-size:12px}
 .gpc.on{border-color:#E8B740;background:rgba(232,183,64,.16)}.gpc .mini{padding:0 6px}
 .gpc span{white-space:normal;overflow:visible}.gpc{flex-wrap:wrap}#gPool{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+#gPool{display:flex;flex-direction:column;gap:8px}
+.gps{border:1.5px solid rgba(128,140,180,.3);border-radius:12px;padding:6px 8px}.gps.has{border-color:#E8B740}
+.gpsh{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}.gpsh b{font-size:15px}
+.gpsl{display:flex;flex-wrap:wrap;gap:6px}
+.gpsl .gpc{flex:0 0 auto;padding:5px 6px 5px 8px}.gpsl .gpc span{white-space:nowrap}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -6371,7 +6376,10 @@ function hostPage() {
     const g = G(); if (!g.pool) g.pool = [];
     g.players.forEach((p) => [p.n, p.n2].filter(Boolean).forEach((n) => { if (!g.pool.some((x) => x.n === n)) g.pool.push({ n, s: p.s || "" }); }));
     const on = (n) => g.players.some((p) => p.n === n || p.n2 === n);
-    const h = g.pool.length ? g.pool.map((p, i) => `<label class="gpc${on(p.n) ? " on" : ""}"><input type="checkbox" data-gpi="${i}" ${on(p.n) ? "checked" : ""}><span>${esc(p.n)}</span><small>${esc(p.s || "")}</small><button class="mini" data-gpx="${i}" title="候補から消す">×</button></label>`).join("") : '<p class="note">上の欄から名前を追加すると、ここに候補として並びます。</p>';
+    const stores = []; g.pool.forEach((p) => { const k = p.s || "店舗なし"; if (!stores.includes(k)) stores.push(k); });
+    const ord = Object.values(H.rstore || {}).filter((v, i, a) => a.indexOf(v) === i); stores.sort((a, b) => (ord.indexOf(a) < 0 ? 999 : ord.indexOf(a)) - (ord.indexOf(b) < 0 ? 999 : ord.indexOf(b)));
+    const h = g.pool.length ? stores.map((st) => { const its = g.pool.map((p, i) => [p, i]).filter(([p]) => (p.s || "店舗なし") === st), cnt = its.filter(([p]) => on(p.n)).length;
+      return `<div class="gps${cnt ? " has" : ""}"><div class="gpsh"><b>${esc(st)}</b><span class="note">${cnt}/${its.length}人 出場</span></div><div class="gpsl">${its.map(([p, i]) => `<label class="gpc${on(p.n) ? " on" : ""}"><input type="checkbox" data-gpi="${i}" ${on(p.n) ? "checked" : ""}><span>${esc(p.n)}</span><button class="mini" data-gpx="${i}" title="候補から消す">×</button></label>`).join("")}</div></div>`; }).join("") : '<p class="note">上の欄から名前を追加すると、ここに候補として並びます。</p>';
     const el = $("#gPool"); if (el._h === h) return; el._h = h; el.innerHTML = h;
     el.querySelectorAll("[data-gpi]").forEach((x) => (x.onchange = () => { const p = g.pool[+x.dataset.gpi]; if (!p) return; const ok = x.checked ? gJoin(p.n, p.s) : gLeave(p.n); if (!ok) x.checked = !x.checked; gPub(); }));
     el.querySelectorAll("[data-gpx]").forEach((x) => (x.onclick = (e) => { e.preventDefault(); const p = g.pool[+x.dataset.gpx]; if (!p) return; if (on(p.n) && !gLeave(p.n)) return; g.pool.splice(+x.dataset.gpx, 1); gPub(); }));
