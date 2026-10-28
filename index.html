@@ -1612,6 +1612,18 @@ body.v-recv>*:not(#vRecv):not(#toast):not(.toast){display:none!important}
 #peditOff,#peditOn{white-space:nowrap}
 .bnchips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.bnchip{border:2px solid #E8B74088;background:#fff;color:#0B1748;border-radius:999px;padding:7px 12px;font-size:15px;font-weight:800;cursor:pointer}.bnchip small{margin-left:5px;font-size:11px;opacity:.7}.bnchip.on{background:#E8B740;border-color:#E8B740;color:#1A1400}
 .pver{position:fixed;right:6px;bottom:4px;font-size:10px;opacity:.45;pointer-events:none;z-index:5}
+body.proj header,body.proj #offBar.x,body.proj #vRemote .monbar,body.proj #rmSfxBox,body.proj #rCtl{display:none!important}
+body.proj main{max-width:none;padding:0;margin:0}
+body.proj #vRemote .remote{display:block}
+body.proj #rMon{position:fixed;inset:0;width:100vw;height:100vh;border-radius:0;margin:0}
+#projGo{position:fixed;inset:0;z-index:9000;background:rgba(10,12,30,.82);display:flex;align-items:center;justify-content:center;color:#fff}
+#projGo.hidden{display:none}
+#projGo .pj-box{max-width:720px;padding:28px;text-align:center}
+#projGo .pj-t{font-size:1.6rem;font-weight:900;margin-bottom:16px}
+#projGo .pj-btn{font-size:1.4rem;padding:18px 28px}
+#projGo .pj-n{margin:14px 0 6px;font-size:1rem}
+#projGo .pj-s{font-size:.85rem;opacity:.8;line-height:1.7}
+.projst{font-size:.85rem;font-weight:700;color:#1a8a4a;align-self:center}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -4719,6 +4731,7 @@ const SFX = (() => {
     get unlocked() { return unlocked; },
     set(v, o) { vol = Math.max(0, Math.min(1, v)); on = !!o; if (out) out.gain.value = vol; LINKS.setVolume(vol, on); },
     play(name, opt) {
+      if (window.__quiet && window.__quiet()) return; // プロジェクター画面が開いている司会PCでは鳴らさない（二重に鳴るのを防ぐ）
       if (!unlocked || !on || !ensure()) return;
       if (name === "think" && opt && opt.endAt) { stopCustom();
         const ls = "think" + (opt.limit || ""), slot = custom[ls] || LINKS.has(ls) ? ls : "think";
@@ -4765,6 +4778,7 @@ const SFX = (() => {
     stop() { stopCustom(); },
     // 残り秒数に合わせたカウント音（モニターだけで鳴らす）
     countdown(sec) {
+      if (window.__quiet && window.__quiet()) return;
       if (!unlocked || !on || !ensure()) return;
       try {
         if (custom.countdown) { if (sec === 5) { stopCustom(); playCustom("countdown"); } return; } // 差し替え音は残り5秒で1回だけ再生
@@ -4837,7 +4851,7 @@ function sfxWatcher() {
   return (S) => {
     if (S.snd) SFX.set(S.snd.vol, S.snd.on);
     const lk = JSON.stringify(S.links || {}); if (lk !== lastLinks) { lastLinks = lk; LINKS.set(S.links || {}); }
-    try { if (SFX.unlocked) LINKS.bgm(bgmLevel(S), S.view === "bonus" && S.bonus && S.bonus.ph === "talk" ? "bonusBgm" : "bgm"); } catch (e) {}
+    try { if (SFX.unlocked) LINKS.bgm(window.__quiet && window.__quiet() ? 0 : bgmLevel(S), S.view === "bonus" && S.bonus && S.bonus.ph === "talk" ? "bonusBgm" : "bgm"); } catch (e) {}
     const x = S.sfx; if (!x) { if (last === null) last = 0; return; } // 効果音がまだ1回も無い状態で開いた → 次の音から鳴らす
     if (last === null) { last = x.seq; return; }   // 開いた直後は過去の音を鳴らさない
     if (x.seq !== last && x.name === "bonusOwn") { last = x.seq; bonusOwnSfx(); return; }
@@ -4845,7 +4859,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/28-33";
+const APPVER = "10/29-1";
 // ================= モニター描画 =================
 // 16:9（1920×1080）の固定キャンバスに描いて、表示先の大きさに合わせて拡大縮小します。
 // どのプロジェクター・PCでも、文字の大きさと配置が同じになります。
@@ -4920,7 +4934,7 @@ function vidSync(el, S) {
   const v = vidOf(S);
   if (!v) { slot.innerHTML = `<div class="vmsg">🎬 動画「${esc(S.vid.name || "")}」が<br>このPCに読み込まれていません</div>`; return; }
   if (!VEL) { VEL = document.createElement("video"); VEL.playsInline = true; VEL.preload = "auto"; VEL.onclick = () => (VEL.paused ? VEL.play().catch(() => {}) : VEL.pause()); }
-  VEL.muted = el.id === "hMon";
+  VEL.muted = el.id === "hMon" || (el.id === "fMon" && window.__quiet && window.__quiet());
   if (VEL.parentNode !== slot) slot.replaceChildren(VEL);
   const play = () => { const pr = VEL.play(); if (pr) pr.catch(() => { slot.insertAdjacentHTML("beforeend", '<div class="vmsg tap">▶ クリックで再生</div>'); const t = slot.querySelector(".tap"); if (t) t.onclick = () => { t.remove(); VEL.play().catch(() => {}); }; }); };
   if (VEL._src !== v.url) { VEL._src = v.url; VEL.src = v.url; }
@@ -5444,7 +5458,7 @@ function ytvSync(el, S) {
   if (!slot) { if (YTV.div && YTV.div.parentNode && el.contains(YTV.div)) { try { YTV.pl && YTV.pl.stopVideo(); } catch (e) {} YTV.div.remove(); } return; }
   if (el.id === "hMon" && fullOpen) { slot.innerHTML = '<div class="vmsg">🎬 全画面モニターで再生中</div>'; return; }
   const id = slot.dataset.yt, at = +slot.dataset.at || 0; if (!id) return;
-  const muted = el.id === "hMon"; // 司会画面の小さいモニターは音なし（音は全画面・別PCモニターから）
+  const muted = el.id === "hMon" || (el.id === "fMon" && window.__quiet && window.__quiet()); // 司会画面の小さいモニターは音なし（音は全画面・別PCモニターから）
   if (!YTV.div) { YTV.div = document.createElement("div"); YTV.div.className = "ytvbox"; YTV.div.innerHTML = '<div id="ytvPl"></div>'; }
   if (YTV.div.parentNode !== slot) slot.replaceChildren(YTV.div);
   const start = () => { try { if (muted) YTV.pl.mute(); else { YTV.pl.unMute(); YTV.pl.setVolume(100); } YTV.pl.seekTo(0, true); YTV.pl.playVideo(); } catch (e) {} };
@@ -5475,6 +5489,56 @@ function bonusOwnHTML(b) {
     <div class="bo-sub" style="animation-delay:${d(T + 1.8)}">${b.kind === "name" ? "スタッフの<b>フルネーム</b>を覚えろ！" : "スタッフの<b>名前</b>と<b>趣味</b>を聞き出せ！"}</div>
     <div class="bo-sub2" style="animation-delay:${d(T + 3.2)}">当てれば 1人につき <b>＋0.1点</b></div></div>
     <div class="bo-conf">${conf}</div></div>`;
+}
+
+// ================= 同じPCの2画面目（プロジェクター）用の画面 =================
+// 司会PCで「プロジェクター画面を開く」→ 別の窓でモニターを開き、プロジェクター側で全画面にする。
+// 開いている間は、司会画面からは音を出さない（音はプロジェクター画面から出す）。
+const PROJ = { bc: null, until: 0, onChange: null };
+try { PROJ.bc = new BroadcastChannel("kansya-proj"); } catch (e) {}
+window.__quiet = () => Date.now() < PROJ.until;
+function projHostListen(room) {
+  if (!PROJ.bc) return;
+  PROJ.bc.onmessage = (e) => { const d = e.data || {}; if (d.room !== room) return;
+    const was = window.__quiet();
+    if (d.t === "alive") PROJ.until = Date.now() + 3500; else if (d.t === "bye") PROJ.until = 0;
+    if (!was && window.__quiet()) { try { SFX.stop(); } catch (er) {} try { LINKS.bgm(0); } catch (er) {} }
+    if (was !== window.__quiet() && PROJ.onChange) PROJ.onChange(); };
+  setInterval(() => { if (PROJ.until && !window.__quiet() && PROJ.onChange) { PROJ.until = 0; PROJ.onChange(); } }, 1000);
+}
+function projMode(room) {
+  document.body.classList.add("proj");
+  const ov = document.createElement("div"); ov.id = "projGo";
+  ov.innerHTML = `<div class="pj-box"><div class="pj-t">📽 プロジェクター画面</div>
+    <button class="btn go pj-btn" id="pjStart">▶ プロジェクターに全画面で映す</button>
+    <p class="pj-n" id="pjNote">ボタンを押すと、プロジェクター側の画面いっぱいに表示します（音もこの画面から出ます）。</p>
+    <p class="pj-s">うまく映らないとき：この窓をプロジェクター側の画面へドラッグしてから、もう一度ボタンを押す（または F キー）<br>Windows：<b>Windowsキー＋P →「拡張」</b>になっているか確認</p></div>`;
+  document.body.append(ov);
+  let sd = null, started = false;
+  const other = () => { if (!sd) return null; const sc = sd.screens || []; return sc.find((s) => s !== sd.currentScreen && !s.isPrimary) || sc.find((s) => s !== sd.currentScreen) || null; };
+  const load = () => window.getScreenDetails().then((x) => { sd = x; try { sd.addEventListener("screenschange", () => {}); } catch (e) {} }).catch(() => {});
+  try { if (window.getScreenDetails && navigator.permissions) navigator.permissions.query({ name: "window-management" }).then((p) => { if (p.state === "granted") load(); }).catch(() => {}); } catch (e) {}
+  const goFull = () => {
+    const o = other(), el = document.documentElement;
+    try { (o ? el.requestFullscreen({ screen: o }) : el.requestFullscreen()).catch(() => el.requestFullscreen().catch(() => {})); } catch (e) {}
+  };
+  $("#pjStart").onclick = () => {
+    if (!SFX.unlocked) SFX.unlock();
+    started = true; beat();
+    if (!sd && window.getScreenDetails) { // 初回：画面の情報を使う許可をもらってから全画面
+      $("#pjNote").textContent = "「画面の管理」の許可を求められたら「許可」を押してください。";
+      load().then(() => { if (other()) { $("#pjStart").textContent = "▶ もう一度押すとプロジェクターに映ります"; $("#pjNote").textContent = "プロジェクターの画面が見つかりました。"; } else goFull(); });
+      return;
+    }
+    goFull();
+  };
+  const sync = () => ov.classList.toggle("hidden", !!document.fullscreenElement);
+  document.addEventListener("fullscreenchange", sync);
+  document.addEventListener("dblclick", () => { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); else goFull(); });
+  const beat = () => { try { PROJ.bc && PROJ.bc.postMessage({ t: "alive", room }); } catch (e) {} };
+  setInterval(() => { if (started) beat(); }, 1000);
+  window.addEventListener("pagehide", () => { try { PROJ.bc && PROJ.bc.postMessage({ t: "bye", room }); } catch (e) {} });
+  document.title = "📽 プロジェクター画面 - 感謝祭クイズ";
 }
 // ================= 司会・サブ司会の操作パネル（共通） =================
 let hostMode = "choice", pickedCorrect = [], preCorrect = [], curS = { ...DEF };
@@ -6462,7 +6526,7 @@ function hostPage() {
     const viewRow = cP.querySelector(".viewbtns");
     viewRow.insertAdjacentHTML("afterbegin", `<button class="btn" data-view="title">オープニング</button><button class="btn" data-view="att">参加状況</button><button class="btn" data-view="rules">📖 ルール説明</button>`);
     monCol.classList.add("monCol");
-    monCol.insertAdjacentHTML("afterbegin", `<div class="row" style="margin:0"><button class="btn go" id="bFull2">📺 モニターを全画面で表示（プロジェクター用）</button><button class="btn" id="bSub2">別PCをモニターにする</button></div>`);
+    monCol.insertAdjacentHTML("afterbegin", `<div class="row" style="margin:0"><button class="btn go" id="bProj">📽 プロジェクター画面を開く（2画面目に映す）</button><button class="btn" id="bFull2">📺 このPCの画面を全画面モニターにする</button><button class="btn" id="bSub2">別PCをモニターにする</button><span class="projst" id="projSt"></span></div>`);
     P("live", "colA").append(monCol);
     P("live", "colB").append(cP, nq, det);
     // ---- 表彰 ----
@@ -6533,6 +6597,16 @@ function hostPage() {
   $("#oRollHide").checked = H.opt.rollHide !== false;
   $("#oRollHide").onchange = () => { H.opt.rollHide = $("#oRollHide").checked; save(); pubState(); render(); };
   $("#bFull2").onclick = () => $("#bFull").click();
+  { let pw = null;
+    $("#bProj").onclick = () => {
+      const u = sURL(), url = location.href.split(/[?#]/)[0] + u.slice(u.indexOf("#")) + "&proj=1";
+      if (pw && !pw.closed) { pw.focus(); return toast("プロジェクター画面はもう開いています"); }
+      pw = window.open(url, "kansyaProj", "popup,width=1100,height=640");
+      if (!pw) return toast("窓を開けませんでした。ブラウザのポップアップ許可を確認してください");
+      toast("開いた窓の「プロジェクターに全画面で映す」を押してください");
+    };
+    const st = () => { const on = window.__quiet(); $("#projSt").textContent = on ? "🟢 プロジェクター画面に表示中（音はプロジェクター画面から）" : ""; };
+    PROJ.onChange = st; projHostListen(H.room); st(); }
   $("#bSub2").onclick = () => { const u = sURL(); (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => toast("別PCモニター用のURLをコピーしました。別のPCのブラウザで開いてください（PIN " + H.pin + " でサブ司会にもなれます）"), () => prompt("別PCモニター用URL", u)); };
   // タイトル
   $("#showTitle").value = H.show.title || ""; $("#showSub").value = H.show.sub || "";
@@ -7659,6 +7733,7 @@ function remotePage(room, bi) {
     if (pin && (e.key === " " || e.key === "ArrowRight")) { e.preventDefault(); act("advance", { correct: pickedCorrect }); }
   });
   $("#rmInfo").textContent = `ルーム ${room} ／ モニター表示`;
+  if (new URLSearchParams(location.hash.slice(1)).has("proj")) projMode(room);
   if (pin) enable();
   function render() {
     const list = live.rid === S.rid ? live.list || [] : [];
