@@ -4827,19 +4827,25 @@ function bgmLevel(S) {
   if (["correct", "review", "list"].includes(st)) return 0.35;
   return 0;
 }
+function bonusOwnSfx() {
+  let done = false; const go = () => { if (done) return; done = true; document.removeEventListener("animationstart", on, true); clearTimeout(tm); SFX.play("bonusOwn"); };
+  const on = (e) => { if (e.target && e.target.classList && e.target.classList.contains("bo-cbg")) go(); };
+  document.addEventListener("animationstart", on, true); const tm = setTimeout(go, 1200); // 演出画面が出ない端末でも1.2秒後には鳴らす
+}
 function sfxWatcher() {
   let last = null, lastLinks = "";
   return (S) => {
     if (S.snd) SFX.set(S.snd.vol, S.snd.on);
     const lk = JSON.stringify(S.links || {}); if (lk !== lastLinks) { lastLinks = lk; LINKS.set(S.links || {}); }
     try { if (SFX.unlocked) LINKS.bgm(bgmLevel(S), S.view === "bonus" && S.bonus && S.bonus.ph === "talk" ? "bonusBgm" : "bgm"); } catch (e) {}
-    const x = S.sfx; if (!x) return;
+    const x = S.sfx; if (!x) { if (last === null) last = 0; return; } // 効果音がまだ1回も無い状態で開いた → 次の音から鳴らす
     if (last === null) { last = x.seq; return; }   // 開いた直後は過去の音を鳴らさない
+    if (x.seq !== last && x.name === "bonusOwn") { last = x.seq; bonusOwnSfx(); return; }
     if (x.seq !== last) { last = x.seq; SFX.play(x.name, x.name === "think" && S.phase === "open" && S.limit ? { endAt: Date.now() + S.limit * 1000 - ((S.snd && S.snd.adj != null ? +S.snd.adj : -1) || 0) * 1000, stopAt: Date.now() + S.limit * 1000, limit: S.limit } : undefined); }
   };
 }
 
-const APPVER = "10/28-30";
+const APPVER = "10/28-31";
 // ================= モニター描画 =================
 // 16:9（1920×1080）の固定キャンバスに描いて、表示先の大きさに合わせて拡大縮小します。
 // どのプロジェクター・PCでも、文字の大きさと配置が同じになります。
@@ -5356,7 +5362,8 @@ setInterval(() => { document.querySelectorAll(".js-cu2[data-t0]").forEach((e) =>
 setInterval(() => { document.querySelectorAll(".js-cu[data-t0]").forEach((e) => { const raw = (hostNow() - +e.dataset.t0 - 300) * +e.dataset.sp, v = Math.min(+e.dataset.end, Math.max(0, raw)), box = e.closest(".tv-cu"), tv = e.closest(".tv");
   e.textContent = (v / 1000).toFixed(2); e.classList.toggle("done", v >= +e.dataset.end);
   if (box) { box.querySelectorAll("li[data-ms]").forEach((li) => { if (!li.classList.contains("on") && +li.dataset.ms <= v) li.classList.add("on"); }); if (raw >= +e.dataset.end + 1200 * +e.dataset.sp && !box.classList.contains("win")) { box.classList.add("win"); tv && tv.querySelector(".cu-fx") && tv.querySelector(".cu-fx").classList.add("on"); } } }); }, 40);
-setInterval(() => { document.querySelectorAll(".js-bt[data-bend]").forEach((e) => { const r = Math.max(0, +e.dataset.bend - hostNow()), sec = Math.ceil(r / 1000); e.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`; e.classList.toggle("hurry", sec <= 10); }); }, 250);
+setInterval(() => { document.querySelectorAll(".js-bt[data-bend]").forEach((e) => { if (typeof window.__hoff !== "number") { e.textContent = "-:--"; return; } // 司会PCの時計がまだ届いていない（開いた直後の数秒）は出さない
+  const r = Math.max(0, +e.dataset.bend - hostNow()), sec = Math.ceil(r / 1000); e.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`; e.classList.toggle("hurry", sec <= 10); }); }, 250);
 function bnCdHTML(b) { return `<div class="bn-cd" data-bend="${bonusEnd(b)}"></div>`; }
 setInterval(() => { document.querySelectorAll(".bn-cd[data-bend]").forEach((e) => { const r = +e.dataset.bend - hostNow(), sec = Math.ceil(r / 1000), v = sec >= 1 && sec <= 10 ? String(sec) : r <= 0 && r > -2500 ? "END" : "";
   if (e.dataset.v === v) return; e.dataset.v = v; e.classList.toggle("on", !!v);
@@ -7543,6 +7550,7 @@ function hostPage() {
     $("#bnBack").onclick = () => { clearTimeout(bnT); setS({ view: "q" }); };
     $("#bnReset").onclick = () => { const kd = H.bonusKind; if (!confirm(`${BK[kd].no}（${BK[kd].t}）のボーナス点を消します（クイズの得点ともう1回分は残ります）。よろしいですか？`)) return; H.bonusR[kd] = { pts: {}, ans: {} }; bnTotal(); save(); sendMe(); pubState(); render(); toast("この回のボーナスをリセットしました"); };
     setTimeout(pubRecv, 2500);
+    window.__hoff = 0; // 司会PC自身が基準の時計
     setInterval(() => { if (cli) cli.send("clock", { now: Date.now() }); }, 3000); // スマホ・別PCの時計合わせ用
   }
   document.querySelectorAll("#hostV7 [data-view]").forEach((b) => (b.onclick = () => act("view", { v: b.dataset.view })));
