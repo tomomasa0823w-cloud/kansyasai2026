@@ -4845,7 +4845,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/28-31";
+const APPVER = "10/28-33";
 // ================= モニター描画 =================
 // 16:9（1920×1080）の固定キャンバスに描いて、表示先の大きさに合わせて拡大縮小します。
 // どのプロジェクター・PCでも、文字の大きさと配置が同じになります。
@@ -6407,7 +6407,7 @@ function hostPage() {
     // ---- 準備 ----
     const chk = document.createElement("div"); chk.className = "ctl"; chk.id = "chkCard";
     chk.innerHTML = `<h2>準備チェック</h2><ul class="chklist" id="chkList"></ul>
-      <div class="row"><button class="btn" id="bDemo">デモデータで試す</button><button class="btn go" id="bToLive">準備OK → 本番へ</button></div>
+      <div class="row"><button class="btn" id="bDemo">デモデータで試す</button><button class="ghost" id="bDemoDel">デモの20人を消す</button><button class="btn go" id="bToLive">準備OK → 本番へ</button></div>
       <p class="note" style="margin:8px 0 0">デモデータは、名簿20人と問題5問を入れて動きを試すためのものです（本番前に「設定 → データ」で消せます）。</p>`;
     const showC = document.createElement("div"); showC.className = "ctl";
     showC.innerHTML = `<h2>番組タイトル（モニターのロゴ）</h2><div class="field"><label for="showTitle">タイトル（スペースの前が小さい文字になります）</label><input type="text" id="showTitle" maxlength="20"></div>
@@ -6785,19 +6785,29 @@ function hostPage() {
   window.__photoEditor = photoEditor;
   // ---- デモデータ ----
   $("#bDemo").onclick = () => {
-    if ((Object.keys(H.roster).length || H.bank.length) && !confirm("デモの名簿20人と問題5問を追加します。よろしいですか？")) return;
+    const useBank = H.bank.length > 0; // 問題が登録済みなら、その問題（ボーナス含む）をそのまま使う
+    if ((Object.keys(H.roster).length || H.bank.length) && !confirm(useBank ? `デモの名簿20人を追加します。問題は登録済みの${H.bank.length}件をそのまま使います。よろしいですか？` : "デモの名簿20人と問題5問を追加します。よろしいですか？")) return;
     const st = ["駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山"];
     const fam = ["山田", "佐藤", "鈴木", "高橋", "田中", "中村", "小林", "加藤", "吉田", "山本", "松本", "井上", "木村", "林", "清水", "山口", "森", "池田", "橋本", "石川"];
     const giv = ["太郎", "花子", "一郎", "さくら", "健太", "美咲", "大輔", "陽子", "翔", "愛"];
-    addRoster(fam.map((f, i) => ({ n: `${f} ${giv[i % 10]}`, s: st[i % 10] })), false);
-    H.bank = H.bank.concat([
+    const dl = fam.map((f, i) => ({ n: `${f} ${giv[i % 10]}`, s: st[i % 10] }));
+    const dk = dl.map((x) => normName(x.n)).filter((k) => !H.roster[k]); // 元から名簿にいる人はデモ扱いにしない
+    addRoster(dl, false); H.demoKeys = [...new Set([...(H.demoKeys || []), ...dk])];
+    if (!useBank) H.bank = H.bank.concat([
       { q: "寿リハの店舗は全部でいくつ？", ch: ["8店舗", "9店舗", "10店舗", "11店舗"], mode: "choice", nch: 4, correct: [2], limit: 10, last: false, predict: false, pts: 1 },
       { q: "兼六園があるのは何県？", ch: ["富山県", "石川県", "福井県", "新潟県"], mode: "choice", nch: 4, correct: [1], limit: 10, last: false, predict: false, pts: 1 },
       { q: "モルックで「上がり」になる点数は？", ch: ["30点", "40点", "50点", "100点"], mode: "choice", nch: 4, correct: [2], limit: 10, last: false, predict: false, pts: 1 },
       { q: "モルックのピンは全部で何本？", ch: ["10本", "11本", "12本", "15本"], mode: "choice", nch: 4, correct: [2], limit: 10, last: true, predict: false, pts: 1 },
       { q: "【予想】モルック大会で優勝するのは？", ch: ["駅西", "神宮寺", "額", "本社"], mode: "choice", nch: 4, correct: [], limit: 30, last: false, predict: true, pts: 3 },
     ]);
-    save(); render(); toast("デモデータを入れました。「本番」タブで試せます");
+    save(); render(); toast(useBank ? `デモの20人を入れました。問題は登録済みの${H.bank.length}件で「本番」タブから試せます` : "デモデータを入れました。「本番」タブで試せます");
+  };
+  $("#bDemoDel").onclick = () => {
+    const ks = (H.demoKeys || []).filter((k) => H.roster[k]);
+    if (!ks.length) return toast("デモの名簿は入っていません");
+    if (!confirm(`デモの${ks.length}人を名簿から消します（問題・本物の名簿はそのまま）。よろしいですか？`)) return;
+    ks.forEach((k) => { if (H.claims[k]) release(k, true); delete H.roster[k]; delete H.rstore[k]; if (H.rkana) delete H.rkana[k]; if (H.points) delete H.points[k]; if (H.tsum) delete H.tsum[k]; if (H.ever) delete H.ever[k]; if (H.recv) delete H.recv[k]; });
+    H.demoKeys = []; save(); render(); pubState(); pubRoster(); toast(`デモの${ks.length}人を消しました`);
   };
   $("#bClearDemo").onclick = () => {
     if (!confirm("名簿と登録した問題をすべて消します（参加中の人も解除されます）。よろしいですか？")) return;
@@ -7422,7 +7432,7 @@ function hostPage() {
       <p class="note" style="margin:0 0 8px">歓談でスタッフのことを聞き出す → スマホで答える（名前当て5分・趣味当て1分） → 当たった数 × 0.1点 をクイズの得点に加点（2回分は合計）。<br>受付スタッフなど「対象外」にした人には、参加者全員の平均点を加点します。</p>
       <div class="seg" id="bnKind"><button data-bk="name">第1回　名前当て</button><button data-bk="hobby">第2回　趣味当て</button></div>
       <p class="note" id="bnKindNote" style="margin:6px 0"></p>
-      <div class="row"><button class="btn go" id="bnOwn">🎬 ボーナスタイム突入の演出（約17秒）</button><button class="btn" id="bnIntro">▶ YouTubeの予告映像</button><label class="chk2"><input type="checkbox" id="bnAuto" checked> 終わったら自動で①へ</label></div>
+      <div class="row"><button class="btn go" id="bnOwn">🎬 ボーナスタイム突入の演出（約17秒）</button><button class="btn" id="bnIntro">▶ YouTubeの予告映像</button><span class="note">演出のあとは自動で進みません。「① 歓談スタート」「② 記入スタート」は司会が押して開始します</span></div>
       <div class="row"><button class="btn go" id="bnTalk">① 歓談スタート</button><button class="btn go" id="bnInput">② 記入スタート</button></div>
       <div class="row"><button class="btn" id="bnFinish">③ 今すぐ締め切って結果を出す</button><button class="btn" id="bnBack">クイズの画面に戻る</button><button class="ghost" id="bnReset">この回のボーナスをリセット</button></div>
       <div class="row"><button class="btn go" id="bnStTop">④ よく当てられたスタッフ TOP3</button><button class="btn go" id="bnStLow">⑤ あまり当てられなかったスタッフ 3名</button></div>
@@ -7473,8 +7483,8 @@ function hostPage() {
     const ytId = (u) => { const m = String(u || "").match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : ""; };
     $("#bnIntro").onclick = () => { const id = ytId((H.links.bonusIntro || {}).url); if (!id) return toast("設定の音のリンク「ボーナスタイムの予告映像」にYouTubeのURLを入れてください"); clearTimeout(bnT); setS({ view: "bonus", bonus: { ph: "intro", at: Date.now(), yt: id } }); };
     document.querySelectorAll("#bnKind [data-bk]").forEach((x) => (x.onclick = () => { if (H.S.view === "bonus" && H.S.bonus && H.S.bonus.ph === "input") return toast("記入中は切り替えられません"); H.bonusKind = x.dataset.bk; save(); render(); }));
-    $("#bnOwn").onclick = () => { clearTimeout(bnT); const at = Date.now(); setS({ view: "bonus", bonus: { kind: H.bonusKind, ph: "intro", own: true, at }, ...sfx("bonusOwn") }); bnT = setTimeout(() => { const b = H.S.bonus; if (H.S.view === "bonus" && b && b.ph === "intro" && b.at === at && $("#bnAuto").checked) $("#bnTalk").click(); }, 17500); };
-    YTV.onEnd = (at) => { const b = H.S.bonus; if (H.S.view === "bonus" && b && b.ph === "intro" && b.at === at && $("#bnAuto").checked) $("#bnTalk").click(); };
+    $("#bnOwn").onclick = () => { clearTimeout(bnT); const at = Date.now(); setS({ view: "bonus", bonus: { kind: H.bonusKind, ph: "intro", own: true, at }, ...sfx("bonusOwn") }); };
+    YTV.onEnd = null; // 予告映像が終わっても自動で歓談に進まない（司会が開始する）
     $("#bnTalk").onclick = () => { clearTimeout(bnT); setS({ view: "bonus", bonus: { kind: H.bonusKind, ph: "talk", dur: BK[H.bonusKind].talk, at: Date.now() }, ...sfx("fanfare") }); };
     $("#bnInput").onclick = () => {
       const kd = H.bonusKind, R0 = (H.bonusR[kd] = H.bonusR[kd] || { pts: {}, ans: {} });
