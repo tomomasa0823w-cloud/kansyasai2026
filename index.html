@@ -1625,6 +1625,8 @@ body.proj #rMon{position:fixed;inset:0;width:100vw;height:100vh;border-radius:0;
 #projGo .pj-s{font-size:.85rem;opacity:.8;line-height:1.7}
 .projst{font-size:.85rem;font-weight:700;color:#1a8a4a;align-self:center}
 
+.gtbl td small.gst{margin-left:.7em;font-size:.8em;font-weight:700;opacity:.75}
+
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
 .ox.o b{color:#E53945;text-shadow:0 0 40px rgba(229,57,69,.5)}.ox.x b{color:#2C7BE5;text-shadow:0 0 40px rgba(44,123,229,.5)}
@@ -4859,7 +4861,11 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/29-2";
+const APPVER = "10/29-4";
+// 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
+const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
+function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
+function stCmp(a, b) { return stIdx(a) - stIdx(b) || String(a || "").localeCompare(String(b || ""), "ja"); }
 // ================= モニター描画 =================
 // 16:9（1920×1080）の固定キャンバスに描いて、表示先の大きさに合わせて拡大縮小します。
 // どのプロジェクター・PCでも、文字の大きさと配置が同じになります。
@@ -5438,12 +5444,12 @@ function recvPage(room, bi) {
     if ($("#rvMain").classList.contains("hidden")) return;
     const ok = (x) => { const r = st[key(x)]; return !!(r && r.att !== false); }, done = roster.filter(ok).length;
     $("#rvSum").innerHTML = `出席 <b>${done}</b> / ${roster.length}人`;
-    const all = []; roster.forEach((x) => { const s2 = x.s || "店舗なし"; if (!all.includes(s2)) all.push(s2); });
+    const all = []; roster.forEach((x) => { const s2 = x.s || "店舗なし"; if (!all.includes(s2)) all.push(s2); }); all.sort(stCmp);
     if (sf && !all.includes(sf)) sf = "";
     const ch = ["", ...all].map((s2) => { const n = roster.filter((x) => !s2 || (x.s || "店舗なし") === s2), d = n.filter(ok).length; return `<button class="rvchip${s2 === sf ? " on" : ""}" data-sf="${esc(s2)}">${s2 ? esc(s2) : "すべて"}<small>${d}/${n.length}</small></button>`; }).join("");
     if ($("#rvChips")._h !== ch) { $("#rvChips")._h = ch; $("#rvChips").innerHTML = ch; $("#rvChips").querySelectorAll("[data-sf]").forEach((b) => (b.onclick = () => { sf = b.dataset.sf; store.set("hq-recv-sf", sf); draw(); window.scrollTo({ top: 0 }); })); }
     const list = roster.filter((x) => (!sf || (x.s || "店舗なし") === sf) && (!q || foldName(x.n + (x.k || "") + x.s).includes(q)));
-    const stores = []; list.forEach((x) => { const s2 = x.s || "店舗なし"; if (!stores.includes(s2)) stores.push(s2); });
+    const stores = []; list.forEach((x) => { const s2 = x.s || "店舗なし"; if (!stores.includes(s2)) stores.push(s2); }); stores.sort(stCmp);
     $("#rvL").innerHTML = stores.map((s2) => `<div class="rvg"><div class="rvgh">${esc(s2)}</div>${list.filter((x) => (x.s || "店舗なし") === s2).map((x) => { const r = st[key(x)], a = ok(x); return `<button class="rvb${a ? " ok" : ""}" data-n="${esc(x.n)}"><span>${esc(x.n)}</span><small>${a ? "✓ 出席" + (r.h ? "・" + esc(r.h) : "") : r && r.h ? "未出席・" + esc(r.h) : "未出席"}</small></button>`; }).join("")}</div>`).join("") || '<p class="note">名簿がまだ届いていません</p>';
     $("#rvL").querySelectorAll("[data-n]").forEach((b) => (b.onclick = () => open(roster.find((x) => x.n === b.dataset.n))));
   }
@@ -5753,7 +5759,7 @@ function hostPage() {
     if (kan() && H.period.active) { const sk = standKeys(); o.standCount = sk.length; o.stand = sk.map((k) => H.roster[k]); }
     o.show = H.show;
     if (o.phase === "read") o.choices = (o.choices || []).map(() => "");
-    if (o.view === "att") { const by = {}; Object.keys(H.roster).forEach((k) => { const s = H.rstore[k] || "店舗なし"; by[s] = by[s] || { s, n: 0, on: 0 }; by[s].n++; if (H.claims[k]) by[s].on++; }); o.att = Object.values(by); }
+    if (o.view === "att") { const by = {}; Object.keys(H.roster).forEach((k) => { const s = H.rstore[k] || "店舗なし"; by[s] = by[s] || { s, n: 0, on: 0 }; by[s].n++; if (H.claims[k]) by[s].on++; }); o.att = Object.values(by).sort((a, b) => stCmp(a.s, b.s)); }
     if (o.view === "roll") { o.roll = R.map((r) => ({ rank: r.rank, n: r.n, p: r.p, t: r.t, s: H.rstore[r.key] || "" })); o.rollHide = H.opt.rollHide === false ? 0 : 3; o.rollAt = H.rollAt || 0; }
     if (o.view === "prizes") o.prizeTable = prizeTable();
     if (o.view === "game" && window.__gameView) o.game = window.__gameView();
@@ -6289,7 +6295,7 @@ function hostPage() {
     release(k, true); delete H.roster[k]; delete H.rstore[k]; pubRoster(); delete H.points[k]; delete H.tsum[k]; delete H.ever[k]; save(); render(); pubState();
   }
   function renderRoster() {
-    const keys = Object.keys(H.roster).sort((a, b) => H.roster[a].localeCompare(H.roster[b], "ja"));
+    const keys = Object.keys(H.roster).sort((a, b) => stCmp(H.rstore[a], H.rstore[b]) || H.roster[a].localeCompare(H.roster[b], "ja"));
     $("#rCount").textContent = `登録 ${keys.length}人 ／ 参加中 ${playersCount()}人`;
     $("#rList").innerHTML = keys.map((k) => {
       const on = !!H.claims[k];
@@ -6902,9 +6908,9 @@ function hostPage() {
     const by = attData(), keys = Object.keys(H.roster);
     const cnt = { on: 0, stale: 0, off: 0 }; keys.forEach((k) => cnt[statusOf(k)]++);
     $("#attSum").textContent = `参加 ${cnt.on + cnt.stale} / ${keys.length}人`;
-    $("#attStores").innerHTML = Object.entries(by).map(([s, ks]) => { const j = ks.filter((k) => H.claims[k]).length; return `<span class="ast${j >= ks.length ? " full" : ""}">${esc(s)} <b>${j}</b>/${ks.length}</span>`; }).join("");
+    $("#attStores").innerHTML = Object.entries(by).sort((a, b) => stCmp(a[0], b[0])).map(([s, ks]) => { const j = ks.filter((k) => H.claims[k]).length; return `<span class="ast${j >= ks.length ? " full" : ""}">${esc(s)} <b>${j}</b>/${ks.length}</span>`; }).join("");
     const rows = [];
-    Object.entries(by).forEach(([s, ks]) => {
+    Object.entries(by).sort((a, b) => stCmp(a[0], b[0])).forEach(([s, ks]) => {
       const f = ks.filter((k) => attF === "all" || (attF === "no" ? statusOf(k) === "off" : statusOf(k) === "stale")).sort((a, b) => H.roster[a].localeCompare(H.roster[b], "ja"));
       if (!f.length) return;
       rows.push(`<tr class="sh"><td colspan="3">${esc(s)}</td></tr>`);
@@ -7026,7 +7032,7 @@ function hostPage() {
           save(); render(); toast(`「${lab}」を表彰式に追加しました（景品メモは③表彰で）`);
         })); } } }
     $("#gPad").dataset.kind = g.type;
-    $("#gTbl").innerHTML = d.P.map((p, i) => `<tr class="${i === d.cur && !d.done ? "now" : ""}"><td>${p.rank}位</td><td>${esc(p.n)}</td><td><b>${p.score}</b>点</td><td class="note">${g.mode === "qual" ? (p.win ? "勝ち抜け " : p.out ? "敗退 " : "") + p.hist.map((v, k) => `${k + 1}巡:${v}`).join(" ") : g.type === "molkky" ? (p.win ? "上がり" : p.out ? "失格" : `ミス${p.miss}`) : p.hist.join(" ")}</td></tr>`).join("");
+    $("#gTbl").innerHTML = d.P.map((p, i) => `<tr class="${i === d.cur && !d.done ? "now" : ""}"><td>${p.rank}位</td><td>${esc(p.n)}${p.n2 ? `・${esc(p.n2)}` : ""}${p.s ? `<small class="gst">${esc(p.s)}</small>` : ""}</td><td><b>${p.score}</b>点</td><td class="note">${g.mode === "qual" ? (p.win ? "勝ち抜け " : p.out ? "敗退 " : "") + p.hist.map((v, k) => `${k + 1}巡:${v}`).join(" ") : g.type === "molkky" ? (p.win ? "上がり" : p.out ? "失格" : `ミス${p.miss}`) : p.hist.join(" ")}</td></tr>`).join("");
     $("#gIntroPrev").disabled = !g.introOn || g.intro <= 0; $("#gIntroNext").disabled = !g.introOn || g.intro >= g.players.length - 1;
     // カメラ
     document.querySelectorAll("#camMode [data-cm]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.cm === CAM.mode)));
@@ -7088,7 +7094,7 @@ function hostPage() {
     g.players.forEach((p) => [p.n, p.n2].filter(Boolean).forEach((n) => { if (!g.pool.some((x) => x.n === n)) g.pool.push({ n, s: p.s || "" }); }));
     const on = (n) => g.players.some((p) => p.n === n || p.n2 === n);
     const stores = []; g.pool.forEach((p) => { const k = p.s || "店舗なし"; if (!stores.includes(k)) stores.push(k); });
-    const ord = Object.values(H.rstore || {}).filter((v, i, a) => a.indexOf(v) === i); stores.sort((a, b) => (ord.indexOf(a) < 0 ? 999 : ord.indexOf(a)) - (ord.indexOf(b) < 0 ? 999 : ord.indexOf(b)));
+    stores.sort(stCmp);
     const h = g.pool.length ? stores.map((st) => { const its = g.pool.map((p, i) => [p, i]).filter(([p]) => (p.s || "店舗なし") === st), cnt = its.filter(([p]) => on(p.n)).length;
       return `<div class="gps${cnt ? " has" : ""}"><div class="gpsh"><b>${esc(st)}</b><span class="note">${cnt}/${its.length}人 出場</span></div><div class="gpsl">${its.map(([p, i]) => `<label class="gpc${on(p.n) ? " on" : ""}"><input type="checkbox" data-gpi="${i}" ${on(p.n) ? "checked" : ""}><span>${esc(p.n)}</span><button class="mini" data-gpx="${i}" title="候補から消す">×</button></label>`).join("")}</div></div>`; }).join("") : '<p class="note">上の欄から名前を追加すると、ここに候補として並びます。</p>';
     const el = $("#gPool"); if (el._h === h) return; el._h = h; el.innerHTML = h;
@@ -7355,7 +7361,7 @@ function hostPage() {
     pl.innerHTML = H.pairs.length ? H.pairs.map((x) => `<div class="prow"><b>${esc(H.roster[x.k])}</b>　${x.partner && H.roster[x.partner] ? `🤝 <b class="pp">${esc(H.roster[x.partner])}</b>＋1秒` : '<span class="note">ペア未定</span>'}
       <span style="flex:1"></span><button class="mini" onclick="__pairDraw('${x.k}')">🎲 ${x.partner ? "引き直す" : "ペアを抽選"}</button>${x.partner ? `<button class="mini" onclick="__pairClr('${x.k}')">ペア解除</button>` : ""}<button class="mini" onclick="__pairDel('${x.k}')">削除</button></div>`).join("") : '<p class="note">ペアを作る人を下から追加してください。</p>';
     const sel = $("#pairAdd"), cur = sel.value;
-    const opts = Object.keys(H.roster).filter((k) => !H.pairs.some((x) => x.k === k)).sort((a, b) => (H.rstore[a] || "").localeCompare(H.rstore[b] || "") || H.roster[a].localeCompare(H.roster[b]));
+    const opts = Object.keys(H.roster).filter((k) => !H.pairs.some((x) => x.k === k)).sort((a, b) => stCmp(H.rstore[a], H.rstore[b]) || H.roster[a].localeCompare(H.roster[b], "ja"));
     const html = '<option value="">ペアを作る人を選ぶ（名簿から）</option>' + opts.map((k) => `<option value="${k}">${esc((H.rstore[k] ? H.rstore[k] + "　" : "") + H.roster[k])}</option>`).join("");
     if (sel._h !== html) { sel.innerHTML = html; sel._h = html; sel.value = cur; }
     const l = H.lotLast;
@@ -7424,7 +7430,7 @@ function hostPage() {
   };
   function gPoolStageRender(g) {
     const stores = []; g.pool.forEach((p) => { const k = p.s || "店舗なし"; if (!stores.includes(k)) stores.push(k); });
-    const ord = Object.values(H.rstore || {}).filter((v, i, a) => a.indexOf(v) === i); stores.sort((a, b) => (ord.indexOf(a) < 0 ? 999 : ord.indexOf(a)) - (ord.indexOf(b) < 0 ? 999 : ord.indexOf(b)));
+    stores.sort(stCmp);
     const win = {}; ["A", "B"].forEach((st) => { const sd = st === g.stage ? { log: g.log, players: g.players } : (g.sd || {})[st]; if (!sd || !sd.log || !sd.log.length) return;
       try { const save = [g.log, g.players, g.mode]; g.log = sd.log; g.players = sd.players; g.mode = "qual"; const d = gDerive(); [g.log, g.players, g.mode] = save; d.P.forEach((p) => { if (p.win && (g.pool || []).some((x) => x.n === p.n && x.g && x.g[st])) win[p.n] = st; }); } catch (e) {} });
     const cnt = (st) => g.pool.filter((p) => p.g && p.g[st]).length;
@@ -7516,7 +7522,7 @@ function hostPage() {
     const rURL = () => pubBase() + `#r=${H.room}&view=recv`;
     $("#rvCopy").onclick = () => { navigator.clipboard && navigator.clipboard.writeText(rURL()); toast("受付用URLをコピーしました"); };
     $("#rvCsv").onclick = () => {
-      const rows = [["店舗", "名前", "出席", "受付時刻", "趣味", "ボーナス対象外", "ボーナス①名前", "ボーナス②趣味", "ボーナス合計"]].concat(Object.keys(H.roster).sort((a, b) => (H.rstore[a] || "").localeCompare(H.rstore[b] || "") || H.roster[a].localeCompare(H.roster[b])).map((k) => { const r = H.recv[k]; return [H.rstore[k] || "", H.roster[k], isAtt(k) ? "出席" : "", r && r.at ? new Date(r.at).toLocaleTimeString("ja-JP") : "", r ? r.h || "" : "", H.bonusEx[k] ? "対象外" : "", ((H.bonusR.name || {}).pts || {})[k] ?? "", ((H.bonusR.hobby || {}).pts || {})[k] ?? "", H.bonusPts[k] != null ? H.bonusPts[k] : ""]; }));
+      const rows = [["店舗", "名前", "出席", "受付時刻", "趣味", "ボーナス対象外", "ボーナス①名前", "ボーナス②趣味", "ボーナス合計"]].concat(Object.keys(H.roster).sort((a, b) => stCmp(H.rstore[a], H.rstore[b]) || H.roster[a].localeCompare(H.roster[b], "ja")).map((k) => { const r = H.recv[k]; return [H.rstore[k] || "", H.roster[k], isAtt(k) ? "出席" : "", r && r.at ? new Date(r.at).toLocaleTimeString("ja-JP") : "", r ? r.h || "" : "", H.bonusEx[k] ? "対象外" : "", ((H.bonusR.name || {}).pts || {})[k] ?? "", ((H.bonusR.hobby || {}).pts || {})[k] ?? "", H.bonusPts[k] != null ? H.bonusPts[k] : ""]; }));
       const csv = "﻿" + rows.map((r) => r.map((x) => `"${String(x).replace(/"/g, '""')}"`).join(",")).join("\r\n");
       const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = `受付台帳_${new Date().toISOString().slice(0, 10)}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     };
@@ -7529,7 +7535,7 @@ function hostPage() {
       const u = rURL(); if ($("#rvURL").value !== u) { $("#rvURL").value = u; qrInto($("#rvQR"), u); }
       { const ae = document.activeElement; if ($("#rvList").contains(ae) && ae.tagName === "INPUT" && ae.type === "text" && ae.dataset.rvh && ae.value !== ((H.recv[ae.dataset.rvh] || {}).h || "")) return; }
       const q = foldName($("#rvFind").value || ""), only = $("#rvOnlyNo").checked;
-      const stores = []; ks.forEach((k) => { const st = H.rstore[k] || "店舗なし"; if (!stores.includes(st)) stores.push(st); });
+      const stores = []; ks.forEach((k) => { const st = H.rstore[k] || "店舗なし"; if (!stores.includes(st)) stores.push(st); }); stores.sort(stCmp);
       const h = stores.map((st) => { const its = ks.filter((k) => (H.rstore[k] || "店舗なし") === st).filter((k) => (!q || foldName(H.roster[k] + st).includes(q)) && (!only || !isAtt(k))); if (!its.length) return "";
         const c = ks.filter((k) => (H.rstore[k] || "店舗なし") === st && isAtt(k)).length, n = ks.filter((k) => (H.rstore[k] || "店舗なし") === st).length;
         return `<div class="rvst"><div class="rvsh"><b>${esc(st)}</b><span class="note">${c}/${n}人 出席</span></div>${its.map((k) => { const r = H.recv[k], at = isAtt(k);
@@ -7762,7 +7768,7 @@ function playerPage(room, bi) {
   let S = { ...DEF }, joined = false, t0 = null, t0rid = null, myAns = null, joinT = null, wasStanding = null, seatFx = 0, reviveFx = 0, place = {}, meInfo = null;
   let up = false, bAns = {}, bKey = "", bRes = null, bQ = "", bSf = "";
   { const v = document.createElement("div"); v.className = "pver"; v.textContent = "ver " + APPVER; document.body.append(v); }
-  const bnChipDraw = (el, L, redraw) => { const box = el.querySelector("#bnChips"); if (!box) return; const st = []; L.forEach((x) => { const s2 = x.s || "店舗なし"; if (!st.includes(s2)) st.push(s2); }); if (bSf && !st.includes(bSf)) bSf = "";
+  const bnChipDraw = (el, L, redraw) => { const box = el.querySelector("#bnChips"); if (!box) return; const st = []; L.forEach((x) => { const s2 = x.s || "店舗なし"; if (!st.includes(s2)) st.push(s2); }); st.sort(stCmp); if (bSf && !st.includes(bSf)) bSf = "";
     const h = ["", ...st].map((s2) => { const n = L.filter((x) => !s2 || (x.s || "店舗なし") === s2), d = n.filter((x) => bAns[x.k]).length; return `<button class="bnchip${s2 === bSf ? " on" : ""}" data-sf="${esc(s2)}">${s2 ? esc(s2) : "すべて"}<small>${d}/${n.length}</small></button>`; }).join("");
     if (box._h === h) return; box._h = h; box.innerHTML = h; box.querySelectorAll("[data-sf]").forEach((x) => (x.onclick = () => { bSf = x.dataset.sf; redraw(); })); };
   document.body.classList.add("v-player");
@@ -7860,13 +7866,13 @@ function playerPage(room, bi) {
   function closeSheet() { const w = $("#sheet"); if (w) w.remove(); }
   var freeJ = false;
   function renderPick() {
-    const stores = [...new Set(roster.map((x) => x.s).filter(Boolean))];
+    const stores = [...new Set(roster.map((x) => x.s).filter(Boolean))].sort(stCmp);
     const q = foldName($("#nsearch").value);
     if (pickStore && !stores.includes(pickStore)) pickStore = "";
     $("#stcs").innerHTML = stores.length ? [["", "すべて"], ...stores.map((x) => [x, x])].map(([v, l]) => `<button class="stc" data-s="${esc(v)}" aria-pressed="${v === pickStore}">${esc(l)}</button>`).join("") : "";
     $("#stcs").querySelectorAll("[data-s]").forEach((b) => (b.onclick = () => { pickStore = b.dataset.s; store.set("hq-pick-store", pickStore); renderPick(); }));
     $("#pickLead").textContent = freeJ ? (roster.length ? "自分の名前をタップ（はじめての人は下に名前を入力）" : "下の欄に名前を入れて参加してください") : stores.length ? "① 店舗を選ぶ → ② 自分の名前をタップ" : "自分の名前をタップしてください";
-    const list = roster.slice().sort((a, b) => a.n.localeCompare(b.n, "ja")).filter((x) => (q ? foldName(x.n).includes(q) || (x.k && foldName(x.k).includes(q)) : !pickStore || x.s === pickStore));
+    const list = roster.slice().sort((a, b) => stCmp(a.s, b.s) || a.n.localeCompare(b.n, "ja")).filter((x) => (q ? foldName(x.n).includes(q) || (x.k && foldName(x.k).includes(q)) : !pickStore || x.s === pickStore));
     $("#nms").innerHTML = !roster.length && freeJ ? "" : !roster.length ? `<div class="empty" style="grid-column:1/-1">名簿を読み込んでいます…<br><span class="note">しばらく出ない場合は、下の「ここから入力」で名前を入れてください</span></div>`
       : list.length ? list.map((x) => `<button class="nm" data-n="${esc(x.n)}">${esc(x.n)}${x.s && (!pickStore || q) ? `<small>${esc(x.s)}</small>` : ""}</button>`).join("")
       : `<div class="empty" style="grid-column:1/-1">見つかりません</div>`;
