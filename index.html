@@ -4859,7 +4859,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/29-1";
+const APPVER = "10/29-2";
 // ================= モニター描画 =================
 // 16:9（1920×1080）の固定キャンバスに描いて、表示先の大きさに合わせて拡大縮小します。
 // どのプロジェクター・PCでも、文字の大きさと配置が同じになります。
@@ -7578,14 +7578,20 @@ function hostPage() {
         ks.forEach((k) => (H.bonusKey[k] = { sur: splitName(H.roster[k]).sur, r: kanaOf(k) }));
         const sur = {}; named.forEach((k) => { const sn = splitName(H.roster[k]).sur; if (!sur[sn]) sur[sn] = kanaOf(k) || sn; });
         const surList = Object.entries(sur).map(([n, r]) => ({ n, r })).sort((a, c) => hira(a.r).localeCompare(hira(c.r), "ja"));
-        bonus = { qs: shuf(ks.slice()).map((k) => ({ k, g: splitName(H.roster[k]).giv, s: H.rstore[k] || "" })), sur: surList };
+        // 同じ店舗に同じ下の名前の人がいるときは、苗字の頭の字をヒントに出す（区別できる長さまで）
+        const hintOf = (k) => { const sp = splitName(H.roster[k]), st = H.rstore[k] || "";
+          const oth = ks.filter((x) => x !== k && (H.rstore[x] || "") === st && splitName(H.roster[x]).giv === sp.giv).map((x) => splitName(H.roster[x]).sur);
+          if (!oth.length) return "";
+          for (let n = 1; n < sp.sur.length; n++) { const h = sp.sur.slice(0, n); if (!oth.some((o) => o.startsWith(h))) return h; }
+          return ""; };
+        bonus = { qs: shuf(ks.slice()).map((k) => ({ k, g: splitName(H.roster[k]).giv, s: H.rstore[k] || "", h: hintOf(k) })), sur: surList };
       }
       H.bonusRun = kd;
       const at = Date.now(); setS({ view: "bonus", bonus: { kind: kd, ph: "input", dur: BK[kd].inp || 60, at, ...bonus }, ...sfx("open") });
       clearTimeout(bnT); bnT = setTimeout(() => bonusFinish(at), (BK[kd].inp || 60) * 1000 + 2500);
     };
     const nameOk = (k, c) => { const key = H.bonusKey[k]; if (!key) return false; const t = String(c || "").trim(); if (!t) return false;
-      const S = H.S, q = (S.bonus.qs || []).find((x) => x.k === k), same = q ? Object.keys(H.bonusKey).filter((x) => { const sp = splitName(H.roster[x]); return sp && sp.giv === q.g && (H.rstore[x] || "") === q.s; }) : [k];
+      const S = H.S, q = (S.bonus.qs || []).find((x) => x.k === k), same = q ? Object.keys(H.bonusKey).filter((x) => { const sp = splitName(H.roster[x]); return sp && sp.giv === q.g && (H.rstore[x] || "") === q.s && (!q.h || sp.sur.startsWith(q.h)); }) : [k];
       return same.some((x) => { const kk = H.bonusKey[x]; return foldName(t) === foldName(kk.sur) || (kk.r && hira(t) === hira(kk.r)); }); };
     window.__onBonus = (d) => {
       const S = H.S, b = S.bonus, p = H.players[d.tok];
@@ -7954,7 +7960,7 @@ function playerPage(room, bi) {
               const q = foldName(el.querySelector("#bnFind").value || "");
               bnChipDraw(el, qs, draw);
               el.querySelector("#bnList").innerHTML = qs.filter((x) => (!bSf || (x.s || "店舗なし") === bSf) && (!q || foldName(x.g + x.s).includes(q))).map((x) => bAns[x.k] ? `<div class="bnr done"><span>${esc(bAns[x.k] === "?" ? "？？" : bAns[x.k])} ${esc(x.g)}<small>${esc(x.s)}</small></span><b>✓ 回答済み</b></div>`
-                : `<div class="bnr" data-bk="${esc(x.k)}"><span><em class="bnq">？？</em> ${esc(x.g)}<small>${esc(x.s)}</small></span><div class="bno bnsu hidden"><input class="bntx" placeholder="苗字を入力" autocomplete="off" autocapitalize="off" enterkeyhint="done"><button class="btn go bnok">決定</button></div></div>`).join("") || '<p class="note">見つかりません</p>';
+                : `<div class="bnr" data-bk="${esc(x.k)}"><span><em class="bnq">${x.h ? esc(x.h) + "◯" : "？？"}</em> ${esc(x.g)}<small>${esc(x.s)}</small></span><div class="bno bnsu hidden"><input class="bntx" placeholder="苗字を入力" autocomplete="off" autocapitalize="off" enterkeyhint="done"><button class="btn go bnok">決定</button></div></div>`).join("") || '<p class="note">見つかりません</p>';
               el.querySelectorAll(".bnr[data-bk]").forEach((r) => {
                 const box = r.querySelector(".bno"), tx = r.querySelector(".bntx");
                 r.querySelector("span").onclick = () => { el.querySelectorAll(".bno").forEach((x) => x !== box && x.classList.add("hidden")); box.classList.toggle("hidden"); if (!box.classList.contains("hidden")) setTimeout(() => tx.focus(), 30); };
