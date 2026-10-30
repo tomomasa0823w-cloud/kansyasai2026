@@ -4938,7 +4938,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/30-1";
+const APPVER = "10/30-2";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -6664,7 +6664,7 @@ function hostPage() {
     const gs = document.createElement("div"); gs.className = "ctl"; gs.id = "gSetup";
     gs.innerHTML = `<h2>ゲームの準備</h2>
       <div class="seg" id="gType"><button data-gt="molkky">🪵 モルック</button><button data-gt="archery">🏹 アーチェリー</button></div>
-      <div class="gstage"><b>進行</b><div class="seg" id="gStage"><button data-gs="A">① 予選A</button><button data-gs="B">② 予選B</button><button data-gs="F">③ 決勝</button><button data-gs="free">自由</button></div><p class="note" id="gStageNote" style="margin:4px 0 0"></p></div>
+      <div class="gstage"><b>進行</b><div class="seg" id="gStage"><button data-gs="A">① 予選①</button><button data-gs="B">② 予選②</button><button data-gs="F">③ 決勝</button><button data-gs="free">自由</button></div><p class="note" id="gStageNote" style="margin:4px 0 0"></p><div class="row" style="margin-top:6px"><button class="btn" id="gAutoF">🏆 決勝メンバーを自動で決める（予選①1位・予選②1位・本社）</button></div></div>
       <div class="seg" id="gMode" style="margin-top:6px"><button data-gm="normal">通常の試合</button><button data-gm="qual">予選（1人1投）</button></div>
       <label class="chk2" id="gTeamL" style="margin-top:6px"><input type="checkbox" id="gTeam"> 2人1組（同じ店舗の2人で交互に投げる）</label>
       <p class="note" id="gModeNote" style="margin:4px 0 0"></p>
@@ -6679,7 +6679,7 @@ function hostPage() {
       <div class="row"><button class="btn" id="gShuffle">🔀 順番をシャッフル（モニターで演出）</button><button class="ghost" id="gClear">選手を全部外す</button></div>
       <div class="gsets"><b>📋 登録しておいた選手リスト</b><p class="note" style="margin:2px 0 6px">予選・決勝などの組み合わせを事前に保存しておき、当日ワンタッチで呼び出せます（種目・予選/通常・2人1組の設定も一緒に保存）。</p>
         <div id="gSetList"></div>
-        <div class="row"><input id="gSetName" maxlength="30" placeholder="リストの名前（例：モルック予選A）" style="flex:1;min-width:150px"><button class="btn" id="gSetSave">💾 いまの選手を保存</button></div></div>`;
+        <div class="row"><input id="gSetName" maxlength="30" placeholder="リストの名前（例：モルック予選①）" style="flex:1;min-width:150px"><button class="btn" id="gSetSave">💾 いまの選手を保存</button></div></div>`;
     const gp = document.createElement("div"); gp.className = "ctl"; gp.id = "gPlay";
     gp.innerHTML = `<h2>進行 <span class="phase" id="gPhase"></span></h2>
       <div class="row"><button class="btn go big2" id="gShow">📺 モニターにゲームを映す</button></div>
@@ -7198,7 +7198,7 @@ function hostPage() {
     const g = G(); if (!g.pool) g.pool = [];
     document.querySelectorAll("#gStage [data-gs]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.gs === (g.stage || "free"))));
     const stg = g.stage && g.stage !== "free";
-    $("#gStageNote").textContent = !stg ? "チェックした人がそのまま出場します（予選A・B・決勝を使うときは上で切り替え）" : g.stage === "F" ? "決勝：店舗名をクリックすると、その店舗の2人を決勝チームにします（もう一度で外す）。2人1組で交互に投げます。" : `予選${g.stage}：名前の横の「${g.stage}」にチェックした人が1人1投で対戦します。`;
+    $("#gStageNote").textContent = !stg ? "チェックした人がそのまま出場します（予選①・②・決勝を使うときは上で切り替え）" : g.stage === "F" ? "決勝：店舗名をクリックすると、その店舗の2人を決勝チームにします（もう一度で外す）。2人1組で交互に投げます。" : `予選${g.stage}：名前の横の「${g.stage}」にチェックした人が1人1投で対戦します。`;
     document.querySelectorAll("#gMode,#gTeamL").forEach((e) => e.classList.toggle("hidden", !!stg));
     ["#gPoolAll", "#gPoolNone"].forEach((id) => $(id).classList.toggle("hidden", !!stg)); { const nt = $("#gPool").parentNode.querySelector(".gph .note"); if (nt) nt.textContent = stg ? "A・B・決 のチェックで、どの試合に出るか決めます" : "チェックした人が出場します"; }
     if (stg) return gPoolStageRender(g);
@@ -7561,7 +7561,7 @@ function hostPage() {
   if (H.opt && H.opt.dup === "one" && !H.dupMig) { H.opt.dup = "both"; H.dupMig = 1; save(); }
 
   // ---- 予選A → 予選B → 決勝 ----
-  const STG = { A: { mode: "qual", team: false, t: "予選A" }, B: { mode: "qual", team: false, t: "予選B" }, F: { mode: "normal", team: true, t: "決勝" } };
+  const STG = { A: { mode: "qual", team: false, t: "予選①" }, B: { mode: "qual", team: false, t: "予選②" }, F: { mode: "normal", team: true, t: "決勝" } };
   const gBase = (g) => (g.type === "archery" ? "アーチェリー" : "モルック");
   // フラグから出場メンバーを作る（決勝は同じ店舗の2人で1組）
   const gBuild = (g, st) => {
@@ -7580,7 +7580,7 @@ function hostPage() {
     gStash(g); g.stage = to; const sd = (g.sd || {})[to];
     g.log = sd ? sd.log || [] : []; g.players = sd ? sd.players || [] : []; g.introOn = false; g.shufOn = false;
     if (to === "free") { if (sd) { g.mode = sd.mode; g.team = sd.team; g.title = sd.title; } }
-    else { g.mode = STG[to].mode; g.team = STG[to].team; g.title = `${gBase(g)}${STG[to].t}`; if (!g.log.length) gSync(g); }
+    else { g.mode = STG[to].mode; g.team = STG[to].team; g.title = `${gBase(g)}${STG[to].t}`; if (!g.log.length) { if (to === "F" && window.__autoFinal) window.__autoFinal(true); gSync(g); } }
     gPub(); toast(to === "free" ? "自由モードにしました" : `${g.title} に切り替えました${g.log.length ? "（途中の記録から再開）" : ""}`);
   }));
   const gFlag = (g, i, st, v) => {
@@ -7589,12 +7589,33 @@ function hostPage() {
     p.g = p.g || {}; p.g[st] = v; if (g.stage === st) { g.log = []; gSync(g); } else if (g.sd && g.sd[st]) { g.sd[st].log = []; g.sd[st].players = gBuild(g, st); }
     return true;
   };
+  // ---- 決勝メンバー：予選①1位の店舗・予選②1位の店舗・本社 の3チーム（各店舗2人） ----
+  const qualWin = (st) => { const g = G(), sd = st === g.stage ? { log: g.log, players: g.players } : (g.sd || {})[st]; if (!sd || !sd.log || !sd.log.length) return null;
+    try { const save = [g.log, g.players, g.mode]; g.log = sd.log; g.players = sd.players; g.mode = "qual"; const d = gDerive(); [g.log, g.players, g.mode] = save; const w = d.done ? d.P.filter((p) => p.win) : []; return w.length === 1 ? { n: w[0].n, s: w[0].s || "" } : null; } catch (e) { return null; } };
+  const FINAL_FIX = "本社";
+  const autoFinal = (quiet) => {
+    const g = G(), wa = qualWin("A"), wb = qualWin("B");
+    if (!wa || !wb) { if (!quiet) toast(`予選${!wa ? "①" : ""}${!wa && !wb ? "・" : ""}${!wb ? "②" : ""}の1位がまだ決まっていません`); return false; }
+    const stores = [...new Set([wa.s, wb.s, FINAL_FIX].filter(Boolean))], msg = [];
+    if (g.stage === "F" && g.log.length) { if (quiet) return false; if (!confirm("決勝のスコアの記録は消えます。決勝メンバーを決め直しますか？")) return false; }
+    (g.pool || []).forEach((p) => { p.g = p.g || {}; if (!stores.includes(p.s)) p.g.F = false; });
+    stores.forEach((st) => { const ms = g.pool.filter((p) => p.s === st), on = ms.filter((p) => p.g.F);
+      let pick = on.length === 2 ? on : ms.filter((p) => p.n === wa.n || p.n === wb.n).concat(on, ms).filter((p, i, a) => a.indexOf(p) === i).slice(0, 2); // 予選1位の人は必ず入れる
+      ms.forEach((p) => (p.g.F = pick.includes(p)));
+      if (pick.length < 2) msg.push(`${st}は候補が${pick.length}人`); else if (ms.length > 2 && on.length !== 2) msg.push(`${st}は${pick.map((p) => p.n).join("・")}（変更は「決」のチェックで）`); });
+    if (g.stage === "F") { g.log = []; gSync(g); } else if (g.sd && g.sd.F) { g.sd.F.log = []; g.sd.F.players = gBuild(g, "F"); }
+    save(); gPub(); if (!quiet || msg.length) toast(`決勝は ${stores.join("・")} の${stores.length}チーム${msg.length ? "（" + msg.join("／") + "）" : ""}`);
+    return true;
+  };
+  window.__autoFinal = autoFinal;
+  $("#gAutoF").onclick = () => autoFinal(false);
   // ---- 🎯 モルック予想（予選①・予選②・決勝を問題に差し込む）：予想を出題 → 締切 → 試合 → 正解発表 ----
   const MK = { A: "予選①", B: "予選②", F: "決勝" };
   const mkKey = (p) => p.n + "|" + (p.n2 || "");
   const mkTeams = (st) => { const g = G(); const sd = (g.sd || {})[st]; const pl = st === g.stage ? g.players : sd && sd.players && sd.players.length ? sd.players : gBuild(g, st); return (pl || []).map((p) => ({ ...p })); };
   window.__startMolk = (st, pts) => {
     if (!MK[st]) return false;
+    if (st === "F") { const g = G(), sd = (g.sd || {}).F; if (!(g.stage === "F" ? g.log.length : sd && sd.log && sd.log.length)) autoFinal(true); }
     const T = mkTeams(st);
     if (T.length < 2) { toast(`モルック${MK[st]}の出場者が決まっていません（④ゲームで${MK[st]}のメンバーにチェックしてください）`); return false; }
     if (T.length > 10) { toast(`モルック${MK[st]}は${T.length}組いるので予想問題にできません（10組まで）`); return false; }
@@ -7627,10 +7648,10 @@ function hostPage() {
     const win = {}; ["A", "B"].forEach((st) => { const sd = st === g.stage ? { log: g.log, players: g.players } : (g.sd || {})[st]; if (!sd || !sd.log || !sd.log.length) return;
       try { const save = [g.log, g.players, g.mode]; g.log = sd.log; g.players = sd.players; g.mode = "qual"; const d = gDerive(); [g.log, g.players, g.mode] = save; d.P.forEach((p) => { if (p.win && (g.pool || []).some((x) => x.n === p.n && x.g && x.g[st])) win[p.n] = st; }); } catch (e) {} });
     const cnt = (st) => g.pool.filter((p) => p.g && p.g[st]).length;
-    const h = (g.pool.length ? `<div class="note" style="margin-bottom:4px">予選A ${cnt("A")}人／予選B ${cnt("B")}人／決勝 ${cnt("F")}人</div>` : "") + (g.pool.length ? stores.map((st) => {
+    const h = (g.pool.length ? `<div class="note" style="margin-bottom:4px">予選① ${cnt("A")}人／予選② ${cnt("B")}人／決勝 ${cnt("F")}人</div>` : "") + (g.pool.length ? stores.map((st) => {
       const its = g.pool.map((p, i) => [p, i]).filter(([p]) => (p.s || "店舗なし") === st), inF = its.filter(([p]) => p.g && p.g.F).length;
       return `<div class="gps${inF ? " has" : ""}"><div class="gpsh">${g.stage === "F" ? `<button class="gfin${inF ? " on" : ""}" data-gfs="${esc(st)}">${inF ? "✓ 決勝" : "＋ 決勝へ"}　<b>${esc(st)}</b></button>` : `<b>${esc(st)}</b>`}${inF ? `<span class="note">決勝 ${inF}人</span>` : ""}</div><div class="gpsl">${its.map(([p, i]) => { const f = p.g || {};
-        return `<div class="gpc st${(f[g.stage]) ? " on" : ""}"><span>${esc(p.n)}${win[p.n] ? ` <i class="gwin">🏆予選${win[p.n]}</i>` : ""}</span>${["A", "B", "F"].map((k) => `<label class="gfl${k === g.stage ? " cur" : ""}"><input type="checkbox" data-gfi="${i}" data-gfk="${k}" ${f[k] ? "checked" : ""}>${k === "F" ? "決" : k}</label>`).join("")}<button class="mini" data-gpx="${i}" title="候補から消す">×</button></div>`; }).join("")}</div></div>`; }).join("") : '<p class="note">上の欄から名前を追加すると、ここに候補として並びます。</p>');
+        return `<div class="gpc st${(f[g.stage]) ? " on" : ""}"><span>${esc(p.n)}${win[p.n] ? ` <i class="gwin">🏆予選${win[p.n] === "A" ? "①" : "②"}</i>` : ""}</span>${["A", "B", "F"].map((k) => `<label class="gfl${k === g.stage ? " cur" : ""}"><input type="checkbox" data-gfi="${i}" data-gfk="${k}" ${f[k] ? "checked" : ""}>${k === "F" ? "決" : k}</label>`).join("")}<button class="mini" data-gpx="${i}" title="候補から消す">×</button></div>`; }).join("")}</div></div>`; }).join("") : '<p class="note">上の欄から名前を追加すると、ここに候補として並びます。</p>');
     const el = $("#gPool"); if (el._h === h) return; el._h = h; el.innerHTML = h;
     el.querySelectorAll("[data-gfi]").forEach((x) => (x.onchange = () => { if (!gFlag(g, +x.dataset.gfi, x.dataset.gfk, x.checked)) x.checked = !x.checked; gPub(); }));
     el.querySelectorAll("[data-gfs]").forEach((x) => (x.onclick = () => {
