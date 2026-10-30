@@ -5101,7 +5101,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/30-19";
+const APPVER = "10/30-20";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -7514,8 +7514,8 @@ function hostPage() {
   $("#camDev").onchange = () => camUseLocal($("#camDev").value);
   // ---- 別の司会PCへ引き継ぎ ----
   {
-    const SETUP = ["roster", "rstore", "rkana", "bank", "bonusDur", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "linksV10", "linksV11", "linksV12", "linksV13", "linksV14", "linksV15", "sndV2", "snd", "pub", "exact", "game", "gameSets", "recv", "bonusEx"];
-    const PROG = ["points", "tsum", "scored", "ever", "period", "champs", "handed", "tie", "bankIdx", "pairs", "lotUsed", "bonusPts", "bonusAns", "bonusR"];
+    const SETUP = ["roster", "rstore", "rkana", "bank", "bonusDur", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "linksV10", "linksV11", "linksV12", "linksV13", "linksV14", "linksV15", "sndV2", "snd", "pub", "exact", "game", "gameSets", "recv", "bonusEx", "linksV16", "seat", "seatV2", "seatV3", "pairs", "pairsInit", "pairsV2", "exNoK", "bonusKind"]; // 座席・ペア枠・役員賞の除外・ボーナス時間も渡す
+    const PROG = ["points", "tsum", "scored", "ever", "period", "champs", "handed", "tie", "bankIdx", "pairs", "lotUsed", "bonusPts", "bonusAns", "bonusR", "bonusKey", "bonusRun", "exec", "molkQ", "molkPend", "flowCur", "pairFlow", "lotLast"];
     const b64e = (u8) => { let x = ""; for (let i = 0; i < u8.length; i += 0x8000) x += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(x); };
     const b64d = (x) => Uint8Array.from(atob(x), (c) => c.charCodeAt(0));
     const gz = async (u8, comp) => new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(comp ? new CompressionStream("gzip") : new DecompressionStream("gzip"))).arrayBuffer());
@@ -7528,7 +7528,7 @@ function hostPage() {
       (H.bank || []).forEach((b) => { const im = b.img; if (!im) return; [im.q, ...(im.c || []), ...(im.qx || []), ...(im.cx || []).flat()].filter(Boolean).forEach((id) => { if (IMG[id]) p.imgs[id] = IMG[id]; }); });
       return p;
     };
-    const pkgSum = (p) => { const st = p.setup || {}; return `名簿 ${Object.keys(st.roster || {}).length}人・問題 ${(st.bank || []).length}問・写真 ${Object.keys(p.imgs || {}).length}枚・賞 ${(st.prizes || []).length}個${(st.gameSets || []).length ? `・選手リスト ${st.gameSets.length}件` : ""}${p.prog ? "・得点と進行" : ""}`; };
+    const pkgSum = (p) => { const st = p.setup || {}; const bk = st.bank || []; return `名簿 ${Object.keys(st.roster || {}).length}人・問題 ${bk.filter((b) => !b.flow && !b.bonus && !b.molk).length}問・進行表 ${bk.length}項目（ボーナス${bk.filter((b) => b.bonus).length}・モルック${bk.filter((b) => b.molk).length}）${st.seat ? "・座席表" : ""}・写真 ${Object.keys(p.imgs || {}).length}枚・賞 ${(st.prizes || []).length}個${(st.gameSets || []).length ? `・選手リスト ${st.gameSets.length}件` : ""}${p.prog ? "・得点と進行" : ""}`; };
     const applyPkg = (p) => {
       if (!p || p.v !== 1 || typeof p.setup !== "object") return toast("引き継ぎデータの形が正しくありません");
       if (!confirm(`次の内容をこのPCに読み込みます。\n\n${pkgSum(p)}${p.vids && p.vids.length ? `・動画 ${p.vids.length}本` : ""}\n\nこのPCの名簿・問題・賞・設定は置き換わります。よろしいですか？`)) return false;
@@ -7536,8 +7536,9 @@ function hostPage() {
       if (p.prog) { PROG.forEach((k) => { if (p.prog[k] !== undefined) H[k] = p.prog[k]; }); H.answers = {}; H.S = { ...H.S, phase: "idle", stage: "", rid: null, view: "q", question: "", img: null, vid: null }; }
       Object.keys(H.claims || {}).forEach((k) => { if (!H.roster[k]) delete H.claims[k]; });
       Object.entries(p.imgs || {}).forEach(([id, d]) => { if (/^i[a-z0-9]{1,12}$/.test(id) && typeof d === "string" && /^data:image\//.test(d)) { window.__hostImgs[id] = d; IMG[id] = d; } });
+      try { window.__bnDurApply && window.__bnDurApply(); } catch (e) {}
       saveImgs(); save(); pubRoster(); pubState(true); render();
-      toast("引き継ぎました：" + pkgSum(p));
+      toast("引き継ぎました：" + pkgSum(p) + "（座席の画面などは一度ページを開き直すと確実です）");
       return true;
     };
     $("#xSend").onclick = async () => {
@@ -8031,7 +8032,8 @@ function hostPage() {
   if (!H.bonusKind) H.bonusKind = "name";
   const BK = { name: { t: "名前当て", talk: 120, inp: 300, no: "第1回" }, hobby: { t: "趣味当て", talk: 300, inp: 60, no: "第2回" } };
   // 歓談・記入の時間は司会が変えられる（保存される）
-  H.bonusDur = H.bonusDur || {}; ["name", "hobby"].forEach((k) => { const d = H.bonusDur[k] || {}; if (d.talk) BK[k].talk = d.talk; if (d.inp) BK[k].inp = d.inp; });
+  window.__bnDurApply = () => { H.bonusDur = H.bonusDur || {}; ["name", "hobby"].forEach((k) => { const d = H.bonusDur[k] || {}; if (d.talk) BK[k].talk = d.talk; if (d.inp) BK[k].inp = d.inp; }); };
+  window.__bnDurApply();
   const bnDurSet = (f, v) => { const kd = H.bonusKind, sec = Math.round(Math.max(0.5, Math.min(30, +v || 0)) * 60); if (!sec) return; BK[kd][f] = sec; H.bonusDur[kd] = { talk: BK[kd].talk, inp: BK[kd].inp }; save(); render(); toast(`${BK[kd].no}（${BK[kd].t}）の${f === "talk" ? "歓談" : "記入"}時間を ${bnMin(sec)} にしました`); };
   const bnTotal = () => { const t = {}; ["name", "hobby"].forEach((kd) => Object.entries((H.bonusR[kd] || {}).pts || {}).forEach(([k, v]) => (t[k] = Math.round(((t[k] || 0) + v) * 10) / 10))); H.bonusPts = t; };
   const splitName = (n) => { const m = String(n || "").trim().split(/[\s\u3000]+/); return m.length >= 2 ? { sur: m[0], giv: m.slice(1).join(" ") } : null; };
