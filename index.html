@@ -1818,6 +1818,9 @@ select option{color:#0E1846;background:#fff}
 .seatp .seatcol{display:inline-block;padding:6px 26px;border-radius:999px;box-shadow:0 4px 0 rgba(0,0,0,.25);border:3px solid rgba(0,0,0,.15)}
 .seatp .seatbig small{font-size:.4em;color:var(--ink)}
 
+.bndur2{display:flex;flex-wrap:wrap;gap:8px 18px;width:100%;margin-top:6px;font-size:.92rem}
+.bndur2 input{width:70px!important;padding:4px 6px!important}
+
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
 .ox.o b{color:#E53945;text-shadow:0 0 40px rgba(229,57,69,.5)}.ox.x b{color:#2C7BE5;text-shadow:0 0 40px rgba(44,123,229,.5)}
@@ -5101,7 +5104,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/30-21";
+const APPVER = "10/30-22";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -5914,7 +5917,7 @@ const STAGE_LABEL = { review: "写真のふりかえり", cutshow: "予選落ち
 function nextLabel(S) {
   if (S.view === "cere") { const c = S.cere || {}; return c.step === "end" ? "表彰式は終わりました" : `次へ ▶（${c.step === "intro" ? "最初の賞" : c.step === "rank" ? "名前を発表" : "次の賞"}）`; }
   if (S.view === "rules") { const n = S.ruleN || 1, i = (S.ruleIdx || 0) + 1; return i < n ? `次の説明へ ▶（${i}/${n}）` : `ルール説明を終わる ▶（${i}/${n}）`; }
-  if (S.view === "bonus") { const b = S.bonus || {}, nb = window.__nbInfo; return b.ph === "intro" ? "① 歓談スタート ▶" : b.ph === "talk" ? "② 記入スタート ▶" : b.ph === "input" ? "③ 締め切って結果発表 ▶" : b.ph === "done" ? "④ よく当てられたスタッフ TOP3 ▶" : b.ph === "staff" && b.side !== "low" ? "⑤ あまり当てられなかった3名 ▶" : nb && nb.has ? (nb.bonus ? "🎁 次のボーナスゲームへ ▶" : `クイズに戻る（次は ${nb.i}/${nb.n}問目） ▶`) : "クイズに戻る ▶"; }
+  if (S.view === "bonus") { const b = S.bonus || {}, nb = window.__nbInfo; return b.ph === "intro" ? "① 歓談スタート ▶" : b.ph === "talk" ? "② 記入スタート ▶" : b.ph === "input" ? "③ 締め切って結果発表 ▶" : b.ph === "done" ? "④ よく当てられたスタッフ TOP3 ▶" : b.ph === "staff" && b.side !== "low" ? "⑤ あまり当てられなかった3名 ▶" : b.ph === "staff" && b.kind === "hobby" ? "🪑 趣味で席替え（スマホにも行き先）▶" : nb && nb.has ? (nb.bonus ? "🎁 次のボーナスゲームへ ▶" : `クイズに戻る（次は ${nb.i}/${nb.n}問目） ▶`) : "クイズに戻る ▶"; }
   { const ml = window.__molkLabel && window.__molkLabel(S); if (ml) return ml; }
   { const fl = window.__flowLabel && window.__flowLabel(S); if (fl) return fl; }
   if (S.view && S.view !== "q") return "問題の表示に戻る ▶";
@@ -8062,12 +8065,12 @@ function hostPage() {
     P2("colA") && P2("colA").append(rc);
     const bc = document.createElement("div"); bc.className = "ctl"; bc.id = "bonusCard";
     bc.innerHTML = `<h2>🎁 ボーナスタイム <span class="phase" id="bnPhase"></span></h2>
-      <p class="note" style="margin:0 0 8px">歓談でスタッフのことを聞き出す → スマホで答える（名前当て5分・趣味当て1分） → 当たった数 × 0.1点 をクイズの得点に加点（2回分は合計）。<br>受付スタッフなど「対象外」にした人には、参加者全員の平均点を加点します。</p>
+      <p class="note" style="margin:0 0 8px">歓談でスタッフのことを聞き出す → スマホで答える（時間は下の「時間」で変えられます） → 当たった数 × 0.1点 をクイズの得点に加点（2回分は合計）。<br>受付スタッフなど「対象外」にした人には、参加者全員の平均点を加点します。</p>
       <div class="seg" id="bnKind"><button data-bk="name">第1回　名前当て</button><button data-bk="hobby">第2回　趣味当て</button></div>
       <p class="note" id="bnKindNote" style="margin:6px 0"></p>
       <div class="row"><button class="btn go" id="bnOwn">🎬 ボーナスタイム突入の演出（約17秒）</button><button class="btn" id="bnIntro">▶ YouTubeの予告映像</button><span class="note">演出のあとは自動で進みません。「① 歓談スタート」「② 記入スタート」は司会が押して開始します</span></div>
       <div class="row"><button class="btn go" id="bnTalk">① 歓談スタート</button><button class="btn go" id="bnInput">② 記入スタート</button></div>
-      <div class="row bndur"><b>時間</b><label>歓談 <input type="number" id="bnDurT" min="0.5" max="30" step="0.5" style="width:80px">分</label><label>記入 <input type="number" id="bnDurI" min="0.5" max="30" step="0.5" style="width:80px">分</label><span class="note">（選んでいる回の時間。0.5＝30秒）</span></div>
+      <div class="row bndur"><b>時間</b><label>歓談 <input type="number" id="bnDurT" min="0.5" max="30" step="0.5" style="width:80px">分</label><label>回答 <input type="number" id="bnDurI" min="0.5" max="30" step="0.5" style="width:80px">分</label><span class="note">（選んでいる回の時間。0.5＝30秒）</span></div>
       <div class="row"><button class="btn" id="bnFinish">③ 今すぐ締め切って結果を出す</button><button class="btn" id="bnBack">クイズの画面に戻る</button><button class="ghost" id="bnReset">この回のボーナスをリセット</button></div>
       <div class="row"><button class="btn go" id="bnStTop">④ よく当てられたスタッフ TOP3</button><button class="btn go" id="bnStLow">⑤ あまり当てられなかったスタッフ 3名</button></div>
       <div id="bnInfo" class="note" style="margin-top:6px"></div>
@@ -8094,11 +8097,12 @@ function hostPage() {
         const c = ks.filter((k) => (H.rstore[k] || "店舗なし") === st && isAtt(k)).length, n = ks.filter((k) => (H.rstore[k] || "店舗なし") === st).length;
         return `<div class="rvst"><div class="rvsh"><b>${esc(st)}</b><span class="note">${c}/${n}人 出席</span></div>${its.map((k) => { const r = H.recv[k], at = isAtt(k);
           return `<div class="rvrow${at ? " ok" : ""}"><label class="rvck" title="出席"><input type="checkbox" data-rvk="${esc(k)}" ${at ? "checked" : ""}><span class="rvatt">${at ? "出席" : "未"}</span>${esc(H.roster[k])}</label><button class="mini rved" data-rved="${esc(k)}" title="名前・店舗を修正">✏️</button><input type="text" class="rvh" data-rvh="${esc(k)}" value="${esc(r ? r.h || "" : "")}" placeholder="趣味"><label class="rvex" title="ボーナスの対象外（全体平均を加点）"><input type="checkbox" data-rvx="${esc(k)}" ${H.bonusEx[k] ? "checked" : ""}>対象外</label>${H.bonusPts[k] != null ? `<span class="rvpt">+${H.bonusPts[k]}</span>` : ""}</div>`; }).join("")}</div>`; }).join("");
-      const el = $("#rvList"); if (el._h === h) return; el._h = h; el.innerHTML = h || '<p class="note">名簿がありません（①準備で名簿を読み込んでください）</p>';
+      const el = $("#rvList"); if (el._h !== h) { el._h = h; el.innerHTML = h || '<p class="note">名簿がありません（①準備で名簿を読み込んでください）</p>';
       el.querySelectorAll("[data-rvk]").forEach((x) => (x.onchange = () => { const k = x.dataset.rvk; if (x.checked) H.recv[k] = { h: (H.recv[k] && H.recv[k].h) || "", at: Date.now(), by: "本部", att: true }; else if (H.recv[k] && H.recv[k].h) H.recv[k] = { ...H.recv[k], att: false }; else delete H.recv[k]; save(); pubRecv(); render(); }));
       el.querySelectorAll("[data-rvh]").forEach((x) => (x.onchange = () => { const k = x.dataset.rvh, v = x.value.replace(/\s+/g, " ").trim().slice(0, 40); H.recv[k] = { ...(H.recv[k] || { at: Date.now(), by: "本部", att: false }), h: v }; save(); pubRecv(); render(); }));
       el.querySelectorAll("[data-rved]").forEach((x) => (x.onclick = () => { const k = x.dataset.rved; const nn = prompt("名前を修正（苗字と名前の間はスペース）", H.roster[k]); if (nn == null) return; const ns = prompt("店舗を修正", H.rstore[k] || ""); if (ns == null) return; renameKey(k, nn, ns); save(); pubRecv(); render(); toast("名前・店舗を修正しました"); }));
       el.querySelectorAll("[data-rvx]").forEach((x) => (x.onchange = () => { const k = x.dataset.rvx; if (x.checked) H.bonusEx[k] = true; else delete H.bonusEx[k]; save(); render(); }));
+      } // ↑名簿が変わったときだけ描き直す（ボーナスの表示は毎回更新）
       // ボーナス
       const S = H.S, b = S.view === "bonus" && S.bonus ? S.bonus : null, kd = H.bonusKind, R0 = H.bonusR[kd] || { pts: {}, ans: {} };
       document.querySelectorAll("#bnKind [data-bk]").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.bk === kd)));
@@ -8284,9 +8288,16 @@ function hostPage() {
       if (b.ph === "input") return $("#bnFinish").click();
       if (b.ph === "done") return bnStShow("top");
       if (b.ph === "staff" && b.side !== "low") return bnStShow("low");
-      clearTimeout(bnT); const nb = window.__nbInfo; if (nb && nb.has && nb.bonus) { setS({ view: "q" }); return window.__goNextBank(); } setS({ view: "q" }); };
+      clearTimeout(bnT);
+      // 趣味当てのあとは、そのまま「趣味で席替え」へ（進行表に入っていなくても）
+      if (b.kind === "hobby" && window.__startFlow && !((H.bank[H.bankIdx || 0] || {}).flow === "seatHobby")) { if (window.__startFlow("seatHobby")) return; }
+      const nb = window.__nbInfo; if (nb && nb.has && nb.bonus) { setS({ view: "q" }); return window.__goNextBank(); } setS({ view: "q" }); };
     { const bl = document.querySelector("#bankList"), card = bl && bl.closest(".ctl");
-      if (card && !card.querySelector(".bnins")) { const d = document.createElement("div"); d.className = "row bnins"; d.innerHTML = `<button class="btn" data-bnins="name">🎁 ボーナス①名前当て を差し込む</button><button class="btn" data-bnins="hobby">🎁 ボーナス②趣味当て を差し込む</button><span class="note">最後に追加されます。▲▼やドラッグで好きな位置へ</span>`; card.append(d);
+      if (card && !card.querySelector(".bnins")) { const d = document.createElement("div"); d.className = "row bnins"; d.innerHTML = `<button class="btn" data-bnins="name">🎁 ボーナス①名前当て を差し込む</button><button class="btn" data-bnins="hobby">🎁 ボーナス②趣味当て を差し込む</button><span class="note">最後に追加されます。▲▼やドラッグで好きな位置へ</span>
+          <div class="bndur2">${["name", "hobby"].map((k) => `<span><b>${k === "name" ? "ボーナス①名前当て" : "ボーナス②趣味当て"}</b> 歓談 <input type="number" data-bdk="${k}" data-bdf="talk" min="0.5" max="30" step="0.5">分 ／ 回答 <input type="number" data-bdk="${k}" data-bdf="inp" min="0.5" max="30" step="0.5">分</span>`).join("")}</div>`; card.append(d);
+        const bdFill = () => d.querySelectorAll("[data-bdk]").forEach((x) => { if (document.activeElement !== x) x.value = String(BK[x.dataset.bdk][x.dataset.bdf] / 60); });
+        d.querySelectorAll("[data-bdk]").forEach((x) => (x.onchange = () => { const k = x.dataset.bdk, f = x.dataset.bdf, sec = Math.round(Math.max(0.5, Math.min(30, +x.value || 0)) * 60); BK[k][f] = sec; H.bonusDur[k] = { talk: BK[k].talk, inp: BK[k].inp }; save(); render(); bdFill(); toast(`${BK[k].no}（${BK[k].t}）の${f === "talk" ? "歓談" : "回答"}時間を ${bnMin(sec)} にしました`); }));
+        bdFill(); setInterval(bdFill, 1500);
         { const f = document.createElement("div"); f.className = "row bnins"; f.innerHTML = `<button class="btn go" id="flAuto">📋 おすすめの進行表にする（会場オープン〜エンディング）</button><select id="flSel" style="width:auto;flex:1">${Object.entries(window.__FLOW || {}).map(([k, t]) => `<option value="${k}">${t}</option>`).join("")}</select><button class="btn" id="flAdd">＋ 差し込む</button><span class="note">「次へ」だけで最初から最後まで進む進行表を作ります（問題・ボーナス・モルックの順番はそのまま）</span>`; card.append(f);
           const FI = (fl) => ({ q: (window.__FLOW || {})[fl] || fl, flow: fl, mode: "choice", nch: 4, ch: ["", "", "", ""], correct: [], limit: 10 });
           $("#flAdd").onclick = () => { const fl = $("#flSel").value; H.bank.push(FI(fl)); save(); render(); toast(`${(window.__FLOW || {})[fl]}を最後に追加しました。並べ替えで位置を決めてください`); };
