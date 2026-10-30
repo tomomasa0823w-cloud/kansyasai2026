@@ -1362,6 +1362,15 @@ body.v-player.offline #offBar{display:block}
 .se-list li b{flex:none;min-width:64px;padding:2px 10px;border-radius:10px;background:var(--c);color:#fff;text-align:center;font-family:var(--disp,sans-serif)}
 .se-list.hb li{font-size:21px}
 
+/* テーブルは色の名前で */
+.se-t{background:var(--c)!important;color:var(--tc,#fff)}
+.se-t .se-st,.se-t .se-hl,.se-t .se-nm{color:var(--tc,#fff);text-shadow:none}
+.se-id{width:auto!important;min-width:46px;height:40px!important;padding:0 10px;border-radius:999px!important;left:50%!important;top:-22px!important;transform:translateX(-50%);background:#fff!important;color:#0B1748!important;border:3px solid var(--c)!important;font:900 22px/34px var(--lux,serif)!important;white-space:nowrap;box-shadow:0 3px 8px rgba(0,0,0,.4)}
+.se-t.hb .se-hl{margin:12px 0 3px 0!important}
+.se-chip{display:inline-block;min-width:54px;padding:2px 10px;border-radius:999px;text-align:center;font:900 20px/1.3 var(--lux,serif);box-shadow:0 0 0 2px rgba(255,255,255,.6)}
+.se-chips{display:inline-flex;gap:4px;flex:none}
+.se-list li .se-chip{flex:none}
+
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
 body:has(#hostV7) main{max-width:1560px}
@@ -1805,6 +1814,9 @@ body:has(#fullMon:not(.hidden)) .topnext{display:none}
 .mini:disabled{opacity:.45}
 select{color:var(--ink);background-color:var(--stage)}
 select option{color:#0E1846;background:#fff}
+.seatp .seatbig{font-size:clamp(44px,14vw,72px)!important;display:flex;flex-direction:column;align-items:center;gap:8px}
+.seatp .seatcol{display:inline-block;padding:6px 26px;border-radius:999px;box-shadow:0 4px 0 rgba(0,0,0,.25);border:3px solid rgba(0,0,0,.15)}
+.seatp .seatbig small{font-size:.4em;color:var(--ink)}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5089,7 +5101,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/30-17";
+const APPVER = "10/30-18";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -5872,22 +5884,28 @@ function bnMin(sec) { sec = Math.round(+sec || 0); const m = Math.floor(sec / 60
 // ================= 🪑 座席案内（会場レイアウト：ラグナヴェール金沢 B1F クリスタルスイート） =================
 const SEAT_ROOM = { x0: 320, y0: 70, x1: 905, y1: 385 };
 const SEAT_T = [["A", 463, 160, 6], ["B", 543, 160, 6], ["C", 623, 160, 6], ["D", 703, 160, 6], ["E", 783, 160, 6], ["F", 477, 241, 7], ["G", 757, 241, 7], ["H", 837, 241, 7], ["I", 462, 327, 7], ["J", 541, 327, 7], ["K", 621, 327, 7], ["L", 701, 327, 7], ["M", 781, 327, 7]];
+// テーブルは色の名前で呼ぶ（A・B…だと順番に見えるため）。[名前, 色, 文字色]
+const SEAT_CN = { A: ["赤", "#E53945", "#fff"], B: ["青", "#2C7BE5", "#fff"], C: ["緑", "#15A052", "#fff"], D: ["黄", "#F2C200", "#2a2000"], E: ["紫", "#8E44AD", "#fff"], F: ["オレンジ", "#F07A1A", "#fff"], G: ["ピンク", "#E8559A", "#fff"],
+  H: ["水色", "#38B6E8", "#06283a"], I: ["茶", "#8B5E3C", "#fff"], J: ["黄緑", "#8CC63F", "#1d2a05"], K: ["紺", "#1F2F86", "#fff"], L: ["グレー", "#7A8496", "#fff"], M: ["白", "#F4F4F4", "#1a1a1a"] };
+const seatNm = (id) => (SEAT_CN[id] || [id])[0];
+const seatChip = (id) => { const c = SEAT_CN[id] || [id, "#888", "#fff"]; return `<b class="se-chip" style="background:${c[1]};color:${c[2]}">${esc(c[0])}</b>`; };
 const SEAT_COL = ["#E53945", "#2C7BE5", "#15A052", "#E9A100", "#8E44AD", "#0E9F9A", "#D9437A", "#8B5E3C", "#4B5A73", "#6E8B1E", "#C2410C", "#0369A1", "#9333EA", "#B45309"];
 function seatMonHTML(S) {
   const st = S.seat || {}, hob = st.mode === "hobby" || !!st.nm, T = st.tables || [], W = 1380, sc = W / (SEAT_ROOM.x1 - SEAT_ROOM.x0), H = Math.round((SEAT_ROOM.y1 - SEAT_ROOM.y0) * sc);
   const X = (x) => Math.round((x - SEAT_ROOM.x0) * sc), Y = (y) => Math.round((y - SEAT_ROOM.y0) * sc);
   const colOf = (lab, i) => { if (st.mode === "hobby") return SEAT_COL[i % SEAT_COL.length]; const f = String(lab || "").split(/[・、,]/)[0]; const j = STORE_ORDER.indexOf(f); return SEAT_COL[(j >= 0 ? j : i) % SEAT_COL.length]; };
   const tb = SEAT_T.map(([id, x, y], i) => { const t = T.find((z) => z.id === id) || { id, label: "" }, c = colOf(t.label, i), lab = String(t.label || "");
+    const cn = SEAT_CN[id] || [id, c, "#fff"];
     const parts = lab.split(/[・、,]/).filter(Boolean), stores = hob ? "" : parts.map((s) => `<span style="font-size:${Math.min(parts.length > 1 ? 27 : 36, Math.floor(128 / s.length))}px">${esc(s)}</span>`).join("");
     const hfs = Math.min(23, Math.floor(150 / Math.max(1, lab.length)));
-    return `<div class="se-t${hob ? " hb" : ""}${lab ? "" : " empty"}" style="left:${X(x)}px;top:${Y(y)}px;--c:${c};animation-delay:${(0.05 * i).toFixed(2)}s"><b class="se-id">${id}</b>${hob ? `<div class="se-hl" style="font-size:${hfs}px">${esc(lab || "—")}</div><div class="se-nm">${(t.names || []).map((n) => `<i>${esc(n)}</i>`).join("")}</div>` : `<div class="se-st">${stores || "—"}</div>`}</div>`; }).join("");
+    return `<div class="se-t${hob ? " hb" : ""}${lab ? "" : " empty"}" style="left:${X(x)}px;top:${Y(y)}px;--c:${cn[1]};--tc:${cn[2]};animation-delay:${(0.05 * i).toFixed(2)}s"><b class="se-id">${esc(cn[0])}</b>${hob ? `<div class="se-hl" style="font-size:${hfs}px">${esc(lab || "—")}</div><div class="se-nm">${(t.names || []).map((n) => `<i>${esc(n)}</i>`).join("")}</div>` : `<div class="se-st">${stores || "—"}</div>`}</div>`; }).join("");
   const room = `<div class="se-room" style="width:${W}px;height:${H}px">
     <div class="se-scr" style="left:${X(588)}px;top:${Y(70)}px;width:${Math.round(66 * sc)}px">スクリーン</div><div class="se-mc" style="left:${X(810)}px;top:${Y(92)}px">MC</div>
     <div class="se-mk" style="left:${X(525)}px;top:${Y(197)}px;width:${Math.round(185 * sc)}px;height:${Math.round(80 * sc)}px">モルックスペース</div>
     <div class="se-bar" style="left:${X(848)}px;top:${Y(290)}px;height:${Math.round(58 * sc)}px">Bar</div>
     <div class="se-in" style="left:${X(335)}px;top:${H - 34}px">⬆ 入口</div><div class="se-in" style="left:${X(410)}px;top:${H - 34}px">⬆ 入口</div>${tb}</div>`;
-  const list = st.mode === "hobby" ? T.filter((t) => t.label).map((t) => `<li><b style="--c:${colOf(t.label, SEAT_T.findIndex((z) => z[0] === t.id))}">${t.id}</b><span>${esc(t.label)}</span></li>`).join("")
-    : (() => { const m = {}; T.forEach((t) => String(t.label || "").split(/[・、,]/).filter(Boolean).forEach((s) => { (m[s] = m[s] || []).push(t.id); })); return Object.keys(m).sort(stCmp).map((s) => `<li><b style="--c:${colOf(s, 0)}">${m[s].join("・")}</b><span>${esc(s)}</span></li>`).join(""); })();
+  const list = st.mode === "hobby" ? T.filter((t) => t.label).map((t) => `<li>${seatChip(t.id)}<span>${esc(t.label)}</span></li>`).join("")
+    : (() => { const m = {}; T.forEach((t) => String(t.label || "").split(/[・、,]/).filter(Boolean).forEach((s) => { (m[s] = m[s] || []).push(t.id); })); return Object.keys(m).sort(stCmp).map((s) => `<li><span class="se-chips">${m[s].map(seatChip).join("")}</span><span>${esc(s)}</span></li>`).join(""); })();
   const head = st.nm ? `<div class="se-h"><small>ようこそ！</small>座席表</div><div class="se-sub">自分の席は<b>スマホ</b>にも出ています</div>` : st.mode === "hobby" ? `<div class="se-h"><small>🎁 趣味当てのあとは</small>同じ趣味のテーブルへ移動！</div><div class="se-sub">自分のテーブルは<b>スマホ</b>にも出ています</div>` : `<div class="se-h"><small>ようこそ！</small>店舗のテーブルへどうぞ</div><div class="se-sub">店舗ごとにお席を用意しています</div>`;
   return { key: "seat-" + (st.mode || "") + (st.nm ? "n" : "") + "-" + (st.at || 0), html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="se-wrap">${room}<div class="se-side">${head}<ol class="se-list${hob ? " hb" : ""}">${list}</ol></div></div></div>${telopHTML(st.mode === "hobby" ? "席替え" : "ご案内", st.mode === "hobby" ? "同じ趣味の人と話そう！テーブルを移動してください" : "店舗ごとのテーブルにお座りください")}` };
 }
@@ -8172,13 +8190,15 @@ function hostPage() {
     {
       const TBL = SEAT_T.map((t) => t[0]);
       // 86人（稲荷公園の相談員を含む）で、店舗を割らずに収まる配置
-      const DEF_STORE = { A: "額", B: "神宮寺", C: "神宮寺", D: "婦中・立山", E: "本社", F: "新神田", G: "富樫", H: "富樫", I: "稲荷公園・新神田", J: "小立野", K: "泉野", L: "トレーディング・松任", M: "駅西・訪問・富樫" };
+      const DEF_STORE = { A: "額", B: "神宮寺", C: "神宮寺", D: "婦中・立山", E: "本社", F: "新神田", G: "稲荷公園・松任", H: "富樫", I: "新神田・トレーディング", J: "小立野", K: "泉野", L: "富樫", M: "駅西・訪問・富樫" };
+      const DEF_CAP = () => { const c = Object.fromEntries(SEAT_T.map((t) => [t[0], t[3]])); c.G = 8; return c; }; // ピンク（G）は稲荷公園5人＋松任3人で8席
+      const V2_STORE = { A: "額", B: "神宮寺", C: "神宮寺", D: "婦中・立山", E: "本社", F: "新神田", G: "富樫", H: "富樫", I: "稲荷公園・新神田", J: "小立野", K: "泉野", L: "トレーディング・松任", M: "駅西・訪問・富樫" };
       const OLD_STORE = { A: "額", B: "神宮寺", C: "神宮寺", D: "富樫・トレーディング", E: "本社", F: "新神田", G: "富樫", H: "富樫", I: "駅西・訪問・新神田", J: "小立野", K: "泉野", L: "婦中・立山", M: "稲荷公園・松任" };
-      if (!H.seat) H.seat = { cap: Object.fromEntries(SEAT_T.map((t) => [t[0], t[3]])), store: { ...DEF_STORE }, hobby: null };
-      if (!H.seatV2) { if (JSON.stringify(H.seat.store) === JSON.stringify(OLD_STORE)) H.seat.store = { ...DEF_STORE }; H.seatV2 = 1; save(); }
+      if (!H.seat) H.seat = { cap: DEF_CAP(), store: { ...DEF_STORE }, hobby: null };
+      if (!H.seatV3) { const cur = JSON.stringify(H.seat.store); if (cur === JSON.stringify(OLD_STORE) || cur === JSON.stringify(V2_STORE)) { H.seat.store = { ...DEF_STORE }; H.seat.cap = DEF_CAP(); } H.seatV2 = H.seatV3 = 1; save(); }
       const card = document.createElement("div"); card.className = "ctl"; card.id = "seatCard";
       card.innerHTML = `<h2>🪑 座席案内（プロジェクター）</h2>
-        <p class="note" style="margin:0 0 6px">会場：ラグナヴェール金沢 B1F クリスタルスイート（A〜Mの13テーブル）。テーブルごとに店舗名を入れておくと、会場図に色分けして映します（複数は「・」区切り）。</p>
+        <p class="note" style="margin:0 0 6px">会場：ラグナヴェール金沢 B1F クリスタルスイート（13テーブル。テーブルは色の名前で呼びます）。テーブルごとに店舗名を入れておくと、会場図に色分けして映します（複数は「・」区切り）。</p>
         <div class="seat-grid" id="seatGrid"></div>
         <div class="note" id="seatSum" style="margin:6px 0"></div>
         <div class="row"><button class="btn go" id="seatShowS">📺 店舗の座席案内をモニターに映す</button><button class="btn" id="seatShowN">📺 座席表（名前つき）を映す</button><button class="ghost" id="seatDef">おすすめ配置に戻す</button></div>
@@ -8195,13 +8215,13 @@ function hostPage() {
         const tOf = {}; TBL.forEach((id) => String(H.seat.store[id] || "").split("・").filter(Boolean).forEach((s2) => (tOf[s2] = (tOf[s2] || []).concat(id))));
         const by = {}; people().forEach((k) => { const s2 = H.rstore[k] || "店舗なし"; (by[s2] = by[s2] || []).push(k); });
         Object.values(by).forEach((a) => a.sort((x, y) => (H.rkana[x] || H.roster[x]).localeCompare(H.rkana[y] || H.roster[y], "ja")));
-        const put = (k, ids) => { const id = ids.find((t) => left[t] > 0) || TBL.filter((t) => left[t] > 0).sort((a, b) => left[b] - left[a])[0]; if (!id) return; tabs[id].push(k); left[id]--; if (!ids.includes(id)) warn.push(`${H.roster[k]}（${H.rstore[k] || "店舗なし"}）→ ${id}`); };
+        const put = (k, ids) => { const id = ids.find((t) => left[t] > 0) || TBL.filter((t) => left[t] > 0).sort((a, b) => left[b] - left[a])[0]; if (!id) return; tabs[id].push(k); left[id]--; if (!ids.includes(id)) warn.push(`${H.roster[k]}（${H.rstore[k] || "店舗なし"}）→ ${seatNm(id)}`); };
         const stores = Object.keys(by).sort((a, b) => ((tOf[a] || []).length || 99) - ((tOf[b] || []).length || 99) || stCmp(a, b));
         stores.forEach((s2) => by[s2].forEach((k) => put(k, tOf[s2] || [])));
         return { tabs, warn };
       };
       const drawGrid = () => {
-        const h = TBL.map((id) => `<label class="seat-r"><b>${id}</b><select data-cap="${id}">${[6, 7, 8].map((n) => `<option${(H.seat.cap[id] || 7) === n ? " selected" : ""}>${n}</option>`).join("")}</select>席<input type="text" data-st="${id}" value="${esc(H.seat.store[id] || "")}" placeholder="店舗名"></label>`).join("");
+        const h = TBL.map((id) => `<label class="seat-r">${seatChip(id)}<select data-cap="${id}">${[6, 7, 8].map((n) => `<option${(H.seat.cap[id] || 7) === n ? " selected" : ""}>${n}</option>`).join("")}</select>席<input type="text" data-st="${id}" value="${esc(H.seat.store[id] || "")}" placeholder="店舗名"></label>`).join("");
         $("#seatGrid").innerHTML = h;
         $("#seatGrid").querySelectorAll("[data-cap]").forEach((x) => (x.onchange = () => { H.seat.cap[x.dataset.cap] = +x.value; save(); drawSum(); }));
         $("#seatGrid").querySelectorAll("[data-st]").forEach((x) => (x.onchange = () => { H.seat.store[x.dataset.st] = x.value.trim().replace(/[、,，\s]+/g, "・"); save(); drawSum(); if (H.S.view === "seat" && H.S.seat && H.S.seat.mode === "store") showStore(); }));
@@ -8212,11 +8232,11 @@ function hostPage() {
         const seats = {}; TBL.forEach((id) => String(H.seat.store[id] || "").split("・").filter(Boolean).forEach((s2) => (seats[s2] = (seats[s2] || []).concat(id))));
         const total = TBL.reduce((a, id) => a + (H.seat.cap[id] || 0), 0), nobody = Object.keys(cnt).filter((s2) => !seats[s2]);
         const ss = storeSeat();
-        $("#seatSum").innerHTML = `<details class="exwon"><summary>一人ずつの席（スマホに「あなたは○卓へ」と出ます）</summary>${TBL.map((id) => `<div><b>${id}</b>（${ss.tabs[id].length}/${H.seat.cap[id] || 7}）${ss.tabs[id].map((k) => esc(H.roster[k])).join("、")}</div>`).join("")}</details>` + (ss.warn.length ? `<div style="color:#E53945">⚠ 店舗のテーブルに入りきらず別の卓：${ss.warn.map(esc).join("、")}</div>` : "") + `名簿 <b>${Object.keys(H.roster).length}人</b> ／ 席 <b>${total}席</b>　` + Object.keys(cnt).sort(stCmp).map((s2) => `${esc(s2)} ${cnt[s2]}人→${seats[s2] ? seats[s2].join("・") : '<b style="color:#E53945">未設定</b>'}`).join("　") + (nobody.length ? `<br>⚠ テーブル未設定の店舗：${nobody.map(esc).join("・")}` : "");
+        $("#seatSum").innerHTML = `<details class="exwon"><summary>一人ずつの席（スマホに「○○さんは 赤テーブルへ」と出ます）</summary>${TBL.map((id) => `<div>${seatChip(id)}（${ss.tabs[id].length}/${H.seat.cap[id] || 7}）${ss.tabs[id].map((k) => esc(H.roster[k])).join("、")}</div>`).join("")}</details>` + (ss.warn.length ? `<div style="color:#E53945">⚠ 店舗のテーブルに入りきらず別の卓：${ss.warn.map(esc).join("、")}</div>` : "") + `名簿 <b>${Object.keys(H.roster).length}人</b> ／ 席 <b>${total}席</b>　` + Object.keys(cnt).sort(stCmp).map((s2) => `${esc(s2)} ${cnt[s2]}人→${seats[s2] ? seats[s2].map(seatNm).join("・") : '<b style="color:#E53945">未設定</b>'}`).join("　") + (nobody.length ? `<br>⚠ テーブル未設定の店舗：${nobody.map(esc).join("・")}` : "");
       };
       const showStore = (names) => { const ss = storeSeat(); setS({ view: "seat", seat: { mode: "store", nm: names === true, at: Date.now(), tables: TBL.map((id) => ({ id, label: H.seat.store[id] || "", names: ss.tabs[id].map((k) => H.roster[k]) })) }, ...sfx("chime") }); drawSum(); };
       $("#seatShowS").onclick = () => showStore(false); $("#seatShowN").onclick = () => showStore(true);
-      $("#seatDef").onclick = () => { if (!confirm("店舗の座席をおすすめ配置に戻しますか？")) return; H.seat.store = { ...DEF_STORE }; H.seat.cap = Object.fromEntries(SEAT_T.map((t) => [t[0], t[3]])); save(); drawGrid(); };
+      $("#seatDef").onclick = () => { if (!confirm("店舗の座席をおすすめ配置に戻しますか？")) return; H.seat.store = { ...DEF_STORE }; H.seat.cap = DEF_CAP(); save(); drawGrid(); };
       // 趣味のカテゴリ（近い趣味をまとめる）
       const CAT = [["ゴルフ", /ゴルフ|golf/], ["釣り", /釣り|つり|フィッシング/], ["アウトドア", /キャンプ|アウトドア|登山|山登り|ハイキング|トレッキング|bbq|バーベキュー|自然|海|サーフ/], ["旅行・ドライブ", /旅|旅行|温泉|ドライブ|観光|サウナ|車|バイク|ツーリング/],
         ["スポーツ", /野球|サッカー|バスケ|バレー|テニス|卓球|バドミントン|ランニング|マラソン|ジョギング|筋トレ|ジム|ヨガ|ピラティス|水泳|スノボ|スノーボード|スキー|ボウリング|ボルダリング|格闘|ボクシング|スポーツ|運動|散歩|ウォーキング|自転車|サイクリング|ダンス|モルック/],
@@ -8250,7 +8270,7 @@ function hostPage() {
           return { id, label, keys: ks }; });
         save(); drawHob(); toast("趣味でテーブルを割り振りました");
       };
-      const drawHob = () => { const hb = H.seat.hobby; $("#seatHob").innerHTML = hb ? hb.filter((t) => t.keys.length).map((t) => `<div><b>${t.id}</b>【${esc(t.label)}】 ${t.keys.map((k) => `${esc(H.roster[k] || "")}<small>（${esc((H.recv[k] || {}).h || "—")}）</small>`).join("、")}</div>`).join("") : "まだ割り振っていません"; };
+      const drawHob = () => { const hb = H.seat.hobby; $("#seatHob").innerHTML = hb ? hb.filter((t) => t.keys.length).map((t) => `<div>${seatChip(t.id)}【${esc(t.label)}】 ${t.keys.map((k) => `${esc(H.roster[k] || "")}<small>（${esc((H.recv[k] || {}).h || "—")}）</small>`).join("、")}</div>`).join("") : "まだ割り振っていません"; };
       $("#seatMakeH").onclick = () => { if (H.seat.hobby && !confirm("割り振り直しますか？（いまの席替えの結果は変わります）")) return; makeHobby(); };
       $("#seatShowH").onclick = () => { if (!H.seat.hobby) makeHobby(); if (!H.seat.hobby) return; setS({ view: "seat", seat: { mode: "hobby", at: Date.now(), tables: H.seat.hobby.map((t) => ({ id: t.id, label: t.label, names: t.keys.map((k) => H.roster[k]).filter(Boolean) })) }, ...sfx("fanfare") }); };
       drawGrid(); drawHob();
@@ -8587,9 +8607,9 @@ function playerPage(room, bi) {
     if (S.view === "seat" && S.seat) {
       const st = S.seat, T = st.tables || [];
       if (st.mode === "hobby") { const t = T.find((x) => (x.names || []).includes(P.name));
-        el.innerHTML = t ? `<div class="status seatp"><div class="h">🪑 席替えタイム！</div><p>${esc(P.name)}さんは</p><div class="seatbig">${esc(t.id)}<small>卓へ</small></div><div class="seatlab">テーマ：<b>${esc(t.label)}</b></div><p class="note">同じテーブル：${t.names.filter((n) => n !== P.name).map(esc).join("、")}</p></div>` : `<div class="status seatp"><div class="h">🪑 席替えタイム！</div><p>モニターの会場図で、自分の名前のテーブルへ移動してください。</p></div>`;
+        el.innerHTML = t ? `<div class="status seatp"><div class="h">🪑 席替えタイム！</div><p>${esc(P.name)}さんは</p><div class="seatbig"><span class="seatcol" style="background:${(SEAT_CN[t.id] || [])[1] || "#888"};color:${(SEAT_CN[t.id] || [])[2] || "#fff"}">${esc(seatNm(t.id))}</span><small>テーブルへ</small></div><div class="seatlab">テーマ：<b>${esc(t.label)}</b></div><p class="note">同じテーブル：${t.names.filter((n) => n !== P.name).map(esc).join("、")}</p></div>` : `<div class="status seatp"><div class="h">🪑 席替えタイム！</div><p>モニターの会場図で、自分の名前のテーブルへ移動してください。</p></div>`;
       } else { const t = T.find((x) => (x.names || []).includes(P.name)), my = (roster.find((x) => x.n === P.name) || {}).s || "", ts = T.filter((x) => my && String(x.label || "").split("・").includes(my)).map((x) => x.id);
-        el.innerHTML = `<div class="status seatp"><div class="h">🪑 ようこそ！</div>${t ? `<p>${esc(P.name)}さんは</p><div class="seatbig">${esc(t.id)}<small>卓へ</small></div><p>${esc(t.label || "")}のテーブルです</p><p class="note">同じテーブル：${t.names.filter((n) => n !== P.name).map(esc).join("、")}<br>モニターの会場図で場所を確認してください</p>` : ts.length ? `<p>${esc(my)}のテーブルは</p><div class="seatbig">${ts.join("・")}</div><p class="note">モニターの会場図で場所を確認してください</p>` : `<p>モニターの会場図で、店舗のテーブルへお座りください。</p>`}</div>`; }
+        el.innerHTML = `<div class="status seatp"><div class="h">🪑 ようこそ！</div>${t ? `<p>${esc(P.name)}さんは</p><div class="seatbig"><span class="seatcol" style="background:${(SEAT_CN[t.id] || [])[1] || "#888"};color:${(SEAT_CN[t.id] || [])[2] || "#fff"}">${esc(seatNm(t.id))}</span><small>テーブルへ</small></div><p>${esc(t.label || "")}のテーブルです</p><p class="note">同じテーブル：${t.names.filter((n) => n !== P.name).map(esc).join("、")}<br>モニターの会場図で場所を確認してください</p>` : ts.length ? `<p>${esc(my)}のテーブルは</p><div class="seatbig">${ts.map((x) => `<span class="seatcol" style="background:${(SEAT_CN[x] || [])[1]};color:${(SEAT_CN[x] || [])[2]}">${esc(seatNm(x))}</span>`).join(" ")}</div><p class="note">モニターの会場図で場所を確認してください</p>` : `<p>モニターの会場図で、店舗のテーブルへお座りください。</p>`}</div>`; }
       return;
     }
     if (S.view === "bonus" && S.bonus) {
