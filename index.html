@@ -1300,7 +1300,7 @@ body.v-player.offline #offBar{display:block}
 .mko-card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:170px;padding:10px;border-radius:22px;background:linear-gradient(180deg,#fff,#E8EEFF);color:#0B1748;box-shadow:0 10px 0 rgba(0,0,0,.3);animation:tvpop .5s both}
 .mko-no{position:absolute;left:-14px;top:-14px;width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 40px var(--disp,sans-serif);color:#fff;background:#C8102E;box-shadow:0 4px 0 rgba(0,0,0,.35);animation:shNo .5s cubic-bezier(.2,1.6,.4,1) both}
 .mko-no.q{background:#5b6a9a;animation:none}
-.mko-card.back{background:repeating-linear-gradient(45deg,#1F3A93 0 18px,#2A4BB0 18px 36px);border:5px solid #FFD55A;animation-duration:.9s;animation-iteration-count:infinite;animation-timing-function:ease-in-out}
+.mko-card.back{background:repeating-linear-gradient(45deg,#1F3A93 0 18px,#2A4BB0 18px 36px);border:5px solid #FFD55A;animation:none;transition:transform .24s cubic-bezier(.4,0,.2,1);will-change:transform}
 .mko-qq{font:900 96px/1 var(--disp,sans-serif);color:#FFD55A;text-shadow:0 4px 0 rgba(0,0,0,.4)}
 .mko-mv0{animation-name:mkoMv0}.mko-mv1{animation-name:mkoMv1}.mko-mv2{animation-name:mkoMv2}.mko-mv3{animation-name:mkoMv3}
 @keyframes mkoMv0{0%,100%{transform:none}25%{transform:translate(140px,60px) rotate(8deg)}50%{transform:translate(-60px,120px) rotate(-6deg)}75%{transform:translate(-120px,-40px) rotate(5deg)}}
@@ -1733,6 +1733,8 @@ input:not([type]),input[type=number],input[type=search]{background:var(--stage);
 .tv-bars:is(.n6,.n7,.n8,.n9,.n10) .lab .T,.tv-bars:is(.n6,.n7,.n8,.n9,.n10) .lab span:not(.L){font-size:24px;line-height:1.15}
 .tv-bars:is(.n6,.n7,.n8,.n9,.n10) .num{font-size:52px}
 body.v-player .choices:is(.n6,.n7,.n8,.n9,.n10) .ch,#vPlay .choices:is(.n6,.n7,.n8,.n9,.n10) .ch{min-height:clamp(64px,11vh,120px)}
+.nb{white-space:nowrap}
+body{word-break:auto-phrase}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -4979,7 +4981,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/30-3";
+const APPVER = "10/30-6";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -5716,11 +5718,43 @@ function mkOrdHTML(S, G, P, isM) {
   const head = o === "hide" ? `<span>出場選手</span><small>投球順は　シャッフルで決定！</small>` : o === "shuf" ? `<span class="mk-shh">🔀 投球順シャッフル中…</span>` : `<span>この順番で投げます！</span>`;
   const cards = P.map((p, i) => {
     if (o === "hide") return `<div class="mko-card" style="animation-delay:${(i * 0.08).toFixed(2)}s"><span class="sh-st">${esc(p.s || "")}</span><span class="sh-nm">${esc(p.n)}</span><span class="mko-no q">？</span></div>`;
-    if (o === "shuf") return `<div class="mko-card back mko-mv${i % 4}" style="animation-delay:${(-(i * 0.17)).toFixed(2)}s"><span class="mko-qq">？</span></div>`;
+    if (o === "shuf") return `<div class="mko-card back js-mks"><span class="mko-qq">？</span></div>`;
     return `<div class="mko-card rev"><div class="mko-f qq" style="animation-delay:${dl(0.4 + STEP * i)}">？</div><div class="mko-f nw" style="animation-delay:${dl(0.4 + STEP * i)}"><span class="sh-st">${esc(p.s || "")}</span><span class="sh-nm">${esc(p.n)}</span></div><span class="mko-no" style="animation-delay:${dl(0.55 + STEP * i)}">${i + 1}</span></div>`;
   }).join("");
   return { key: `mko-${o}-${at}`, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="mko-wrap ${o}"><div class="mko-h">${head}</div><div class="sh-grid n${Math.min(n, 30)}" style="--cols:${cols}">${cards}</div></div></div>${telopHTML(isM ? "モルック" : "ゲーム", `${esc(ttl)}　${o === "hide" ? "出場選手の発表" : o === "shuf" ? "投球順シャッフル！" : "投球順はこちら！"}`)}` };
 }
+
+// シャッフル中：カードの位置をランダムに入れ替え続ける（本当に混ぜている感じに）
+setInterval(() => { document.querySelectorAll(".mko-wrap.shuf").forEach((w) => {
+  const cs = [...w.querySelectorAll(".js-mks")]; if (cs.length < 2) return;
+  if (!w._slots) { w._slots = cs.map((c) => [c.offsetLeft, c.offsetTop]); w._pos = cs.map((_, i) => i); w._n = 0; }
+  const n = cs.length, pos = w._pos; w._n++;
+  if (w._n % 7 === 0) { const cx = w._slots.reduce((a, s) => a + s[0], 0) / n, cy = w._slots.reduce((a, s) => a + s[1], 0) / n; // ときどき真ん中に集めてまた配る
+    cs.forEach((c, i) => { c.style.transform = `translate(${cx - w._slots[i][0] + (i % 3 - 1) * 14}px,${cy - w._slots[i][1] + (i % 2) * 10}px) rotate(${(i % 5 - 2) * 4}deg) scale(.92)`; c.style.zIndex = String(i); }); return; }
+  for (let k = n - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [pos[k], pos[j]] = [pos[j], pos[k]]; }
+  cs.forEach((c, i) => { const t = w._slots[pos[i]], f = w._slots[i]; c.style.transform = `translate(${t[0] - f[0]}px,${t[1] - f[1]}px) rotate(${Math.round(Math.random() * 16 - 8)}deg) scale(${(1 + Math.random() * 0.12).toFixed(2)})`; c.style.zIndex = String(Math.floor(Math.random() * 50)); });
+}); }, 260);
+
+// ================= 名前・店舗名の途中で改行しない（全画面共通） =================
+// 「苗字 名前」と店舗名を改行しないかたまりにする（「・」や名前と名前の間では改行できる）
+(() => {
+  const C = "\\u3041-\\u3096\\u30a1-\\u30fa\\u30fc\\u3400-\\u9fff\\uf900-\\ufaff々〆ヵヶ";
+  const ST = STORE_ORDER.concat(["AIM"]).sort((a, b) => b.length - a.length).map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  const RX = new RegExp(`[${C}]{1,5} [${C}]{1,6}|(?:${ST})(?:店)?`, "g");
+  const SKIP = /^(SCRIPT|STYLE|TEXTAREA|OPTION|SELECT|INPUT|TITLE|NOSCRIPT)$/;
+  const fixText = (t) => {
+    const p = t.parentNode; if (!p || p.nodeType !== 1 || SKIP.test(p.nodeName) || p.namespaceURI !== "http://www.w3.org/1999/xhtml" || (p.classList && p.classList.contains("nb")) || p.isContentEditable) return;
+    const v = t.nodeValue; if (!v || v.length < 2) return; RX.lastIndex = 0; if (!RX.test(v)) return; RX.lastIndex = 0;
+    const f = document.createDocumentFragment(); let last = 0, m;
+    while ((m = RX.exec(v))) { if (m.index > last) f.append(v.slice(last, m.index)); const s = document.createElement("nobr"); s.className = "nb"; s.textContent = m[0]; f.append(s); last = m.index + m[0].length; }
+    if (last < v.length) f.append(v.slice(last));
+    p.replaceChild(f, t);
+  };
+  const fix = (n) => { if (!n) return; if (n.nodeType === 3) return fixText(n); if (n.nodeType !== 1 || SKIP.test(n.nodeName) || (n.classList && n.classList.contains("nb"))) return;
+    const w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT), ts = []; let t; while ((t = w.nextNode())) ts.push(t); ts.forEach(fixText); };
+  const start = () => { fix(document.body); new MutationObserver((ms) => ms.forEach((m) => { if (m.type === "characterData") fixText(m.target); else m.addedNodes.forEach(fix); })).observe(document.body, { childList: true, subtree: true, characterData: true }); };
+  if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
+})();
 // ================= 司会・サブ司会の操作パネル（共通） =================
 let hostMode = "choice", pickedCorrect = [], preCorrect = [], curS = { ...DEF };
 const STAGE_LABEL = { review: "写真のふりかえり", cutshow: "予選落ちの発表", read: "問題を表示中（選択肢はまだ）", open: "回答受付中", closed: "締め切り", dist: "回答分布", correct: "正解発表", fast: "最速正解者", list: "正解者一覧", champ: "ピリオドチャンピオン" };
@@ -7717,8 +7751,8 @@ function hostPage() {
       if (g.ordSt === "shuf") { mkReveal(); return true; }
       if (g.ordSt === "rev") { mkStart(); return true; }
       const idx = mkWinIdx(q); if (!idx) return false; // 試合中は「問題の表示に戻る」
-      H.secret.correct = idx; q.done = true; save(); setS({ view: "q" }); act("advance"); toast(`正解：${idx.map((i) => H.S.choices[i]).join("・")}`); return true; }
-    if (S.view === "q" && st0 === "dist") { mkGame(q); return true; }
+      H.secret.correct = idx; q.done = true; save(); setS({ view: "q" }); setTab("live"); act("advance"); toast(`正解：${idx.map((i) => H.S.choices[i]).join("・")}`); return true; }
+    if (S.view === "q" && st0 === "dist") { mkGame(q); setTab("game"); return true; } // 司会画面も④ゲームのタブへ
     return false;
   };
   window.__molkLabel = (S) => {
