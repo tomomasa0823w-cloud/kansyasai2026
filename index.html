@@ -4852,6 +4852,39 @@ const SFX = (() => {
     unlock() { if (!ensure()) return false; unlocked = true; const t = now(); osc("sine", 880, t, 0.08, 0.05, dry); decodeAll().then(() => { if (window.onSfxReady) window.onSfxReady(); }); return true; },
     get unlocked() { return unlocked; },
     set(v, o) { vol = Math.max(0, Math.min(1, v)); on = !!o; if (out) out.gain.value = vol; LINKS.setVolume(vol, on); },
+    bgSynth(level) { // 明るい歓談用の曲をその場で作り続ける（120BPM・8小節のくり返し＋毎回少し変わるメロディ）
+      if (!unlocked || !ensure()) return;
+      if (!on || (window.__quiet && window.__quiet())) level = 0;
+      const B = (window.__bgs = window.__bgs || { on: false });
+      if (level <= 0) { if (B.on) { B.on = false; clearInterval(B.timer); const g = B.g; try { g.gain.cancelScheduledValues(ctx.currentTime); g.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.5); } catch (e) {} setTimeout(() => { try { g.disconnect(); } catch (e) {} }, 3000); } return; }
+      if (!B.on) {
+        B.on = true; B.g = ctx.createGain(); B.g.gain.value = 0.0001; B.g.connect(dry); B.t = ctx.currentTime + 0.15; B.step = 0; B.mel = [];
+        const SX = 60 / 120 / 4, mf = (m) => 440 * Math.pow(2, (m - 69) / 12);
+        const PROG = [["C", 36, [60, 64, 67]], ["Am", 33, [57, 60, 64]], ["F", 41, [57, 60, 65]], ["G", 43, [55, 59, 62]], ["C", 36, [60, 64, 67]], ["Em", 40, [55, 59, 64]], ["F", 41, [57, 60, 65]], ["G", 43, [55, 59, 62]],
+          ["F", 41, [57, 60, 65]], ["G", 43, [55, 59, 62]], ["Em", 40, [55, 59, 64]], ["Am", 33, [57, 60, 64]], ["Dm", 38, [57, 62, 65]], ["G", 43, [55, 59, 62]], ["C", 36, [60, 64, 67]], ["G", 43, [55, 59, 62]]];
+        const PENT = [72, 74, 76, 79, 81, 84];
+        const sched = () => {
+          if (!B.on) return;
+          while (B.t < ctx.currentTime + 1.6) {
+            const t = B.t, s = B.step % 16, bar = Math.floor(B.step / 16) % PROG.length, [, root, ch] = PROG[bar], o = B.g;
+            if (B.step % 128 === 0) { B.mel = []; for (let i = 0; i < 128; i++) B.mel.push(i % 2 === 0 && Math.random() < (Math.floor(i / 16) % 4 === 3 ? 0.18 : 0.42) ? PENT[Math.floor(Math.random() * PENT.length)] : 0); }
+            // ドラム：キック（1・3拍）、クラップ（2・4拍）、シェイカー
+            if (s === 0 || s === 8 || (s === 10 && bar % 2 === 1)) { const k = ctx.createOscillator(), kg = ctx.createGain(); k.frequency.setValueAtTime(130, t); k.frequency.exponentialRampToValueAtTime(42, t + 0.18); kg.gain.setValueAtTime(0.5, t); kg.gain.exponentialRampToValueAtTime(0.001, t + 0.3); k.connect(kg).connect(o); k.start(t); k.stop(t + 0.32); }
+            if (s === 4 || s === 12) noise(t, 0.12, 0.16, o, "bandpass", 1500, 0.9, 0.002);
+            noise(t, 0.035, s % 4 === 2 ? 0.06 : 0.03, o, "highpass", 8000, 0.7, 0.001);
+            // ベース
+            if ([0, 3, 6, 8, 11, 14].includes(s)) osc("triangle", mf(root + (s === 6 || s === 14 ? 7 : s === 11 ? 12 : 0)), t, 0.2, 0.22, o, { a: 0.005 });
+            // コード（裏拍のエレピ風）
+            if ([2, 6, 10, 14].includes(s)) ch.forEach((m) => { osc("sine", mf(m), t, 0.22, 0.05, o, { a: 0.004 }); osc("triangle", mf(m + 12), t, 0.12, 0.015, o, { a: 0.004 }); });
+            // メロディ（マリンバ風）
+            const mm = B.mel[B.step % 128]; if (mm) { osc("sine", mf(mm), t, 0.35, 0.09, o, { a: 0.003 }); osc("sine", mf(mm) * 4, t, 0.06, 0.02, o, { a: 0.002 }); }
+            B.step++; B.t += SX;
+          }
+        };
+        B.timer = setInterval(sched, 200); sched();
+      }
+      try { B.g.gain.cancelScheduledValues(ctx.currentTime); B.g.gain.setTargetAtTime(0.55 * level, ctx.currentTime, 0.6); } catch (e) {}
+    },
     play(name, opt) {
       if (window.__quiet && window.__quiet()) return; // プロジェクター画面が開いている司会PCでは鳴らさない（二重に鳴るのを防ぐ）
       if (!unlocked || !on || !ensure()) return;
@@ -4914,7 +4947,7 @@ const SFX = (() => {
 })();
 // 差し替えできる場面
 const SFX_SLOTS = [
-  ["title", "オープニング（オープニング画面を出したとき）"], ["roll", "総合順位の発表（下からスクロール）"], ["cut", "予選落ちの発表"], ["think", "回答中のBGM（スタート〜締め切り）"], ["think15", "回答中のBGM：15秒の問題用（空欄なら上の曲）"], ["think20", "回答中のBGM：20秒の問題用（空欄なら上の曲）"], ["bgm", "待ち時間のBGM（参加受付・ルール説明・解答紹介でくり返し。受付中は普通、それ以外は小さめ）"], ["bonusBgm", "ボーナスタイム歓談中のBGM（くり返し）"], ["bonusIntro", "ボーナスタイムの予告映像（モニターに全面で流す・YouTube）"],
+  ["title", "オープニング（オープニング画面を出したとき）"], ["roll", "総合順位の発表（下からスクロール）"], ["cut", "予選落ちの発表"], ["think", "回答中のBGM（スタート〜締め切り）"], ["think15", "回答中のBGM：15秒の問題用（空欄なら上の曲）"], ["think20", "回答中のBGM：20秒の問題用（空欄なら上の曲）"], ["bgm", "待ち時間のBGM（参加受付・ルール説明・解答紹介でくり返し。受付中は普通、それ以外は小さめ）"], ["bonusBgm", "ボーナスタイム歓談中のBGM（くり返し・空欄なら内蔵の曲が何分でも流れます）"], ["bonusIntro", "ボーナスタイムの予告映像（モニターに全面で流す・YouTube）"],
   ["period", "ピリオド開始"], ["open", "出題"], ["countdown", "残り5秒のカウント（5秒の音声を1つ）"], ["close", "締め切り"], ["bell", "最終問題の鐘"],
   ["drum", "回答分布（ドラムロール）"], ["correct", "正解発表"], ["wrong", "不正解・該当者なし"], ["seat", "着席"],
   ["drumReveal", "最速正解者の発表"], ["chime", "正解者一覧"], ["tame", "表彰「○位は…」"], ["fanfare", "1位・チャンピオン"],
@@ -4973,7 +5006,8 @@ function sfxWatcher() {
   return (S) => {
     if (S.snd) SFX.set(S.snd.vol, S.snd.on);
     const lk = JSON.stringify(S.links || {}); if (lk !== lastLinks) { lastLinks = lk; LINKS.set(S.links || {}); }
-    try { if (SFX.unlocked) LINKS.bgm(window.__quiet && window.__quiet() ? 0 : bgmLevel(S), S.view === "bonus" && S.bonus && S.bonus.ph === "talk" ? "bonusBgm" : "bgm"); } catch (e) {}
+    try { if (SFX.unlocked) { const bt = S.view === "bonus" && S.bonus && S.bonus.ph === "talk", syn = bt && !(S.links && S.links.bonusBgm && S.links.bonusBgm.url);
+      SFX.bgSynth(syn ? bgmLevel(S) : 0); LINKS.bgm(syn || (window.__quiet && window.__quiet()) ? 0 : bgmLevel(S), bt ? "bonusBgm" : "bgm"); } } catch (e) {}
     const x = S.sfx; if (!x) { if (last === null) last = 0; return; } // 効果音がまだ1回も無い状態で開いた → 次の音から鳴らす
     if (last === null) { last = x.seq; return; }   // 開いた直後は過去の音を鳴らさない
     if (x.seq !== last && x.name === "bonusOwn") { last = x.seq; bonusOwnSfx(); return; }
@@ -4981,7 +5015,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/30-6";
+const APPVER = "10/30-7";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -5903,6 +5937,7 @@ function hostPage() {
   if (!H.sndV2) { H.snd = H.snd || { vol: 0.8, on: true }; H.snd.adj = -1; H.sndV2 = true; }
   if (!H.linksV14) { H.links = H.links || {}; if (!H.links.bonusBgm || !H.links.bonusBgm.url) H.links.bonusBgm = { url: "https://youtu.be/eslmQH0xPt8" }; H.linksV14 = true; }
   if (!H.linksV15) { H.links = H.links || {}; if (!H.links.bonusIntro || !H.links.bonusIntro.url) H.links.bonusIntro = { url: "https://youtu.be/sWtavkaZJgk" }; H.linksV15 = true; }
+  if (!H.linksV16) { H.links = H.links || {}; if (H.links.bonusBgm && /eslmQH0xPt8/.test(H.links.bonusBgm.url || "")) H.links.bonusBgm = { url: "" }; H.linksV16 = true; } // 歓談BGMは内蔵の曲に
   if (!H.linksV13) { H.links = H.links || {}; [["think", "tYNXv76ZtUY", 20], ["think20", "tYNXv76ZtUY", 20], ["think15", "d1LFCMMtGb8", 15]].forEach(([k, id, d]) => { const L = H.links[k]; if (L && L.url && L.url.includes(id) && !(+L.dur > 0)) { L.dur = d; L.start = +L.start || 0; } }); H.linksV13 = true; }
   if (!H.linksV12) { H.links = H.links || {}; if (!H.links.bgm || !H.links.bgm.url) H.links.bgm = { url: "https://youtu.be/tJOL_ii0LbY" }; H.linksV12 = true; }
   let saveT = null;
