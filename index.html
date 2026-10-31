@@ -5127,7 +5127,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/31-5";
+const APPVER = "10/31-6";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -7588,11 +7588,21 @@ function hostPage() {
         const iv = crypto.getRandomValues(new Uint8Array(12));
         const enc = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await xkey(code), await gz(new TextEncoder().encode(JSON.stringify(pkg)), true)));
         const str = b64e(enc), CH = 48000, n = Math.ceil(str.length / CH), r = xroom(code);
-        for (let i = 0; i < n; i++) cli.sendTo(r, "c/" + i, { i, d: str.slice(i * CH, (i + 1) * CH) }, { qos: 1, retain: true });
-        cli.sendTo(r, "m", { v: 1, at: Date.now(), n, iv: b64e(iv) }, { qos: 1, retain: true });
+        const man = { v: 1, at: Date.now(), n, iv: b64e(iv) };
+        const pushAll = (c, retain) => { for (let i = 0; i < n; i++) c.sendTo(r, "c/" + i, { i, d: str.slice(i * CH, (i + 1) * CH) }, { qos: 1, retain }); c.sendTo(r, "m", man, { qos: 1, retain }); };
+        pushAll(cli, true);
+        // 受け取る側から「ください」が来たら、つながっている中継すべてにもう一度送る（中継が1つだけでも届くように）
+        try { window.__xResp && window.__xResp.forEach((c) => { try { c.end(true); } catch (e) {} }); } catch (e) {}
+        let lastPush = 0;
+        const resp = BROKERS.map((_, bi) => rawConnect(bi, r, ["req", "ok"], (t, d, from) => {
+          if (t === "ok") { const st = $("#xCodeSt"); if (st) st.textContent = "✓ もう1台の司会PCが受け取りました"; return; }
+          if (t !== "req" || Date.now() - lastPush < 3000) return; lastPush = Date.now();
+          resp.forEach((c) => { if (c.connected) pushAll(c, false); });
+        }, () => {}));
+        window.__xResp = resp;
         const box = $("#xCode"); box.classList.remove("hidden");
-        box.innerHTML = `<div>引き継ぎコード</div><b>${code}</b><div class="note">もう1台の司会PCで「📥 コードで受け取る」を押して、この6桁を入れてください（30分有効）<br>送った内容：${pkgSum(pkg)}</div>`;
-        setTimeout(() => { for (let i = 0; i < n; i++) cli.sendTo(r, "c/" + i, { x: 1 }, { qos: 1, retain: true }); cli.sendTo(r, "m", { x: 1 }, { qos: 1, retain: true }); if (box.textContent.includes(code)) box.classList.add("hidden"); }, 30 * 60 * 1000);
+        box.innerHTML = `<div>引き継ぎコード</div><b>${code}</b><div class="note">もう1台の司会PCで「📥 コードで受け取る」を押して、この6桁を入れてください（30分有効）<br>送った内容：${pkgSum(pkg)}</div><div class="note" id="xCodeSt" style="font-weight:700">受け取り待ち…（この画面は開いたままにしてください）</div>`;
+        setTimeout(() => { for (let i = 0; i < n; i++) cli.sendTo(r, "c/" + i, { x: 1 }, { qos: 1, retain: true }); cli.sendTo(r, "m", { x: 1 }, { qos: 1, retain: true }); if (box.textContent.includes(code)) box.classList.add("hidden"); resp.forEach((c) => { try { c.end(true); } catch (e) {} }); }, 30 * 60 * 1000);
       } catch (e) { toast("送れませんでした（" + (e && e.message ? e.message : e) + "）"); }
     };
     $("#xRecv").onclick = () => {
@@ -7604,7 +7614,8 @@ function hostPage() {
       let cs = [];
       const endAll = () => cs.forEach((c) => { try { c.end(true); } catch (e) {} });
       const fin = async (man, parts) => {
-        done = true; endAll();
+        done = true; clearInterval(reqT);
+        cs.forEach((c) => { try { c.send("ok", { at: Date.now() }); } catch (e) {} }); setTimeout(endAll, 1500);
         try {
           if (Date.now() - man.at > 2 * 3600 * 1000) return toast("このコードは古くなっています。送る側でもう一度「送る」を押してください");
           const str = Array.from({ length: man.n }, (_, i) => parts[i]).join("");
@@ -7614,15 +7625,17 @@ function hostPage() {
       };
       const onMsg = (t, d, bi) => {
         if (done) return;
-        const g = (got[bi] = got[bi] || { man: null, parts: {} });
-        if (t === "m") { if (d && d.v === 1 && d.n > 0) g.man = d; }
+        const g = (got.all = got.all || { man: null, parts: {} }); // どの中継から届いた分も合わせて使う
+        if (t === "m") { if (d && d.v === 1 && d.n > 0) { if (g.man && g.man.at !== d.at) g.parts = {}; g.man = d; } }
         else if (t.startsWith("c/") && d && typeof d.d === "string" && Number.isInteger(d.i)) g.parts[d.i] = d.d;
         if (g.man && Array.from({ length: g.man.n }, (_, i) => g.parts[i]).every((x) => typeof x === "string")) fin(g.man, g.parts);
         else if (g.man) { const have = Object.keys(g.parts).length; if (have && have % 5 === 0) toast(`受け取っています…（${have}/${g.man.n}）`); }
       };
       cs = BROKERS.map((_, i) => rawConnect(i, xroom(code), ["m", "c/+"], onMsg, () => {}));
+      // 保存データが中継に残っていなくても届くよう、送る側に「ください」を数秒おきに送る
+      const reqT = setInterval(() => { if (done) return clearInterval(reqT); cs.forEach((c) => { try { c.send("req", { at: Date.now() }); } catch (e) {} }); }, 2500);
       const c2 = { end: endAll };
-      setTimeout(() => { if (!done) { done = true; try { c2.end(); } catch (e) {} toast("このコードのデータを受け取れませんでした。写真が多いとコードでは届かないことがあります。その場合は「ファイルで引き継ぐ」を使ってください"); } }, 45000);
+      setTimeout(() => { if (!done) { done = true; clearInterval(reqT); try { c2.end(); } catch (e) {} toast("このコードのデータを受け取れませんでした。写真が多いとコードでは届かないことがあります。その場合は「ファイルで引き継ぐ」を使ってください"); } }, 45000);
     };
     // ファイル形式：「KQX1」＋ヘッダの長さ(4バイト)＋ヘッダ(JSON)＋動画データを順につなげたもの
     $("#xFileOut").onclick = async () => {
