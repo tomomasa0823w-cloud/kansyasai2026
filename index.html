@@ -1371,6 +1371,20 @@ body.v-player.offline #offBar{display:block}
 .se-chips{display:inline-flex;gap:4px;flex:none}
 .se-list li .se-chip{flex:none}
 
+/* ===== 会場アンケート ===== */
+.po-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
+.po-k{font:900 46px/1 var(--lux,serif);color:#FFD55A}
+.po-q{font:900 92px/1.1 var(--lux,serif);color:#fff;text-shadow:0 6px 0 rgba(0,0,0,.45)}
+.po-s{font:800 34px var(--body,sans-serif);color:#E5E9FF}.po-s b{color:#FFD55A}
+.po-ch{display:grid;grid-template-columns:repeat(var(--n,4),1fr);gap:22px;width:100%;margin-top:10px}
+.po-ch.n2{--n:2}.po-ch.n3{--n:3}.po-ch.n4{--n:4}.po-ch.n5{--n:5}.po-ch.n6{--n:3}.po-ch.n7,.po-ch.n8{--n:4}.po-ch.n9,.po-ch.n10{--n:5}
+.po-c{border-radius:26px;padding:24px 18px;display:flex;align-items:center;gap:16px;color:#fff;box-shadow:0 8px 0 rgba(0,0,0,.3);animation:tvpop .5s both}
+.po-c .L{flex:none;width:70px;height:70px;border-radius:50%;background:#fff;color:#0B1748;display:flex;align-items:center;justify-content:center;font:900 44px var(--disp,sans-serif)}
+.po-c .T{font:900 46px/1.15 var(--lux,serif);text-shadow:0 3px 0 rgba(0,0,0,.3)}
+.po-c.c0{background:var(--a)}.po-c.c1{background:var(--b)}.po-c.c2{background:var(--c)}.po-c.c3{background:var(--d)}.po-c.c4{background:var(--e)}
+.po-foot{display:flex;align-items:center;gap:40px;margin-top:14px}
+.po-n{font:900 54px var(--lux,serif);color:#fff}.po-n b{font-family:var(--disp,sans-serif);font-size:90px;color:#FFD55A}
+
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
 body:has(#hostV7) main{max-width:1560px}
@@ -1826,6 +1840,9 @@ select option{color:#0E1846;background:#fff}
 #bankList tr.bnrow .mini:disabled,#bankList tr.bnrow button:disabled{opacity:.4!important}
 #bankList tr.bnrow input{background:#fff!important;color:#3a2500!important;border:1.5px solid #C9A03A!important}
 #bankList tr.bnrow .bto{color:#3a2500}
+
+.pollp .pollq{font-size:1.6rem;font-weight:900;margin:6px 0}
+.pollmk{width:100%;margin:6px 0}.pollmk summary{cursor:pointer}.pollmk .row{margin-top:6px;align-items:center;gap:6px;flex-wrap:wrap}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5110,7 +5127,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/30-23";
+const APPVER = "10/31-4";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -5250,6 +5267,7 @@ function monHTML(S, list, joinURL) {
   if (view === "lot") return lotMonHTML(S);
   if (view === "mkop") return mkOpenHTML(S);
   if (view === "seat") return seatMonHTML(S);
+  if (view === "poll") return pollMonHTML(S);
   if (view === "bonus") return bonusMonHTML(S);
   if (view === "roll") {
     const R = S.roll || [], hide = S.rollHide || 0, N = R.length;
@@ -5917,6 +5935,15 @@ function seatMonHTML(S) {
   const head = st.nm ? `<div class="se-h"><small>ようこそ！</small>座席表</div><div class="se-sub">自分の席は<b>スマホ</b>にも出ています</div>` : st.mode === "hobby" ? `<div class="se-h"><small>🎁 趣味当てのあとは</small>同じ趣味のテーブルへ移動！</div><div class="se-sub">自分のテーブルは<b>スマホ</b>にも出ています</div>` : `<div class="se-h"><small>ようこそ！</small>店舗のテーブルへどうぞ</div><div class="se-sub">店舗ごとにお席を用意しています</div>`;
   return { key: "seat-" + (st.mode || "") + (st.nm ? "n" : "") + "-" + (st.at || 0), html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="se-wrap">${room}<div class="se-side">${head}<ol class="se-list${hob ? " hb" : ""}">${list}</ol></div></div></div>${telopHTML(st.mode === "hobby" ? "席替え" : "ご案内", st.mode === "hobby" ? "同じ趣味の人と話そう！テーブルを移動してください" : "店舗ごとのテーブルにお座りください")}` };
 }
+
+// ================= 📊 会場アンケート（モニター） =================
+function pollMonHTML(S) {
+  const po = S.poll || {}, ch = po.ch || [], end = (po.at || 0) + (po.dur || 60) * 1000;
+  return { key: "poll-" + (po.at || 0) + "-" + (po.n || 0), html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="po-wrap">
+    <div class="po-k">📊 会場アンケート</div><div class="po-q">${esc(po.q || "あなたはどれ？")}</div><div class="po-s">スマホで、<b>自分にあてはまるもの</b>を1つ選んでください</div>
+    <div class="po-ch n${ch.length}">${ch.map((c, i) => `<div class="po-c c${i}"><span class="L">${L[i]}</span><span class="T">${esc(c)}</span></div>`).join("")}</div>
+    <div class="po-foot"><div class="po-n">回答 <b>${po.n || 0}</b> 人</div><div class="bn-time js-bt" data-bend="${end}"></div></div></div></div>${telopHTML("アンケート", "いちばん多いのはどれ？　結果は回答のあとで発表！")}` };
+}
 // ================= 司会・サブ司会の操作パネル（共通） =================
 let hostMode = "choice", pickedCorrect = [], preCorrect = [], curS = { ...DEF };
 const STAGE_LABEL = { review: "写真のふりかえり", cutshow: "予選落ちの発表", read: "問題を表示中（選択肢はまだ）", open: "回答受付中", closed: "締め切り", dist: "回答分布", correct: "正解発表", fast: "最速正解者", list: "正解者一覧", champ: "ピリオドチャンピオン" };
@@ -5925,6 +5952,7 @@ function nextLabel(S) {
   if (S.view === "rules") { const n = S.ruleN || 1, i = (S.ruleIdx || 0) + 1; return i < n ? `次の説明へ ▶（${i}/${n}）` : `ルール説明を終わる ▶（${i}/${n}）`; }
   if (S.view === "bonus") { const b = S.bonus || {}, nb = window.__nbInfo; return b.ph === "intro" ? "① 歓談スタート ▶" : b.ph === "talk" ? "② 記入スタート ▶" : b.ph === "input" ? "③ 締め切って結果発表 ▶" : b.ph === "done" ? "④ よく当てられたスタッフ TOP3 ▶" : b.ph === "staff" && b.side !== "low" ? "⑤ あまり当てられなかった3名 ▶" : b.ph === "staff" && b.kind === "hobby" ? "🪑 趣味で席替え（スマホにも行き先）▶" : nb && nb.has ? (nb.bonus ? "🎁 次のボーナスゲームへ ▶" : `クイズに戻る（次は ${nb.i}/${nb.n}問目） ▶`) : "クイズに戻る ▶"; }
   { const ml = window.__molkLabel && window.__molkLabel(S); if (ml) return ml; }
+  { const pl = window.__pollLabel && window.__pollLabel(S); if (pl) return pl; }
   { const fl = window.__flowLabel && window.__flowLabel(S); if (fl) return fl; }
   if (S.view && S.view !== "q") return "問題の表示に戻る ▶";
   { const nb = window.__nbInfo, st0 = S.stage || S.phase; if (nb && nb.has && nb.bonus && (S.phase === "idle" || !S.rid || st0 === "champ" || (st0 === "list" && !(S.last && S.rule === "kanshasai" && S.period && S.period.active)))) return `🎁 ボーナスゲーム（${nb.bonus === "name" ? "名前当て" : "趣味当て"}）へ ▶`; }
@@ -6150,7 +6178,7 @@ function hostPage() {
   const pubRoster = () => { if (!cli) return; const list = Object.keys(H.roster).map((k) => ({ n: H.roster[k], s: H.rstore[k] || "", k: (H.rkana || {})[k] || "", id: k })); cli.send("roster", { list, free: !!H.opt.freeJoin }, { qos: 1, retain: true }); };
   let lobbyCur, annT = null;
   const takeOver = () => { announce(); lobbyCur = H.room; render(); };
-  const cli = connectAll(H.room, ["join", "ans", "cmd", "ping", "leave", "cam", "bonus", "@" + LOBBY + "/cur"], onMsg, () => { pubState(true); pubRoster(); pubImgs(H.S.img);
+  const cli = connectAll(H.room, ["join", "ans", "cmd", "ping", "leave", "cam", "bonus", "poll", "@" + LOBBY + "/cur"], onMsg, () => { pubState(true); pubRoster(); pubImgs(H.S.img);
     clearTimeout(annT); annT = setTimeout(() => { if (lobbyCur === undefined || !lobbyCur || lobbyCur === H.room) { announce(); lobbyCur = H.room; } render(); }, 1800); });
   if (!cli) return;
   const watchSfx = sfxWatcher(), watchCount = countWatcher();
@@ -6168,6 +6196,7 @@ function hostPage() {
     if (t === "join") return onJoin(d);
     if (t === "ans") return onAns(d);
     if (t === "bonus") return window.__onBonus && window.__onBonus(d);
+    if (t === "poll") return window.__onPoll && window.__onPoll(d);
     if (t === "cmd") { if (String(d.pin) === H.pin) { if (d.cmd === "recv") return window.__onRecv && window.__onRecv(d.a || {}); act(d.cmd, d.a || {}, true); } }
   }
   function validTok(tok) { return typeof tok === "string" && /^[A-Za-z0-9]{16,40}$/.test(tok); }
@@ -6350,6 +6379,7 @@ function hostPage() {
     else if (cmd === "advance") {
       if (S.view === "bonus" && window.__bonusNext) return window.__bonusNext();
       if (window.__molkAdv && window.__molkAdv()) return;
+      if (window.__pollAdv && window.__pollAdv()) return;
       if (window.__flowAdv && window.__flowAdv()) return;
       if (S.view === "q" && S.rid && H.redo && H.redo.length && H.redo[H.redo.length - 1].rid === S.rid) {
         H.hist = (H.hist || []).filter((x) => x.rid === S.rid); H.hist.push({ ...H.S });
@@ -6534,6 +6564,7 @@ function hostPage() {
   function loadBank(i) {
     const b = H.bank[i]; if (!b) return toast("登録された問題はもうありません");
     if (b.bonus) { H.bankIdx = i + 1; save(); if (window.__startBonus) window.__startBonus(b.bonus); render(); return; }
+    if (b.poll) { if (window.__startPoll && window.__startPoll(b)) { H.bankIdx = i + 1; save(); } render(); return; }
     if (b.flow) { if (window.__startFlow && window.__startFlow(b.flow)) { H.bankIdx = i + 1; save(); } render(); return; }
     if (b.molk) { if (window.__molkSplash && window.__molkSplash(b.molk, b.pts)) { H.bankIdx = i + 1; save(); } render(); return; }
     H.bankIdx = i + 1; save(); window.__pendImg = b.img || null; window.__pendVid = b.vid || null; window.__pendRevive = !!b.revive; window.__pendAns = b.ans || ""; window.__pendCans = Array.isArray(b.cans) ? b.cans.slice() : null;
@@ -6547,7 +6578,7 @@ function hostPage() {
   $("#bankNext").onclick = () => loadBank(H.bankIdx || 0);
   function renderBank() {
     $("#bankCount").textContent = H.bank.length ? `${H.bank.length}問（次は ${Math.min((H.bankIdx || 0) + 1, H.bank.length + 1)}問目）` : "未登録";
-    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}${b.bonus || b.molk || b.flow ? " bnrow" : ""}"><td>${b.bonus ? "🎁" : b.molk ? "🎯" : b.flow ? "▶" : i + 1}</td><td class="wrap">${b.flow ? `<b class="bnbank">${esc(b.q)}</b><span class="note">（「次へ」で進みます）</span>` : b.molk ? `<b class="bnbank">🎯 ${esc(b.q)}</b><span class="note">（${b.pts || 1}点・開催の演出 → 予想 → 分布 → 選手発表 → 投球順シャッフル → 試合 → 正解発表）</span>` : b.bonus ? `<b class="bnbank">🎁 ${esc(b.q)}</b><span class="note">（ここでボーナスカットイン → 歓談 → 記入 → 結果。「次へ」で進みます）</span>` : esc(b.q)}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td><select class="blim" data-blim="${i}" title="回答時間">${[5, 10, 15, 20, 30, 60].map((s) => `<option value="${s}"${+b.limit === s ? " selected" : ""}>${s}秒</option>`).join("")}</select> ${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td style="white-space:nowrap">${b.predict ? `予想${b.pts || 1}点` : b.mode === "choice" ? `<label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label><label class="bchk rv${b.revive ? " on" : ""}"><input type="checkbox" data-brev="${i}" ${b.revive ? "checked" : ""}>🔥復活</label>` : ""}</td><td style="white-space:nowrap"><button class="mini mv" data-mv="${i}:-1" ${i ? "" : "disabled"} title="上へ">▲</button><button class="mini mv" data-mv="${i}:1" ${i < H.bank.length - 1 ? "" : "disabled"} title="下へ">▼</button> <button class="mini" data-bedit="${i}">✏️編集</button> <button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button> <button class="mini" data-bdel="${i}" title="この問題を消す">🗑</button><label class="bto">→<input type="number" min="1" max="${H.bank.length}" data-bto="${i}" placeholder="${i + 1}">番へ</label></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
+    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}${b.bonus || b.molk || b.flow ? " bnrow" : ""}"><td>${b.bonus ? "🎁" : b.molk ? "🎯" : b.flow ? "▶" : i + 1}</td><td class="wrap">${b.flow ? `<b class="bnbank">${esc(b.q)}</b><span class="note">（「次へ」で進みます）</span>` : b.molk ? `<b class="bnbank">🎯 ${esc(b.q)}</b><span class="note">（${b.pts || 1}点・開催の演出 → 予想 → 分布 → 選手発表 → 投球順シャッフル → 試合 → 正解発表）</span>` : b.bonus ? `<b class="bnbank">🎁 ${esc(b.q)}</b><span class="note">（ここでボーナスカットイン → 歓談 → 記入 → 結果。「次へ」で進みます）</span>` : (b.poll ? `<b>📊 ${esc(b.q)}</b><span class="note">（会場アンケート：予想 → 締切 → 自分はどれ？を${b.pollDur || 60}秒 → いちばん多いものが正解・${b.pts || 1}点）</span>` : esc(b.q))}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td><select class="blim" data-blim="${i}" title="回答時間">${[5, 10, 15, 20, 30, 60].map((s) => `<option value="${s}"${+b.limit === s ? " selected" : ""}>${s}秒</option>`).join("")}</select> ${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td style="white-space:nowrap">${b.predict ? `予想${b.pts || 1}点` : b.mode === "choice" ? `<label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label><label class="bchk rv${b.revive ? " on" : ""}"><input type="checkbox" data-brev="${i}" ${b.revive ? "checked" : ""}>🔥復活</label>` : ""}</td><td style="white-space:nowrap"><button class="mini mv" data-mv="${i}:-1" ${i ? "" : "disabled"} title="上へ">▲</button><button class="mini mv" data-mv="${i}:1" ${i < H.bank.length - 1 ? "" : "disabled"} title="下へ">▼</button> <button class="mini" data-bedit="${i}">✏️編集</button> <button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button> <button class="mini" data-bdel="${i}" title="この問題を消す">🗑</button><label class="bto">→<input type="number" min="1" max="${H.bank.length}" data-bto="${i}" placeholder="${i + 1}">番へ</label></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
     $("#bankList").querySelectorAll("[data-load]").forEach((x) => (x.onclick = () => loadBank(+x.dataset.load)));
     $("#bankList").querySelectorAll("[data-blast]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.blast]; if (!b) return; b.last = x.checked; save(); render(); }));
     $("#bankList").querySelectorAll("[data-brev]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.brev]; if (!b) return; b.revive = x.checked; save(); render(); }));
@@ -7313,7 +7344,7 @@ function hostPage() {
     if (H.S.phase === "open") return toast("回答受付中です");
     if (H.S.rid && H.S.phase !== "idle" && H.S.stage !== "list" && H.S.stage !== "champ") return toast("今の問題を最後まで進めてから出題してください（「次へ」）");
     if (H.S.rid) act("next");
-    if (H.bank[i].bonus || H.bank[i].molk || H.bank[i].flow) return loadBank(i);
+    if (H.bank[i].bonus || H.bank[i].molk || H.bank[i].flow || H.bank[i].poll) return loadBank(i);
     loadBank(i); $("#bOpen").click();
   };
   $("#bEndHere").onclick = () => { if (!confirm("この問題でピリオドを終わりにして、ピリオドチャンピオンを発表します。よろしいですか？")) return; act("endHere"); };
@@ -7523,7 +7554,7 @@ function hostPage() {
   // ---- 別の司会PCへ引き継ぎ ----
   {
     const SETUP = ["roster", "rstore", "rkana", "bank", "bonusDur", "prizes", "rule", "opt", "show", "links", "linksV7", "linksV8", "linksV9", "linksV10", "linksV11", "linksV12", "linksV13", "linksV14", "linksV15", "sndV2", "snd", "pub", "exact", "game", "gameSets", "recv", "bonusEx", "linksV16", "seat", "seatV2", "seatV3", "pairs", "pairsInit", "pairsV2", "exNoK", "bonusKind"]; // 座席・ペア枠・役員賞の除外・ボーナス時間も渡す
-    const PROG = ["points", "tsum", "scored", "ever", "period", "champs", "handed", "tie", "bankIdx", "pairs", "lotUsed", "bonusPts", "bonusAns", "bonusR", "bonusKey", "bonusRun", "exec", "molkQ", "molkPend", "flowCur", "pairFlow", "lotLast"];
+    const PROG = ["points", "tsum", "scored", "ever", "period", "champs", "handed", "tie", "bankIdx", "pairs", "lotUsed", "bonusPts", "bonusAns", "bonusR", "bonusKey", "bonusRun", "exec", "molkQ", "molkPend", "flowCur", "pairFlow", "lotLast", "pollQ"];
     const b64e = (u8) => { let x = ""; for (let i = 0; i < u8.length; i += 0x8000) x += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(x); };
     const b64d = (x) => Uint8Array.from(atob(x), (c) => c.charCodeAt(0));
     const gz = async (u8, comp) => new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(comp ? new CompressionStream("gzip") : new DecompressionStream("gzip"))).arrayBuffer());
@@ -7929,7 +7960,7 @@ function hostPage() {
   window.__resetExtra = () => { const g = G();
     g.log = []; g.ordSt = null; g.introOn = false; g.shufOn = false; Object.values(g.sd || {}).forEach((x) => { if (x) x.log = []; });
     if (g.stage && g.stage !== "free") { g.players = gBuild(g, g.stage); } (g.pool || []).forEach((p) => { if (p.g) p.g.F = false; });
-    H.molkQ = null; H.molkPend = null; H.pairFlow = 0; H.flowCur = null;
+    H.molkQ = null; H.molkPend = null; H.pairFlow = 0; H.flowCur = null; H.pollQ = null;
     (H.pairs || []).forEach((x) => (x.partner = null));
     if (H.seat) H.seat.hobby = null;
     H.prizes = (H.prizes || []).filter((p) => !p.gid); // ゲーム・役員賞から自動で入れた賞は消す
@@ -7949,6 +7980,38 @@ function hostPage() {
     act("open", { mode: "choice", nch: T.length, choices: ch, predict: true, pts: pts || 1, limit: 30, question: `【予想】モルック${MK[st]}　勝つのは${st === "F" ? "どのチーム" : "誰"}？`, correct: [] });
     H.molkQ = { st, keys: T.map(mkKey), rid: H.S.rid, played: false, done: false }; save(); render(); return true;
   };
+  // ---- 📊 会場アンケート問題：予想（どれがいちばん多い？）→ 自分のことをアンケート → いちばん多いものが正解 ----
+  window.__startPoll = (b) => {
+    const ch = (b.ch || []).map((x) => String(x || "").replace(/​/g, "").trim()).filter(Boolean);
+    if (ch.length < 2) { toast("選択肢が2つ以上必要です"); return false; }
+    act("open", { mode: "choice", nch: ch.length, choices: ch, predict: true, pts: b.pts || 1, limit: b.limit || 20, question: b.q, correct: [] });
+    H.pollQ = { rid: H.S.rid, ch, dur: b.pollDur || 60, ans: {}, done: false, q: b.pollQ || "あなたはどれ？" }; save(); render(); return true;
+  };
+  const pollCur = () => { const q = H.pollQ; return q && H.S.rid && q.rid === H.S.rid && !q.done ? q : null; };
+  let pollT = null, pollP = null;
+  const pollPub = () => { if (pollP) return; pollP = setTimeout(() => { pollP = null; const q = pollCur(); if (q && H.S.view === "poll") setS({ poll: { ...H.S.poll, n: Object.keys(q.ans).length } }); save(); }, 600); };
+  const pollStart = (q) => { const at = Date.now(); q.at = at; save(); setS({ view: "poll", poll: { rid: q.rid, q: q.q, ch: q.ch, at, dur: q.dur, n: Object.keys(q.ans).length }, ...sfx("open") });
+    clearTimeout(pollT); pollT = setTimeout(() => { const c = pollCur(); if (c && c.at === at && H.S.view === "poll") pollFinish(c); }, q.dur * 1000 + 1500); };
+  const pollFinish = (q) => {
+    clearTimeout(pollT); const cnt = q.ch.map(() => 0); Object.values(q.ans).forEach((c) => { if (c >= 0 && c < cnt.length) cnt[c]++; });
+    const mx = Math.max(...cnt); if (!(mx > 0)) { toast("アンケートの回答がまだありません"); return; }
+    const corr = cnt.map((n, i) => [n, i]).filter(([n]) => n === mx).map(([, i]) => i);
+    H.secret.correct = corr; H.secret.cans = cnt.map((n) => `会場 ${n}人`);
+    H.secret.ans = `会場で${mx}人 ${corr.map((i) => q.ch[i]).join("・")}`.slice(0, 40);
+    q.done = true; q.cnt = cnt; save(); setS({ view: "q" }); act("advance");
+    toast(`アンケート結果：${q.ch.map((c, i) => `${c} ${cnt[i]}人`).join("／")}`);
+  };
+  window.__onPoll = (d) => { const q = pollCur(), p = H.players[d.tok]; if (!q || H.S.view !== "poll" || !p || H.claims[p.key] !== d.tok || d.rid !== q.rid) return;
+    const c = +d.c; if (!(Number.isInteger(c) && c >= 0 && c < q.ch.length)) return; if (Date.now() - (q.at || 0) > (q.dur + 3) * 1000) return;
+    q.ans[p.key] = c; p.cid = d.cid; reply(d.cid, { t: "pollack", rid: q.rid, c }); pollPub(); };
+  window.__pollAdv = () => { const q = pollCur(); if (!q) return false; const S = H.S, st0 = S.stage || S.phase;
+    if (S.view === "poll") { pollFinish(q); return true; }
+    if (S.view === "q" && st0 === "closed") { pollStart(q); return true; }
+    return false; };
+  window.__pollLabel = (S) => { const q = pollCur(); if (!q) return null; const st0 = S.stage || S.phase;
+    if (S.view === "poll") return "📊 アンケートを締め切って結果へ ▶";
+    if (S.view === "q" && st0 === "closed") return "📊 会場アンケート開始（自分はどれ？）▶";
+    return null; };
   const mkCur = () => { const q = H.molkQ; return q && H.S.rid && q.rid === H.S.rid && !q.done ? q : null; };
   // 試合へ：出場選手を表示（投球順は伏せる）→ シャッフル → 投球順を発表 → 試合開始
   const mkGame = (q) => { const g0 = G(); if ((g0.stage || "free") !== q.st) document.querySelector(`#gStage [data-gs="${q.st}"]`).click();
@@ -8220,13 +8283,20 @@ function hostPage() {
       const colB = document.querySelector('#hostV7 [data-hp="recv"] .colB') || document.querySelector('#hostV7 [data-hp="recv"]');
       colB && colB.append(card);
       const people = () => { const ks = Object.keys(H.roster); const att = ks.filter((k) => isAtt(k)); return att.length ? att : ks; }; // ゲーム進行の人（楢原・川口・山田）も席は割り振る
+      // 席が足りないときは、ゲーム進行の人（ペア枠：楢原・川口・山田）を足りない分だけ外して、着席する人を優先
+      const seatTotal = () => TBL.reduce((a, id) => a + (H.seat.cap[id] || 0), 0);
+      const seatPeople = () => { const ps = people(), over = ps.length - seatTotal(); if (over <= 0) return { ps, out: [] };
+        const out = ps.filter((k) => isPairK(k)).slice(0, over); return { ps: ps.filter((k) => !out.includes(k)), out }; };
+      window.__seatOut = () => seatPeople().out;
       // 店舗の席：一人ずつテーブルを決める（1つのテーブルだけの店舗を先に → 複数テーブルの店舗は空いている席へ順に）
       const storeSeat = () => {
         const tabs = {}, left = {}, warn = []; TBL.forEach((id) => { tabs[id] = []; left[id] = H.seat.cap[id] || 7; });
         const tOf = {}; TBL.forEach((id) => String(H.seat.store[id] || "").split("・").filter(Boolean).forEach((s2) => (tOf[s2] = (tOf[s2] || []).concat(id))));
-        const by = {}; people().forEach((k) => { const s2 = H.rstore[k] || "店舗なし"; (by[s2] = by[s2] || []).push(k); });
+        const by = {}; seatPeople().ps.forEach((k) => { const s2 = H.rstore[k] || "店舗なし"; (by[s2] = by[s2] || []).push(k); });
         Object.values(by).forEach((a) => a.sort((x, y) => (H.rkana[x] || H.roster[x]).localeCompare(H.rkana[y] || H.roster[y], "ja")));
-        const put = (k, ids) => { const id = ids.find((t) => left[t] > 0) || TBL.filter((t) => left[t] > 0).sort((a, b) => left[b] - left[a])[0]; if (!id) return; tabs[id].push(k); left[id]--; if (!ids.includes(id)) warn.push(`${H.roster[k]}（${H.rstore[k] || "店舗なし"}）→ ${seatNm(id)}`); };
+        const put = (k, ids) => { let id = ids.find((t) => left[t] > 0) || TBL.filter((t) => left[t] > 0).sort((a, b) => left[b] - left[a])[0];
+          if (!id) { id = (ids.length ? ids : TBL).slice().sort((a, b) => tabs[a].length - tabs[b].length)[0]; warn.push(`${H.roster[k]}（席数オーバー）→ ${seatNm(id)}`); } // 席が足りないときも、誰かが席なしにならないように
+          tabs[id].push(k); left[id]--; if (!ids.includes(id)) warn.push(`${H.roster[k]}（${H.rstore[k] || "店舗なし"}）→ ${seatNm(id)}`); };
         const stores = Object.keys(by).sort((a, b) => ((tOf[a] || []).length || 99) - ((tOf[b] || []).length || 99) || stCmp(a, b));
         stores.forEach((s2) => by[s2].forEach((k) => put(k, tOf[s2] || [])));
         return { tabs, warn };
@@ -8243,7 +8313,8 @@ function hostPage() {
         const seats = {}; TBL.forEach((id) => String(H.seat.store[id] || "").split("・").filter(Boolean).forEach((s2) => (seats[s2] = (seats[s2] || []).concat(id))));
         const total = TBL.reduce((a, id) => a + (H.seat.cap[id] || 0), 0), nobody = Object.keys(cnt).filter((s2) => !seats[s2]);
         const ss = storeSeat();
-        $("#seatSum").innerHTML = `<details class="exwon"><summary>一人ずつの席（スマホに「○○さんは 赤テーブルへ」と出ます）</summary>${TBL.map((id) => `<div>${seatChip(id)}（${ss.tabs[id].length}/${H.seat.cap[id] || 7}）${ss.tabs[id].map((k) => esc(H.roster[k])).join("、")}</div>`).join("")}</details>` + (ss.warn.length ? `<div style="color:#E53945">⚠ 店舗のテーブルに入りきらず別の卓：${ss.warn.map(esc).join("、")}</div>` : "") + `名簿 <b>${Object.keys(H.roster).length}人</b> ／ 席 <b>${total}席</b>　` + Object.keys(cnt).sort(stCmp).map((s2) => `${esc(s2)} ${cnt[s2]}人→${seats[s2] ? seats[s2].map(seatNm).join("・") : '<b style="color:#E53945">未設定</b>'}`).join("　") + (nobody.length ? `<br>⚠ テーブル未設定の店舗：${nobody.map(esc).join("・")}` : "");
+        const totalS = seatTotal(), sp = seatPeople(), nPpl = sp.ps.length;
+        $("#seatSum").innerHTML = (sp.out.length ? `<div class="note" style="font-weight:700">席が足りないため、ゲーム進行の ${sp.out.map((k) => esc(H.roster[k])).join("・")} さんは席の割り振りから外しています（着席する人を優先）</div>` : "") + (nPpl > totalS ? `<div style="color:#E53945;font-weight:800">⚠ 出席（または名簿）${nPpl}人に対して席が ${totalS}席です。あと ${nPpl - totalS}席 必要です（会場に椅子の追加を頼み、上の席数を増やしてください）</div>` : "") + `<details class="exwon"><summary>一人ずつの席（スマホに「○○さんは 赤テーブルへ」と出ます）</summary>${TBL.map((id) => `<div>${seatChip(id)}（${ss.tabs[id].length}/${H.seat.cap[id] || 7}）${ss.tabs[id].map((k) => esc(H.roster[k])).join("、")}</div>`).join("")}</details>` + (ss.warn.length ? `<div style="color:#E53945">⚠ 店舗のテーブルに入りきらず別の卓：${ss.warn.map(esc).join("、")}</div>` : "") + `名簿 <b>${Object.keys(H.roster).length}人</b> ／ 席 <b>${total}席</b>　` + Object.keys(cnt).sort(stCmp).map((s2) => `${esc(s2)} ${cnt[s2]}人→${seats[s2] ? seats[s2].map(seatNm).join("・") : '<b style="color:#E53945">未設定</b>'}`).join("　") + (nobody.length ? `<br>⚠ テーブル未設定の店舗：${nobody.map(esc).join("・")}` : "");
       };
       const showStore = (names) => { const ss = storeSeat(); setS({ view: "seat", seat: { mode: "store", nm: names === true, at: Date.now(), tables: TBL.map((id) => ({ id, label: H.seat.store[id] || "", names: ss.tabs[id].map((k) => H.roster[k]) })) }, ...sfx("chime") }); drawSum(); };
       $("#seatShowS").onclick = () => showStore(false); $("#seatShowN").onclick = () => showStore(true);
@@ -8258,9 +8329,9 @@ function hostPage() {
       const norm = (x) => String(x || "").normalize("NFKC").toLowerCase().replace(/[\s「」『』（）()。、・!！?？]/g, "");
       const catOf = (h) => { const n = norm(h); if (!n) return "いろいろ"; const c = CAT.find(([, rx]) => rx.test(n)); return c ? c[0] : "いろいろ"; };
       const makeHobby = () => {
-        const ps = people(); if (ps.length < 2) return toast("参加者がいません");
+        const ps = seatPeople().ps; if (ps.length < 2) return toast("参加者がいません");
         const caps = {}; TBL.forEach((id) => (caps[id] = H.seat.cap[id] || 7));
-        if (ps.length > TBL.reduce((a, id) => a + caps[id], 0)) return toast("席が足りません（席数を増やしてください）");
+        const capT = TBL.reduce((a, id) => a + caps[id], 0); if (ps.length > capT) toast(`⚠ 出席 ${ps.length}人に対して席が ${capT}席です。人数の少ない卓から順に1人ずつ多めに入れます`);
         // カテゴリ → 同じ趣味 のまとまり
         const cats = {}; ps.forEach((k) => { const h = (H.recv[k] && H.recv[k].h) || "", c = catOf(h), n = norm(h) || "-"; ((cats[c] = cats[c] || {})[n] = cats[c][n] || []).push(k); });
         const order = Object.keys(cats).sort((a, b) => (a === "いろいろ") - (b === "いろいろ") || Object.values(cats[b]).flat().length - Object.values(cats[a]).flat().length);
@@ -8269,7 +8340,8 @@ function hostPage() {
         const place = (k, c) => { // 同じカテゴリのテーブル → 空のテーブル → いちばん空いているテーブル
           let id = TBL.filter((t) => left[t] > 0 && tCat[t] === c).sort((a, b) => left[a] - left[b])[0]
             || TBL.filter((t) => left[t] > 0 && !tab[t].length)[0]
-            || TBL.filter((t) => left[t] > 0).sort((a, b) => left[b] - left[a])[0];
+            || TBL.filter((t) => left[t] > 0).sort((a, b) => left[b] - left[a])[0]
+            || TBL.slice().sort((a, b) => tab[a].length - tab[b].length)[0]; // 席が足りないときは人数の少ない卓へ
           tab[id].push(k); left[id]--; if (!tCat[id]) tCat[id] = c; };
         // 同じ趣味の人はできるだけ1つのテーブルに（入りきるテーブルを優先）
         const putGroup = (g, c) => { const fit = TBL.filter((t) => left[t] >= g.length && tCat[t] === c).sort((a, b) => left[a] - left[b])[0] || TBL.filter((t) => !tab[t].length && left[t] >= g.length).sort((a, b) => left[a] - left[b])[0];
@@ -8285,6 +8357,7 @@ function hostPage() {
       $("#seatMakeH").onclick = () => { if (H.seat.hobby && !confirm("割り振り直しますか？（いまの席替えの結果は変わります）")) return; makeHobby(); };
       $("#seatShowH").onclick = () => { if (!H.seat.hobby) makeHobby(); if (!H.seat.hobby) return; setS({ view: "seat", seat: { mode: "hobby", at: Date.now(), tables: H.seat.hobby.map((t) => ({ id: t.id, label: t.label, names: t.keys.map((k) => H.roster[k]).filter(Boolean) })) }, ...sfx("fanfare") }); };
       drawGrid(); drawHob();
+      setInterval(() => { if (H.tab === "recv" && document.activeElement && !card.contains(document.activeElement)) { try { drawSum(); } catch (e) {} } }, 3000); // 出席・ペア枠の変化を反映
       window.__seatShow = (mode) => { if (mode === "hobby") $("#seatShowH").click(); else showStore(mode === "names"); return true; };
     }
     window.__startBonus = (kd) => { if (!BK[kd]) return; H.bonusKind = kd; save(); $("#bnOwn").click(); };
@@ -8306,6 +8379,24 @@ function hostPage() {
         bdFill(); setInterval(bdFill, 1500);
         { const f = document.createElement("div"); f.className = "row bnins"; f.innerHTML = `<button class="btn go" id="flAuto">📋 おすすめの進行表にする（会場オープン〜エンディング）</button><select id="flSel" style="width:auto;flex:1">${Object.entries(window.__FLOW || {}).map(([k, t]) => `<option value="${k}">${t}</option>`).join("")}</select><button class="btn" id="flAdd">＋ 差し込む</button><span class="note">「次へ」だけで最初から最後まで進む進行表を作ります（問題・ボーナス・モルックの順番はそのまま）</span>`; card.append(f);
           const FI = (fl) => ({ q: (window.__FLOW || {})[fl] || fl, flow: fl, mode: "choice", nch: 4, ch: ["", "", "", ""], correct: [], limit: 10 });
+          const PQT = [
+            { name: "きょうだい（長男長女・真ん中っ子・末っ子・ひとりっ子）", q: "この会場の中で1番多いのはどれ？（きょうだい）", ch: ["長男長女", "真ん中っ子", "末っ子", "ひとりっ子"], a: "あなたはどれ？" },
+            { name: "好きな季節（春・夏・秋・冬）", q: "この会場の中で1番多いのはどれ？（好きな季節）", ch: ["春", "夏", "秋", "冬"], a: "あなたが好きな季節は？" },
+            { name: "生まれた月（1〜3月・4〜6月・7〜9月・10〜12月）", q: "この会場の中で1番多いのはどれ？（生まれた月）", ch: ["1〜3月生まれ", "4〜6月生まれ", "7〜9月生まれ", "10〜12月生まれ"], a: "あなたは何月生まれ？" }];
+          { const pq = document.createElement("div"); pq.className = "pollmk"; pq.innerHTML = `<details><summary><b>📊 会場アンケート問題を追加</b>（「この会場でいちばん多いのは？」→ 予想 → 自分のことをアンケート → いちばん多いものが正解）</summary>
+              <div class="row">ひな形 <select id="pqT" style="width:auto;flex:1">${PQT.map((t, i) => `<option value="${i}">${esc(t.name)}</option>`).join("")}</select><button class="btn" id="pqAll">＋ ひな形3問をまとめて追加</button></div>
+              <div class="row"><input type="text" id="pqQ" value="この会場の中で1番多いのはどれ？" style="flex:1"></div>
+              <div class="row"><input type="text" id="pqC" value="長男長女、真ん中っ子、末っ子、ひとりっ子" style="flex:1" title="「、」区切り・2〜10個"></div>
+              <div class="row"><input type="text" id="pqA" value="あなたはどれ？" style="flex:1" title="アンケートの質問"></div>
+              <div class="row">予想の時間 <select id="pqL" style="width:auto">${[10, 15, 20, 30].map((x) => `<option${x === 20 ? " selected" : ""}>${x}</option>`).join("")}</select>秒　アンケート <select id="pqD" style="width:auto">${[30, 45, 60, 90, 120].map((x) => `<option${x === 60 ? " selected" : ""}>${x}</option>`).join("")}</select>秒　配点 <select id="pqP" style="width:auto">${[1, 2, 3, 5].map((x) => `<option>${x}</option>`).join("")}</select>点
+                <button class="btn go" id="pqAdd">＋ 進行表に追加</button></div></details>`; f.after(pq);
+            const pqSet = (t) => { $("#pqQ").value = t.q; $("#pqC").value = t.ch.join("、"); $("#pqA").value = t.a; };
+            $("#pqT").onchange = () => pqSet(PQT[+$("#pqT").value]); pqSet(PQT[0]);
+            $("#pqAll").onclick = () => { PQT.forEach((t) => H.bank.push({ q: t.q, ch: t.ch.slice(), mode: "choice", nch: t.ch.length, correct: [], limit: +$("#pqL").value, predict: true, pts: +$("#pqP").value, poll: true, pollDur: +$("#pqD").value, pollQ: t.a }));
+              save(); render(); toast("会場アンケート問題を3問（きょうだい・好きな季節・生まれた月）追加しました。並べ替えで位置を決めてください"); };
+            $("#pqAdd").onclick = () => { const ch = $("#pqC").value.split(/[、,，\n]+/).map((x) => x.trim()).filter(Boolean).slice(0, 10); if (ch.length < 2) return toast("選択肢を「、」区切りで2つ以上入れてください");
+              H.bank.push({ q: $("#pqQ").value.trim() || "この会場の中で1番多いのはどれ？", ch, mode: "choice", nch: ch.length, correct: [], limit: +$("#pqL").value, predict: true, pts: +$("#pqP").value, poll: true, pollDur: +$("#pqD").value, pollQ: $("#pqA").value.trim() || "あなたはどれ？" });
+              save(); render(); toast("会場アンケート問題を最後に追加しました。並べ替えで位置を決めてください"); }; }
           $("#flAdd").onclick = () => { const fl = $("#flSel").value; H.bank.push(FI(fl)); save(); render(); toast(`${(window.__FLOW || {})[fl]}を最後に追加しました。並べ替えで位置を決めてください`); };
           $("#flAuto").onclick = () => {
             if (!confirm("問題・ボーナス・モルックの順番はそのままで、会場オープン・オープニング・ルール説明・ペア抽選・趣味で席替え・総合順位・役員賞・表彰式・エンディングを入れた進行表にします。\n（いま入っている進行の項目は入れ直します）よろしいですか？")) return;
@@ -8622,6 +8713,12 @@ function playerPage(room, bi) {
     if (reviveFx && Date.now() - reviveFx < 3500) { setTimeout(() => { if (Date.now() - reviveFx >= 3500) { reviveFx = 0; render(); } }, 3600); }
     let fx = reviveFx && Date.now() - reviveFx < 3500 ? `<div class="seatfx revfx"><div>🔥 復活！<small style="display:block;font-size:clamp(15px,4.6vw,22px);line-height:1.5;margin-top:14px;font-weight:800">起立に戻りました！<br>ピリオドチャンピオンを狙えます</small></div></div>` : seatFx && Date.now() - seatFx < 3000 ? `<div class="seatfx"><div>着席…<small style="display:block;font-size:clamp(15px,4.6vw,22px);line-height:1.5;margin-top:14px;font-weight:800">でも回答はこのまま続けられます！<br>正解すれば得点が入ります</small></div></div>` : "";
     if (fx) setTimeout(() => { if (Date.now() - seatFx >= 3000) { seatFx = 0; render(); } }, 3100);
+    if (S.view === "poll" && S.poll) {
+      const po = S.poll, W = (window.__pollMine = window.__pollMine || {}), mine = W[po.rid];
+      el.innerHTML = `<div class="status pollp"><div class="h">📊 会場アンケート</div><div class="pollq">${esc(po.q || "あなたはどれ？")}</div><p class="note">${mine != null ? "選びました（変えるときは押し直してください）" : "自分にあてはまるものを1つ選んでください"}</p><div class="choices n${po.ch.length}">${po.ch.map((c, i) => `<button class="ch c${i}${mine === i ? " pick" : mine != null ? " dim" : ""}" data-pc="${i}"><span class="L">${L[i]}</span><span class="T">${esc(c)}</span></button>`).join("")}</div></div>`;
+      el.querySelectorAll("[data-pc]").forEach((bt) => (bt.onclick = () => { const c = +bt.dataset.pc; W[po.rid] = c; const m = { tok: P.tok, cid: P.cid, rid: po.rid, c }; cli.send("poll", m); setTimeout(() => cli.send("poll", m), 1500); render(); }));
+      return;
+    }
     if (S.view === "seat" && S.seat) {
       const st = S.seat, T = st.tables || [];
       if (st.mode === "hobby") { const t = T.find((x) => (x.names || []).includes(P.name));
