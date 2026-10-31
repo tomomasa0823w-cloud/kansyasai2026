@@ -5127,7 +5127,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/31-4";
+const APPVER = "10/31-5";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -6395,7 +6395,7 @@ function hostPage() {
       if (S.view === "rules") { const n = rulesList({ rule: H.rule, rulesOpt: { noCut: !!H.opt.noCut } }).length, i = S.ruleIdx || 0; return i < n - 1 ? setS({ ruleIdx: i + 1, ...sfx("chime") }) : setS({ view: "q" }); }
       if (S.view && S.view !== "q") return setS({ view: "q" });
       if (!S.rid) { if (S.phase === "idle" || !S.rid) window.__goNextBank && window.__goNextBank(); return; }
-      if (isCList(a.correct, nchOf(S))) H.secret.correct = cleanC(a.correct, nchOf(S));
+      if (isCList(a.correct, nchOf(S)) && !(H.pollQ && H.pollQ.done && H.pollQ.rid === S.rid)) H.secret.correct = cleanC(a.correct, nchOf(S));
       const st = S.stage || S.phase, l = answersList();
       if (S.phase === "read") return act("start");
       if (S.phase === "open") return doClose();
@@ -7996,7 +7996,8 @@ function hostPage() {
     clearTimeout(pollT); const cnt = q.ch.map(() => 0); Object.values(q.ans).forEach((c) => { if (c >= 0 && c < cnt.length) cnt[c]++; });
     const mx = Math.max(...cnt); if (!(mx > 0)) { toast("アンケートの回答がまだありません"); return; }
     const corr = cnt.map((n, i) => [n, i]).filter(([n]) => n === mx).map(([, i]) => i);
-    H.secret.correct = corr; H.secret.cans = cnt.map((n) => `会場 ${n}人`);
+    H.secret.correct = corr; H.secret.cans = q.ch.slice();
+    try { pickedCorrect = corr.slice(); } catch (e) {} // 「次へ」で前の問題の正解ボタンの選択が使われないように
     H.secret.ans = `会場で${mx}人 ${corr.map((i) => q.ch[i]).join("・")}`.slice(0, 40);
     q.done = true; q.cnt = cnt; save(); setS({ view: "q" }); act("advance");
     toast(`アンケート結果：${q.ch.map((c, i) => `${c} ${cnt[i]}人`).join("／")}`);
@@ -8036,7 +8037,7 @@ function hostPage() {
       if (g.ordSt === "shuf") { mkReveal(); return true; }
       if (g.ordSt === "rev") { mkStart(); return true; }
       const idx = mkWinIdx(q); if (!idx) { toast("試合中です。下の得点ボタンで記録してください（勝者が決まると正解発表へ進めます）"); return true; }
-      H.secret.correct = idx; q.done = true; save(); setS({ view: "q" }); setTab("live"); act("advance"); toast(`正解：${idx.map((i) => H.S.choices[i]).join("・")}`); return true; }
+      H.secret.correct = idx; try { pickedCorrect = idx.slice(); } catch (e) {} q.done = true; save(); setS({ view: "q" }); setTab("live"); act("advance"); toast(`正解：${idx.map((i) => H.S.choices[i]).join("・")}`); return true; }
     if (S.view === "q" && st0 === "dist") { mkGame(q); setTab("game"); return true; } // 司会画面も④ゲームのタブへ
     return false;
   };
