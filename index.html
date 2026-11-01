@@ -5129,7 +5129,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "10/31-7";
+const APPVER = "11/1-1";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -5966,7 +5966,7 @@ function nextLabel(S) {
   if (st === "closed") return S.mode === "choice" ? "回答分布を出す ▶" : "一番乗りを発表 ▶";
   if (st === "dist") return "正解を発表 ▶";
   if (st === "correct" && hasPics(S)) return "📷 写真をふりかえる ▶";
-  if (st === "correct" || st === "review") return S.predict ? "的中者一覧 ▶" : S.cut ? "予選落ちを発表 ▶" : S.last && S.rule === "kanshasai" && S.period && S.period.active ? "👑 ピリオドチャンピオン発表（カウントアップ） ▶" : "最速正解者を発表 ▶";
+  if (st === "correct" || st === "review") return S.predict && !(S.last && S.rule === "kanshasai" && S.period && S.period.active) ? "的中者一覧 ▶" : S.cut ? "予選落ちを発表 ▶" : S.last && S.rule === "kanshasai" && S.period && S.period.active ? "👑 ピリオドチャンピオン発表（カウントアップ） ▶" : "最速正解者を発表 ▶";
   if (st === "cutshow") return "最速正解者を発表 ▶";
   if (st === "fast") return S.mode === "choice" ? "正解者一覧 ▶" : "2位以下を出す ▶";
   if (st === "list") return S.last && S.rule === "kanshasai" && S.period && S.period.active ? "ピリオドチャンピオン発表 ▶" : (window.__nbInfo && window.__nbInfo.has ? `次の問題（${window.__nbInfo.i}/${window.__nbInfo.n}問目）へ ▶` : "次の問題へ ▶");
@@ -6273,7 +6273,7 @@ function hostPage() {
       H.scored = [...H.scored, S.rid].slice(-300);
     }
     let seatedNow = [], cut = null, champ = null, revivedNow = [], cutList = null;
-    if (kan() && H.period.active && !H.secret.judged && !S.predict) {
+    if (kan() && H.period.active && !H.secret.judged && (!S.predict || H.secret.last)) {
       const byKey = {}; l.forEach((a) => (byKey[a.key] = a));
       const sk = standKeys();
       if (S.revive) l.forEach((a) => { if (hit(a.c) && H.roster[a.key] && !H.period.stand[a.key]) { H.period.stand[a.key] = true; revivedNow.push(a.n); } });
@@ -6340,7 +6340,7 @@ function hostPage() {
       H.hist = []; H.redo = [];
       pubImgs(cleanImg(a.img));
       H.answers = {};
-      H.secret = { last: !!a.last && !predict, correct: cleanC(a.correct, nch), judged: false, champ: null, ans: String(a.ans || "").slice(0, 80), cans: Array.isArray(a.cans) && a.cans.some(Boolean) ? a.cans.slice(0, 10).map((x) => String(x || "").slice(0, 40)) : null };
+      H.secret = { last: !!a.last && (!predict || !!a.pollLast), correct: cleanC(a.correct, nch), judged: false, champ: null, ans: String(a.ans || "").slice(0, 80), cans: Array.isArray(a.cans) && a.cans.some(Boolean) ? a.cans.slice(0, 10).map((x) => String(x || "").slice(0, 40)) : null };
       if (kan() && H.period.active && !predict) H.period.q++;
       const rf = H.opt.readFirst !== false;
       setS({ rid, no: (S.no || 0) + 1, phase: rf ? "read" : "open", stage: rf ? "read" : "open", mode, nch, predict, pts: predict ? Math.max(1, Math.min(10, +a.pts || 1)) : 1, question: String(a.question || "").slice(0, 300), choices,
@@ -6405,9 +6405,9 @@ function hostPage() {
         if (st === "closed") { const counts = IDX(nchOf(S)).map(() => 0); l.forEach((x) => { if (x.c >= 0 && x.c < counts.length) counts[x.c]++; }); return setS({ phase: "reveal", stage: "dist", counts, total: l.length, ...sfx("drum") }); }
         if (st === "dist") { if (!isCList(H.secret.correct, nchOf(S))) { toast("正解を選んでから進めてください（複数選べます）"); return render(); } return doCorrect(H.secret.correct.slice()); }
         if (st === "correct" && hasPics(S)) return setS({ stage: "review", rvZoom: null, ...sfx("chime") });
-        if ((st === "correct" || st === "review") && S.predict) { const w = l.filter((x) => isHit(S, x.c)); sendPlaces(w, "corr"); return setS({ stage: "list", winners: w.map((x) => ({ n: x.n, ms: x.ms })), ...sfx("chime") }); }
+        if ((st === "correct" || st === "review") && S.predict && !(S.last && kan() && H.period.active)) { const w = l.filter((x) => isHit(S, x.c)); sendPlaces(w, "corr"); return setS({ stage: "list", winners: w.map((x) => ({ n: x.n, ms: x.ms })), ...sfx("chime") }); }
         if ((st === "correct" || st === "review") && S.cut && !S.predict) return setS({ stage: "cutshow", ...sfx("cut") });
-        if ((st === "correct" || st === "review") && S.last && kan() && H.period.active && !S.predict) {
+        if ((st === "correct" || st === "review") && S.last && kan() && H.period.active) {
           const c = H.secret.champ; H.period.active = false;
           const w = l.filter((x) => isHit(S, x.c)); sendPlaces(w, "corr");
           return setS({ stage: "champ", winners: w.map((x) => ({ n: x.n, ms: x.ms })), champ: c ? { period: c.period, n: c.n, ms: c.ms, at: Date.now(), cands: (c.cands || []).slice(0, 10).map((x) => ({ n: x.n, ms: x.ms })) } : null, ...sfx(c ? "champ" : "wrong") });
@@ -6580,7 +6580,7 @@ function hostPage() {
   $("#bankNext").onclick = () => loadBank(H.bankIdx || 0);
   function renderBank() {
     $("#bankCount").textContent = H.bank.length ? `${H.bank.length}問（次は ${Math.min((H.bankIdx || 0) + 1, H.bank.length + 1)}問目）` : "未登録";
-    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}${b.bonus || b.molk || b.flow ? " bnrow" : ""}"><td>${b.bonus ? "🎁" : b.molk ? "🎯" : b.flow ? "▶" : i + 1}</td><td class="wrap">${b.flow ? `<b class="bnbank">${esc(b.q)}</b><span class="note">（「次へ」で進みます）</span>` : b.molk ? `<b class="bnbank">🎯 ${esc(b.q)}</b><span class="note">（${b.pts || 1}点・開催の演出 → 予想 → 分布 → 選手発表 → 投球順シャッフル → 試合 → 正解発表）</span>` : b.bonus ? `<b class="bnbank">🎁 ${esc(b.q)}</b><span class="note">（ここでボーナスカットイン → 歓談 → 記入 → 結果。「次へ」で進みます）</span>${(() => { const d = window.__bnDurGet && window.__bnDurGet(b.bonus); if (!d) return ""; const inp = (f, v) => `<input type="number" class="bndurin" min="0.5" max="30" step="0.5" value="${Math.round(v / 30) / 2}" onchange="window.__bnDurRow('${b.bonus}','${f}',this.value)" onclick="event.stopPropagation()">`; return `<div class="bndurrow">⏱ 歓談 ${inp("talk", d.talk)} 分　✏️ 回答 ${inp("inp", d.inp)} 分</div>`; })()}` : (b.poll ? `<b>📊 ${esc(b.q)}</b><span class="note">（会場アンケート：予想 → 締切 → 自分はどれ？を${b.pollDur || 60}秒 → いちばん多いものが正解・${b.pts || 1}点）</span>` : esc(b.q))}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td><select class="blim" data-blim="${i}" title="回答時間">${[5, 10, 15, 20, 30, 60].map((s) => `<option value="${s}"${+b.limit === s ? " selected" : ""}>${s}秒</option>`).join("")}</select> ${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td style="white-space:nowrap">${b.predict ? `予想${b.pts || 1}点` : b.mode === "choice" ? `<label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label><label class="bchk rv${b.revive ? " on" : ""}"><input type="checkbox" data-brev="${i}" ${b.revive ? "checked" : ""}>🔥復活</label>` : ""}</td><td style="white-space:nowrap"><button class="mini mv" data-mv="${i}:-1" ${i ? "" : "disabled"} title="上へ">▲</button><button class="mini mv" data-mv="${i}:1" ${i < H.bank.length - 1 ? "" : "disabled"} title="下へ">▼</button> <button class="mini" data-bedit="${i}">✏️編集</button> <button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button> <button class="mini" data-bdel="${i}" title="この問題を消す">🗑</button><label class="bto">→<input type="number" min="1" max="${H.bank.length}" data-bto="${i}" placeholder="${i + 1}">番へ</label></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
+    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}${b.bonus || b.molk || b.flow ? " bnrow" : ""}"><td>${b.bonus ? "🎁" : b.molk ? "🎯" : b.flow ? "▶" : i + 1}</td><td class="wrap">${b.flow ? `<b class="bnbank">${esc(b.q)}</b><span class="note">（「次へ」で進みます）</span>` : b.molk ? `<b class="bnbank">🎯 ${esc(b.q)}</b><span class="note">（${b.pts || 1}点・開催の演出 → 予想 → 分布 → 選手発表 → 投球順シャッフル → 試合 → 正解発表）</span>` : b.bonus ? `<b class="bnbank">🎁 ${esc(b.q)}</b><span class="note">（ここでボーナスカットイン → 歓談 → 記入 → 結果。「次へ」で進みます）</span>${(() => { const d = window.__bnDurGet && window.__bnDurGet(b.bonus); if (!d) return ""; const inp = (f, v) => `<input type="number" class="bndurin" min="0.5" max="30" step="0.5" value="${Math.round(v / 30) / 2}" onchange="window.__bnDurRow('${b.bonus}','${f}',this.value)" onclick="event.stopPropagation()">`; return `<div class="bndurrow">⏱ 歓談 ${inp("talk", d.talk)} 分　✏️ 回答 ${inp("inp", d.inp)} 分</div>`; })()}` : (b.poll ? `<b>📊 ${esc(b.q)}</b><span class="note">（会場アンケート：予想 → 締切 → 自分はどれ？を${b.pollDur || 60}秒 → いちばん多いものが正解・${b.pts || 1}点）</span>` : esc(b.q))}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td><select class="blim" data-blim="${i}" title="回答時間">${[5, 10, 15, 20, 30, 60].map((s) => `<option value="${s}"${+b.limit === s ? " selected" : ""}>${s}秒</option>`).join("")}</select> ${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td style="white-space:nowrap">${b.predict ? `予想${b.pts || 1}点${b.poll ? ` <label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label>` : ""}` : b.mode === "choice" ? `<label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label><label class="bchk rv${b.revive ? " on" : ""}"><input type="checkbox" data-brev="${i}" ${b.revive ? "checked" : ""}>🔥復活</label>` : ""}</td><td style="white-space:nowrap"><button class="mini mv" data-mv="${i}:-1" ${i ? "" : "disabled"} title="上へ">▲</button><button class="mini mv" data-mv="${i}:1" ${i < H.bank.length - 1 ? "" : "disabled"} title="下へ">▼</button> <button class="mini" data-bedit="${i}">✏️編集</button> <button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button> <button class="mini" data-bdel="${i}" title="この問題を消す">🗑</button><label class="bto">→<input type="number" min="1" max="${H.bank.length}" data-bto="${i}" placeholder="${i + 1}">番へ</label></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
     $("#bankList").querySelectorAll("[data-load]").forEach((x) => (x.onclick = () => loadBank(+x.dataset.load)));
     $("#bankList").querySelectorAll("[data-blast]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.blast]; if (!b) return; b.last = x.checked; save(); render(); }));
     $("#bankList").querySelectorAll("[data-brev]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.brev]; if (!b) return; b.revive = x.checked; save(); render(); }));
@@ -7999,7 +7999,7 @@ function hostPage() {
   window.__startPoll = (b) => {
     const ch = (b.ch || []).map((x) => String(x || "").replace(/​/g, "").trim()).filter(Boolean);
     if (ch.length < 2) { toast("選択肢が2つ以上必要です"); return false; }
-    act("open", { mode: "choice", nch: ch.length, choices: ch, predict: true, pts: b.pts || 1, limit: b.limit || 20, question: b.q, correct: [] });
+    act("open", { mode: "choice", nch: ch.length, choices: ch, predict: true, pts: b.pts || 1, limit: b.limit || 20, question: b.q, correct: [], last: !!b.last, pollLast: true });
     H.pollQ = { rid: H.S.rid, ch, dur: b.pollDur || 60, ans: {}, done: false, q: b.pollQ || "あなたはどれ？" }; save(); render(); return true;
   };
   const pollCur = () => { const q = H.pollQ; return q && H.S.rid && q.rid === H.S.rid && !q.done ? q : null; };
