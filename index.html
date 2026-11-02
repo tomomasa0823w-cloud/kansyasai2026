@@ -5129,7 +5129,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "11/1-1";
+const APPVER = "11/2-1";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -7807,8 +7807,11 @@ function hostPage() {
       const A = typeof awards === "function" ? awards() : [], won = new Set();
       A.forEach((a) => { if (a.kind === "manual") { if (/^exec\d$/.test(String((H.prizes.find((p) => p.id === a.id) || {}).gid || ""))) return; const w = normName(a.n || ""); Object.keys(H.roster).forEach((k) => { if (w && w.includes(normName(H.roster[k]))) won.add(k); }); } else if (a.key) won.add(a.key); });
       const pairK = new Set((H.pairs || []).map((x) => x.k)), extra = new Set(H.exNoK);
-      const all = R().filter((r) => !r.pair), C = all.filter((r) => !exIsExec(r.key) && !won.has(r.key) && !pairK.has(r.key) && !extra.has(r.key));
-      return { C, won: all.filter((r) => won.has(r.key) && !exIsExec(r.key)), execs: Object.keys(H.roster).filter(exIsExec), pairs: [...pairK].filter((k) => H.roster[k]) };
+      const all0 = R().filter((r) => !r.pair), has = new Set(all0.map((r) => r.key));
+      // ペア枠の人も役員賞の抽選に入れる（総合順位ではペアの行になるので、本人の名前で追加する）
+      const all = all0.concat([...pairK].filter((k) => H.roster[k] && !has.has(k)).map((k) => ({ key: k, n: H.roster[k] })));
+      const C = all.filter((r) => !exIsExec(r.key) && !won.has(r.key) && !extra.has(r.key));
+      return { C, won: all.filter((r) => won.has(r.key) && !exIsExec(r.key)), execs: Object.keys(H.roster).filter(exIsExec), pairs: [] };
     };
     const exCands = () => exInfo().C;
     window.__exInfo = exInfo;
