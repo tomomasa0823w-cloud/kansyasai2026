@@ -1384,6 +1384,16 @@ body.v-player.offline #offBar{display:block}
 .po-c.c0{background:var(--a)}.po-c.c1{background:var(--b)}.po-c.c2{background:var(--c)}.po-c.c3{background:var(--d)}.po-c.c4{background:var(--e)}
 .po-foot{display:flex;align-items:center;gap:40px;margin-top:14px}
 .po-n{font:900 54px var(--lux,serif);color:#fff}.po-n b{font-family:var(--disp,sans-serif);font-size:90px;color:#FFD55A}
+/* 表彰式：まとめて発表 */
+.tv .cg-wrap{gap:22px}
+.tv .cg-grid{display:grid;gap:18px;width:min(1760px,92vw);grid-template-columns:repeat(4,1fr)}
+.tv .cg-grid.cg-n1{grid-template-columns:1fr;width:900px}.tv .cg-grid.cg-n2{grid-template-columns:repeat(2,1fr);width:1300px}.tv .cg-grid.cg-n3{grid-template-columns:repeat(3,1fr)}
+.tv .cg-grid.cg-n5,.tv .cg-grid.cg-n6,.tv .cg-grid.cg-n9{grid-template-columns:repeat(3,1fr)}
+.tv .cg-card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px 14px;border-radius:22px;background:linear-gradient(180deg,#fffdf4,#f3e6c4);color:#1B1340;box-shadow:0 0 0 3px #D9B45A,0 10px 30px rgba(0,0,0,.35)}
+.tv .cg-r{font:800 30px/1 var(--lux,serif);color:#9A6B12}
+.tv .cg-nm{font:900 64px/1.15 var(--lux,serif);overflow-wrap:anywhere;text-align:center}
+.tv .cg-s{font-size:26px;color:#5B4A7A}.tv .cg-m{font-size:24px;color:#7A4B00}
+.tv .cg-go{font:900 44px/1.3 var(--lux,serif);color:#FFE7A0;text-shadow:0 0 20px rgba(255,210,90,.6)}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -1845,6 +1855,17 @@ select option{color:#0E1846;background:#fff}
 .pollmk{width:100%;margin:6px 0}.pollmk summary{cursor:pointer}.pollmk .row{margin-top:6px;align-items:center;gap:6px;flex-wrap:wrap}
 
 .bndurrow{margin-top:8px;font-weight:700;color:#5a3d00;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:16px}.bndurin{width:5em;padding:6px 8px;font-size:17px;font-weight:700;border:2px solid #d4a63a;border-radius:8px;background:#fff;color:#222;text-align:center}
+/* スマホ：表彰で自分が受賞したとき */
+.status.cgme{background:linear-gradient(180deg,#FFF6D8,#FFE08A);color:#3A2600;border-radius:18px;padding:18px 12px;box-shadow:0 0 0 3px #E2B33C}
+.status.cgme .cgprize{font-weight:900;font-size:1.35rem;margin:8px 0}.status.cgme .cgprize small{font-size:.9rem;margin-left:4px}
+.status.cgme .cggo{font-family:var(--disp);font-size:clamp(1.8rem,9vw,2.6rem);line-height:1.25;color:#C2185B;margin:10px 0;animation:cgp 1s ease-in-out infinite alternate}
+@keyframes cgp{from{transform:scale(1)}to{transform:scale(1.06)}}
+/* 司会：表彰の進行 */
+.cgl{list-style:none;margin:6px 0 0;padding:0;max-height:420px;overflow:auto}
+.cgl li{display:flex;align-items:center;gap:8px;padding:6px 4px;border-top:1px solid rgba(255,255,255,.12)}
+.cgl li.on{background:rgba(255,200,61,.18)}.cgl li.done{opacity:.55}
+.cgl li .cgn{flex:1;min-width:0}.cgl li .cgn small{display:block;opacity:.75;font-size:.8em;overflow-wrap:anywhere}
+.cgl li .cgno{width:2.2em;text-align:right;opacity:.7}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5129,7 +5150,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "11/2-1";
+const APPVER = "11/2-2";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -5301,6 +5322,8 @@ function monHTML(S, list, joinURL) {
     const it = c.item || {};
     if (c.step === "intro") body = `<div class="tv-center spot"><div class="kick">いよいよ</div><div class="giant gold pop">表彰式</div><div class="sub">全 ${c.total || 0} 賞を発表します</div></div>`;
     else if (c.step === "end") { body = `<div class="tv-center spot"><div class="giant gold pop">おめでとう<br>ございます！</div><div class="sub">ご参加ありがとうございました</div></div>`; fx = confetti(90); }
+    else if (c.step === "rank" && it.multi) body = `<div class="tv-center spot"><div class="kick">${it.n}名 まとめて発表</div><div class="giant gold">${esc(it.label)}は…</div>${it.ranks && it.ranks.length ? `<div class="sub">${esc(it.ranks.join("・"))}</div>` : ""}<div class="drum">♪ ドゥルルルル…</div></div>`;
+    else if (c.step === "name" && it.multi) { const L = it.list || [], n = L.length; body = `<div class="tv-center spot cg-wrap"><div class="kick">${esc(it.label)}　${n}名</div><div class="cg-grid cg-n${Math.min(n, 9)}">${L.map((x) => `<div class="cg-card pop">${x.r ? `<span class="cg-r">${esc(x.r)}</span>` : ""}<b class="cg-nm">${esc(x.n)}</b>${x.s ? `<small class="cg-s">${esc(x.s)}</small>` : ""}${x.m ? `<small class="cg-m">🎁 ${esc(x.m)}</small>` : ""}</div>`).join("")}</div><div class="cg-go">受賞者のみなさん、ステージ前へどうぞ！</div>${it.memo ? `<div class="memo">🎁 ${esc(it.memo)}</div>` : ""}</div>`; fx = confetti(80); }
     else if (c.step === "rank") body = `<div class="tv-center spot${it.big ? " hot" : ""}"><div class="kick">${esc(it.label)}</div><div class="giant gold">${esc(it.rankText)}は…</div><div class="drum">♪ ドゥルルルル…</div></div>`;
     else { body = `<div class="tv-center spot${it.big ? " hot" : ""}"><div class="kick">${esc(it.rankText)}　${esc(it.label)}</div><div class="winner pop">${esc(it.name)}</div>${it.info ? `<div class="sub">${esc(it.info)}</div>` : ""}${it.memo ? `<div class="memo">🎁 ${esc(it.memo)}</div>` : ""}</div>`; if (it.first || it.kind === "champ" || it.big) fx = confetti(it.first ? 150 : 80); }
     const prog = c.step === "rank" || c.step === "name" ? `<div class="tv-prog">${(c.i || 0) + 1} / ${c.total || 0}</div>` : "";
@@ -6444,13 +6467,9 @@ function hostPage() {
       setS({ view: v, ...(v === "title" ? sfx("title") : v === "roll" ? sfx("roll") : v !== "q" ? sfx("chime") : {}) });
     } else if (cmd === "cereStart") {
       { const NA = ranking().length, sk = H.prizes.filter((p) => p.type === "rank" && +p.rank > NA).length; if (sk) toast(`⚠ 参加 ${NA}人のため、${NA + 1}位以下の賞 ${sk}個は飛ばして発表します`); }
-      const list = awards();
-      const before = list.filter((x) => x.kind === "manual" && x.pos === "before");
-      const after = list.filter((x) => x.kind === "manual" && x.pos !== "before");
-      const champsFirst = list.filter((x) => x.kind === "champ").sort((a, b) => a.period - b.period);
-      const ranks = list.filter((x) => x.kind === "rank" || x.kind === "booby" || x.kind === "last").sort((a, b) => b.rank - a.rank);
-      H.cere = { items: [...before, ...champsFirst, ...ranks, ...after], i: -1, step: "intro" };
-      setS({ view: "cere", cere: { step: "intro", i: -1, total: H.cere.items.length }, ...sfx("fanfare") });
+      const B = cereBuild();
+      H.cere = { items: B.items, groups: B.groups, i: -1, step: "intro" };
+      setS({ view: "cere", cere: { step: "intro", i: -1, total: B.groups.length }, ...sfx("fanfare") });
     } else if (cmd === "point") {
       const key = a.key || normName(a.n); if (!H.roster[key]) return;
       const d = a.d > 0 ? 1 : -1, ans = Object.values(H.answers).find((x) => x.key === key);
@@ -6459,29 +6478,58 @@ function hostPage() {
       save(); pubState(); render(); sendMe();
     }
   }
-  function cereNext() {
+  // 表彰の順番：③表彰の景品一覧の「下から」。同じ名前の賞（「（…）」より前が同じ）が続くときは、まとめて1回で発表する
+  function cereBuild() {
+    const list = awards(), byId = {};
+    list.forEach((x) => { const id = x.kind === "champ" ? String(x.id).replace(/-\d+$/, "") : x.id; (byId[id] = byId[id] || []).push(x); });
+    const base = (s) => String(s || "").replace(/[（(].*$/, "").trim() || String(s || "");
+    const grpOn = H.opt.cereGroup !== false, items = [], groups = [];
+    H.prizes.slice().reverse().forEach((p) => {
+      const its = (byId[p.id] || []).slice().sort((a, b) => (a.period || 0) - (b.period || 0)); if (!its.length) return;
+      const lab = p.type === "manual" ? p.label : base(p.label), idx = its.map((x) => items.push(x) - 1), last = groups[groups.length - 1];
+      if (!grpOn) idx.forEach((j) => groups.push({ base: lab, idx: [j] }));
+      else if (last && last.base === lab) last.idx.push(...idx);
+      else groups.push({ base: lab, idx });
+    });
+    groups.forEach((g) => g.idx.sort((a, b) => (items[a].rank || 0) - (items[b].rank || 0) || (items[a].period || 0) - (items[b].period || 0)));
+    return { items, groups };
+  }
+  window.__cereBuild = cereBuild;
+  // 受賞者の名前（スマホで本人に「前へ」を出すため）
+  const cereNames = (it) => { if (it.key && H.roster[it.key]) return [H.roster[it.key]]; const w = normName(it.n || ""); return Object.keys(H.roster).filter((k) => w && w.includes(normName(H.roster[k]))).map((k) => H.roster[k]); };
+  function cereNext(jump) {
     const C = H.cere; if (!C) return;
+    if (!C.groups) C.groups = C.items.map((x, j) => ({ base: x.label, idx: [j] }));
+    const G = C.groups;
     const pack = (st) => {
-      const it = C.items[C.i];
+      const g = G[C.i], its = g.idx.map((j) => C.items[j]);
+      if (its.length > 1) {
+        const memo = its.every((x) => (x.memo || "") === (its[0].memo || "")) ? its[0].memo || "" : "";
+        const item = { multi: true, label: g.base, rankText: g.base, kind: its[0].kind, memo, n: its.length, ranks: its.map((x) => (x.kind === "champ" ? `第${x.period}ピリオド` : x.kind === "manual" ? "" : rankText(x))).filter(Boolean) };
+        if (st === "name") { item.list = its.map((x) => ({ r: x.kind === "champ" ? `第${x.period}P` : x.kind === "manual" ? "" : rankText(x), n: x.n, s: (x.key && H.rstore[x.key]) || "", m: memo ? "" : x.memo || "" })); item.ns = [].concat(...its.map(cereNames)); }
+        return { step: st, i: C.i, total: G.length, item };
+      }
+      const it = its[0];
       const ranked = it.kind !== "champ" && it.kind !== "manual";
       const item = { label: it.kind === "manual" ? "特別表彰" : it.label, memo: it.memo, rankText: rankText(it), big: ranked && it.rank <= 3, first: ranked && it.rank === 1, kind: it.kind };
-      if (st === "name") { item.name = it.n; item.info = it.kind === "manual" ? "" : it.kind === "champ" ? `${sec(it.ms)}${it.moved ? "（繰り下げ受賞）" : ""}` : `${it.p}pt・合計 ${(it.t / 1000).toFixed(2)}秒`; }
-      return { step: st, i: C.i, total: C.items.length, item };
+      if (st === "name") { item.name = it.n; item.ns = cereNames(it); item.info = it.kind === "manual" ? "" : it.kind === "champ" ? `${sec(it.ms)}${it.moved ? "（繰り下げ受賞）" : ""}` : `${it.p}pt・合計 ${(it.t / 1000).toFixed(2)}秒`; }
+      return { step: st, i: C.i, total: G.length, item };
     };
+    const one = () => { const its = G[C.i].idx.map((j) => C.items[j]); return its.length === 1 ? its[0] : null; };
+    if (jump != null && G[jump]) { C.i = jump; C.step = "rank"; save(); const it = one(), rk = it && it.kind !== "champ" && it.kind !== "manual"; return setS({ cere: pack("rank"), ...sfx(rk && it.rank <= 3 ? "drum" : "tame") }); }
     if (C.step === "intro" || C.step === "name") {
-      if (C.i + 1 >= C.items.length) { C.step = "end"; save(); return setS({ cere: { step: "end", i: C.i, total: C.items.length }, ...sfx("fanfare") }); }
+      if (C.i + 1 >= G.length) { C.step = "end"; save(); return setS({ cere: { step: "end", i: C.i, total: G.length }, ...sfx("fanfare") }); }
       C.i++; C.step = "rank"; save();
-      const it = C.items[C.i];
-      const rk = it.kind !== "champ" && it.kind !== "manual";
+      const it = one(), rk = it && it.kind !== "champ" && it.kind !== "manual";
       return setS({ cere: pack("rank"), ...sfx(rk && it.rank <= 3 ? "drum" : "tame") });
     }
     if (C.step === "rank") {
       C.step = "name"; save();
-      const it = C.items[C.i];
-      const rk = it.kind !== "champ" && it.kind !== "manual";
-      return setS({ cere: pack("name"), ...sfx(rk && it.rank === 1 ? "first" : rk && it.rank <= 3 ? "fanfare" : it.kind === "manual" ? "fanfare" : "chime") });
+      const it = one(), rk = it && it.kind !== "champ" && it.kind !== "manual";
+      return setS({ cere: pack("name"), ...sfx(!it ? "fanfare" : rk && it.rank === 1 ? "first" : rk && it.rank <= 3 ? "fanfare" : it.kind === "manual" ? "fanfare" : "chime") });
     }
   }
+  window.__cereJump = (g) => { if (!H.cere || H.S.view !== "cere") act("cereStart"); cereNext(g); render(); };
   wireControls(act);
 
   // ---- ゲーム形式・設定 ----
@@ -8437,6 +8485,31 @@ function hostPage() {
     window.__hoff = 0; // 司会PC自身が基準の時計
     setInterval(() => { if (cli) cli.send("clock", { now: Date.now() }); }, 3000); // スマホ・別PCの時計合わせ用
   }
+  // ---- 🎤 表彰の進行（景品一覧の下から・同じ名前の賞はまとめて・選んで発表） ----
+  {
+    const dst = document.querySelector('#hostV7 [data-hp="cere"] .colA') || document.querySelector('#hostV7 [data-hp="cere"]');
+    const cg = document.createElement("div"); cg.className = "ctl"; cg.id = "cgCard";
+    cg.innerHTML = `<h3 style="margin:0 0 4px">🎤 表彰の進行</h3>
+      <p class="note" style="margin:0 0 6px">景品の一覧の<b>下から</b>発表します。同じ名前の賞（「（…）」より前が同じ）が続くときは、<b>まとめて1回</b>で発表し、受賞者のスマホに「ステージ前へ」と出します。▶で好きな賞から発表できます。</p>
+      <label class="chk2"><input type="checkbox" id="cgGrp"> 同じ名前の賞はまとめて発表する</label>
+      <ol class="cgl" id="cgList"></ol>`;
+    dst && dst.prepend(cg);
+    $("#cgGrp").onchange = (e) => { if (H.cere && H.S.view === "cere" && !confirm("表彰式の途中です。まとめ方を変えると、発表の順番を作り直します（いま発表中の賞から先は最初から）。よろしいですか？")) { e.target.checked = H.opt.cereGroup !== false; return; } H.opt.cereGroup = e.target.checked; if (H.cere) { const B = window.__cereBuild(); H.cere.items = B.items; H.cere.groups = B.groups; H.cere.i = -1; H.cere.step = "intro"; } save(); render(); drawCg(true); };
+    const drawCg = (force) => {
+      const box = $("#cgList"); if (!box) return;
+      $("#cgGrp").checked = H.opt.cereGroup !== false;
+      const live = !!(H.cere && H.cere.groups && H.S.view === "cere");
+      const B = live ? H.cere : window.__cereBuild ? window.__cereBuild() : { items: [], groups: [] };
+      const cur = live ? H.cere.i : -1, step = live ? H.cere.step : "";
+      const h = B.groups.map((g, j) => { const its = g.idx.map((k) => B.items[k]);
+        const sub = its.map((x) => `${x.kind === "champ" ? `第${x.period}P` : x.kind === "manual" ? "" : rankText(x)}${live || its.length < 6 ? " " + x.n : ""}`.trim()).join("・");
+        return `<li class="${j === cur ? "on" : j < cur ? "done" : ""}"><span class="cgno">${j + 1}</span><span class="cgn"><b>${esc(g.base)}</b>${its.length > 1 ? `（${its.length}名）` : ""}<small>${esc(sub)}</small></span>${j === cur ? `<span class="note">${step === "rank" ? "発表前" : step === "name" ? "発表中" : ""}</span>` : ""}<button class="mini" data-cgj="${j}">▶ 発表</button></li>`; }).join("") || '<li class="note">発表する賞がありません（参加者がいないか、景品の一覧が空です）</li>';
+      if (!force && box._h === h) return; box._h = h; box.innerHTML = h;
+      box.querySelectorAll("[data-cgj]").forEach((x) => (x.onclick = () => { const j = +x.dataset.cgj; if (!(H.cere && H.S.view === "cere") && !confirm("表彰式を始めて、この賞から発表します。よろしいですか？")) return; window.__cereJump(j); drawCg(true); }));
+    };
+    window.__drawCg = drawCg;
+    setInterval(() => { if (H.tab === "cere" || document.querySelector('#hostV7 [data-hp="cere"]')?.offsetParent) drawCg(); }, 1200);
+  }
   document.querySelectorAll("#hostV7 [data-view]").forEach((b) => (b.onclick = () => act("view", { v: b.dataset.view })));
   function render() {
     const S = viewState(), l = answersList();
@@ -8560,7 +8633,7 @@ function playerPage(room, bi) {
     const h = ["", ...st].map((s2) => { const n = L.filter((x) => !s2 || (x.s || "店舗なし") === s2), d = n.filter((x) => bAns[x.k]).length; return `<button class="bnchip${s2 === bSf ? " on" : ""}" data-sf="${esc(s2)}">${s2 ? esc(s2) : "すべて"}<small>${d}/${n.length}</small></button>`; }).join("");
     if (box._h === h) return; box._h = h; box.innerHTML = h; box.querySelectorAll("[data-sf]").forEach((x) => (x.onclick = () => { bSf = x.dataset.sf; redraw(); })); };
   document.body.classList.add("v-player");
-  let roster = [], pickStore = store.get("hq-pick-store", ""), pendingForce = null;
+  let roster = [], pickStore = store.get("hq-pick-store", ""), pendingForce = null, cgBuzz = "";
   const openedAt = Date.now();
   const cli = connectAny(bi, room, ["state", "roster", "img/+", "r/" + P.cid, "clock", "@" + LOBBY + "/cur"], (t, d) => (t === "clock" ? hostClock(d && d.now) : onMsg(t, d)), () => {
     if (!up) { up = true; if (!P.name) show("vJoin"); else loading("参加の確認をしています", ""); }
@@ -8603,6 +8676,7 @@ function playerPage(room, bi) {
       if (joined && wasStanding === false && sn === true && S.revive) { reviveFx = Date.now(); try { navigator.vibrate && navigator.vibrate([60, 40, 60, 40, 120]); } catch (e) {} }
       if (joined && wasStanding === true && sn === false) { seatFx = Date.now(); try { navigator.vibrate && navigator.vibrate([80, 60, 200]); } catch (e) {} }
       wasStanding = sn;
+      { const c = S.view === "cere" && S.cere, it = c && c.item; const k = c && c.step === "name" && it && (it.name === P.name || (it.ns || []).includes(P.name)) ? "cg" + c.i : ""; if (joined && k && k !== cgBuzz) { try { navigator.vibrate && navigator.vibrate([200, 100, 200, 100, 400]); } catch (e) {} beep(988); } cgBuzz = k; }
       if (joined) render();
       return;
     }
@@ -8811,8 +8885,10 @@ function playerPage(room, bi) {
     }
     if (S.view === "cere") {
       const c = S.cere || {}, it = c.item || {};
-      const mine = c.step === "name" && it.name === P.name;
-      el.innerHTML = fx + `<div class="status"><div class="h">${mine ? "🎉 おめでとうございます！" : "表彰式"}</div><div class="s">${c.step === "name" ? `${esc(it.rankText)}：${esc(it.name)}${mine && it.memo ? `<br>景品：${esc(it.memo)}` : ""}` : c.step === "rank" ? `${esc(it.rankText)}は…` : "モニターをご覧ください"}</div></div>`;
+      const mine = c.step === "name" && (it.name === P.name || (it.ns || []).includes(P.name));
+      const myL = mine && it.multi ? (it.list || []).find((x) => String(x.n || "").includes(P.name)) : null;
+      if (mine) { el.innerHTML = fx + `<div class="status cgme"><div class="h">🎉 おめでとうございます！</div><div class="cgprize">${esc(it.multi ? it.label : it.rankText + "　" + it.label)}${myL && myL.r ? `<small>（${esc(myL.r)}）</small>` : ""}</div><div class="cggo">ステージ前へ<br>お越しください</div>${it.memo || (myL && myL.m) ? `<div class="s">景品：${esc(it.memo || myL.m)}</div>` : ""}</div>`; return; }
+      el.innerHTML = fx + `<div class="status"><div class="h">表彰式</div><div class="s">${c.step === "name" ? (it.multi ? `${esc(it.label)}（${it.n}名）発表中` : `${esc(it.rankText)}：${esc(it.name)}`) : c.step === "rank" ? `${esc(it.multi ? it.label : it.rankText)}は…` : "モニターをご覧ください"}</div></div>`;
       return;
     }
     if (S.phase === "idle" || !S.rid) {
