@@ -1866,6 +1866,11 @@ select option{color:#0E1846;background:#fff}
 .cgl li.on{background:rgba(255,200,61,.18)}.cgl li.done{opacity:.55}
 .cgl li .cgn{flex:1;min-width:0}.cgl li .cgn small{display:block;opacity:.75;font-size:.8em;overflow-wrap:anywhere}
 .cgl li .cgno{width:2.2em;text-align:right;opacity:.7}
+#przList tr.drg{cursor:grab}#przList tr.dragging{opacity:.4}#przList tr.dropto td{border-top:3px solid #E8B740}
+.cgl li.drg{cursor:grab}.cgl li.dragging{opacity:.4}.cgl li.dropto{box-shadow:inset 0 3px 0 #E8B740}
+.cgl li .cgh{opacity:.5;cursor:grab;padding:0 2px}
+#przList .pzh{display:inline-block;cursor:grab;opacity:.6;font-weight:900;padding:6px 6px 6px 0;user-select:none;vertical-align:middle}#przList .pzh:hover{opacity:1}
+#przList tr.drg{cursor:default}#przList td:first-child{white-space:nowrap}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -2077,7 +2082,7 @@ select option{color:#0E1846;background:#fff}
           <h2>賞の設定</h2>
           <p class="note" id="przSum" style="margin:0 0 8px"></p>
           <div class="tbl-wrap" style="max-height:340px;overflow:auto"><table class="przt"><thead><tr><th>順位</th><th>賞の名前</th><th>景品メモ</th><th></th></tr></thead><tbody id="przList"></tbody></table></div>
-          <div class="row"><button class="btn" id="pAdd">＋ 順位を追加</button><button class="btn" id="pBooby">＋ ブービー賞</button><button class="btn" id="pLast">＋ 最下位賞</button><button class="btn" id="pKiri">＋ キリ番（15・25・35・45位）</button><button class="btn" id="pChamp">＋ チャンピオン賞</button><button class="btn" id="pManual">＋ 手動の賞（モルック表彰など）</button><button class="ghost" id="pReset">初期設定に戻す</button></div>
+          <div class="row"><button class="btn" id="pAdd">＋ 順位を追加</button><button class="btn" id="pMolkF">＋ モルック決勝出場賞</button><button class="btn" id="pBooby">＋ ブービー賞</button><button class="btn" id="pLast">＋ 最下位賞</button><button class="btn" id="pKiri">＋ キリ番（15・25・35・45位）</button><button class="btn" id="pChamp">＋ チャンピオン賞</button><button class="btn" id="pManual">＋ 手動の賞（モルック表彰など）</button><button class="ghost" id="pReset">初期設定に戻す</button></div>
           <p class="note" style="margin:10px 0 4px" id="tieInfo"></p>
           <div class="row"><button class="btn" id="tieDraw">同点を抽選</button></div>
           <p class="note" style="margin:8px 0 0">順位は ①総合ポイント → ②正解した問題のタイム合計が短い順 → ③抽選 で決め、同じ順位の人は出ません。参加人数を超える順位の賞は自動で飛ばします。</p>
@@ -5150,7 +5155,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "11/2-3";
+const APPVER = "11/2-6";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -6148,7 +6153,8 @@ function hostPage() {
   function awards() {
     const R = ranking(), N = R.length, out = [];
     H.prizes.filter((p) => p.type === "manual").forEach((p) => out.push({ id: p.id, kind: "manual", rank: null, label: p.label, memo: p.memo, n: p.winner || "（受賞者未入力）", pos: p.pos === "before" ? "before" : "after" }));
-    H.prizes.filter((p) => p.type !== "champ" && p.type !== "manual").forEach((p) => {
+    H.prizes.filter((p) => p.type === "molk").forEach((p) => (window.__molkFinalists ? window.__molkFinalists() : []).forEach((x, j) => out.push({ id: p.id + "-m" + j, pid: p.id, kind: "manual", molk: true, rank: null, label: p.label, memo: p.memo, n: x.n, key: x.key, st: x.s, pos: "after" })));
+    H.prizes.filter((p) => p.type !== "champ" && p.type !== "manual" && p.type !== "molk").forEach((p) => {
       const r = p.type === "booby" ? N - 1 : p.type === "last" ? N : +p.rank;
       if (!(r >= 1 && r <= N)) return;
       const w = R[r - 1];
@@ -6173,6 +6179,7 @@ function hostPage() {
     return H.prizes.map((p) => {
       if (p.type === "champ") return { rankText: "各ピリオドの優勝者", label: p.label, memo: p.memo, big: false, r: 0 };
       if (p.type === "manual") return { rankText: p.label, label: "特別表彰", memo: p.memo, big: false, r: p.pos === "before" ? -1 : 1000 };
+      if (p.type === "molk") return { rankText: "モルック決勝", label: p.label, memo: p.memo, big: false, r: 1001 };
       const r = p.type === "booby" ? N - 1 : p.type === "last" ? N : +p.rank;
       if (N && !(r >= 1 && r <= N)) return null;
       return { rankText: p.type === "booby" ? "ブービー" : p.type === "last" ? "最下位" : `${p.rank}位`, label: p.label, memo: p.memo, big: r <= 3, r: r || 999 };
@@ -6481,7 +6488,7 @@ function hostPage() {
   // 表彰の順番：③表彰の景品一覧の「下から」。同じ名前の賞（「（…）」より前が同じ）が続くときは、まとめて1回で発表する
   function cereBuild() {
     const list = awards(), byId = {};
-    list.forEach((x) => { const id = x.kind === "champ" ? String(x.id).replace(/-\d+$/, "") : x.id; (byId[id] = byId[id] || []).push(x); });
+    list.forEach((x) => { const id = x.pid || (x.kind === "champ" ? String(x.id).replace(/-\d+$/, "") : x.id); (byId[id] = byId[id] || []).push(x); });
     const base = (s) => String(s || "").replace(/[（(].*$/, "").trim() || String(s || "");
     const grpOn = H.opt.cereGroup !== false, items = [], groups = [];
     H.prizes.slice().reverse().forEach((p) => {
@@ -6506,7 +6513,7 @@ function hostPage() {
       if (its.length > 1) {
         const memo = its.every((x) => (x.memo || "") === (its[0].memo || "")) ? its[0].memo || "" : "";
         const item = { multi: true, label: g.base, rankText: g.base, kind: its[0].kind, memo, n: its.length, ranks: its.map((x) => (x.kind === "champ" ? `第${x.period}ピリオド` : x.kind === "manual" ? "" : rankText(x))).filter(Boolean) };
-        if (st === "name") { item.list = its.map((x) => ({ r: x.kind === "champ" ? `第${x.period}P` : x.kind === "manual" ? "" : rankText(x), n: x.n, s: (x.key && H.rstore[x.key]) || "", m: memo ? "" : x.memo || "" })); item.ns = [].concat(...its.map(cereNames)); }
+        if (st === "name") { item.list = its.map((x) => ({ r: x.kind === "champ" ? `第${x.period}P` : x.kind === "manual" ? "" : rankText(x), n: x.n, s: (x.key && H.rstore[x.key]) || x.st || "", m: memo ? "" : x.memo || "" })); item.ns = [].concat(...its.map(cereNames)); }
         return { step: st, i: C.i, total: G.length, item };
       }
       const it = its[0];
@@ -6653,6 +6660,10 @@ function hostPage() {
   function renderPrizes() {
     const N = Object.keys(H.roster).length, NA = ranking().length;
     $("#przList").innerHTML = H.prizes.map((p, i) => {
+      if (p.type === "molk") { const F = window.__molkFinalists ? window.__molkFinalists() : []; return `<tr class="manual"><td><span class="note">モルック決勝</span></td>
+        <td><input type="text" value="${esc(p.label)}" data-f="label" data-i="${i}" maxlength="30" placeholder="賞の名前"><div class="note" style="margin-top:4px">受賞者（自動）：${F.length ? F.map((x) => esc(x.n + (x.s ? `（${x.s}）` : ""))).join("・") : "決勝の出場者がまだ決まっていません"}<br>決勝に出た人のうち、本社チーム以外の全員（順位は関係なし）</div></td>
+        <td><input type="text" value="${esc(p.memo)}" data-f="memo" data-i="${i}" maxlength="40" placeholder="景品メモ"></td>
+        <td style="white-space:nowrap"><span class="note">自動の賞</span> <button class="mini mv" data-pmv="${i}:-1" ${i ? "" : "disabled"}>▲</button><button class="mini mv" data-pmv="${i}:1" ${i < H.prizes.length - 1 ? "" : "disabled"}>▼</button> <button class="mini" data-pdel="${i}">削除</button></td></tr>`; }
       if (p.type === "manual") return `<tr class="manual"><td><select data-f="pos" data-i="${i}"><option value="before"${p.pos === "before" ? " selected" : ""}>クイズの前</option><option value="after"${p.pos !== "before" ? " selected" : ""}>最後</option></select></td>
         <td><input type="text" value="${esc(p.label)}" data-f="label" data-i="${i}" maxlength="30" placeholder="賞の名前"><input type="text" value="${esc(p.winner || "")}" data-f="winner" data-i="${i}" maxlength="40" placeholder="受賞者（チーム名・個人名）" style="margin-top:4px"></td>
         <td><input type="text" value="${esc(p.memo)}" data-f="memo" data-i="${i}" maxlength="40" placeholder="景品メモ"></td>
@@ -6672,12 +6683,21 @@ function hostPage() {
     }));
     $("#przList").querySelectorAll("[data-pdel]").forEach((x) => (x.onclick = () => { H.prizes.splice(+x.dataset.pdel, 1); save(); render(); }));
     $("#przList").querySelectorAll("[data-pmv]").forEach((x) => (x.onclick = () => { const [i, d] = x.dataset.pmv.split(":").map(Number), j = i + d; if (j < 0 || j >= H.prizes.length) return; const [it] = H.prizes.splice(i, 1); H.prizes.splice(j, 0, it); save(); render(); }));
+    $("#przList").querySelectorAll(":scope > tr").forEach((tr, i) => {
+      if (!H.prizes[i]) return; tr.classList.add("drg");
+      { const td = tr.firstElementChild; if (td && !td.querySelector(".pzh")) { const hd = document.createElement("span"); hd.className = "pzh"; hd.title = "ドラッグで並べ替え"; hd.textContent = "⋮⋮"; hd.draggable = true; td.prepend(hd);
+        hd.ondragstart = (e) => { e.dataTransfer.setData("text/prz", String(i)); e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setDragImage(tr, 20, 20); } catch (x) {} tr.classList.add("dragging"); };
+        hd.ondragend = () => tr.classList.remove("dragging"); } }
+      tr.ondragover = (e) => { if ([...e.dataTransfer.types].includes("text/prz")) { e.preventDefault(); tr.classList.add("dropto"); } };
+      tr.ondragleave = () => tr.classList.remove("dropto");
+      tr.ondrop = (e) => { e.preventDefault(); tr.classList.remove("dropto"); const from = +e.dataTransfer.getData("text/prz"); if (isNaN(from) || from === i) return; const [it] = H.prizes.splice(from, 1); H.prizes.splice(i, 0, it); save(); render(); };
+    });
     if (!$("#przSort") && $("#przList").closest("table")) { const bt = document.createElement("button"); bt.className = "btn"; bt.id = "przSort"; bt.textContent = "↕ 順位の順に並べる"; bt.style.margin = "8px 0"; $("#przList").closest("table").parentNode.insertAdjacentElement("afterend", bt);
       bt.onclick = () => { const N = Object.keys(H.ever).filter((k) => H.roster[k]).length || 999, key = (p) => p.type === "manual" ? (p.pos === "before" ? -1 : 1e6) : p.type === "champ" ? 1e5 : p.type === "booby" ? N - 1 + 0.5 : p.type === "last" ? N + 0.5 : +p.rank; H.prizes.sort((a, b) => key(a) - key(b)); save(); render(); toast("順位の順に並べ直しました"); }; }
     const manualCount = H.prizes.filter((p) => p.type === "manual").length;
-    const rankCount = H.prizes.filter((p) => p.type !== "champ" && p.type !== "manual").filter((p) => { const r = p.type === "booby" ? N - 1 : p.type === "last" ? N : +p.rank; return !N || (r >= 1 && r <= N); }).length;
+    const rankCount = H.prizes.filter((p) => p.type !== "champ" && p.type !== "manual" && p.type !== "molk").filter((p) => { const r = p.type === "booby" ? N - 1 : p.type === "last" ? N : +p.rank; return !N || (r >= 1 && r <= N); }).length;
     const hasChamp = H.prizes.some((p) => p.type === "champ");
-    const rankAll = H.prizes.filter((p) => p.type !== "champ" && p.type !== "manual").length;
+    const rankAll = H.prizes.filter((p) => p.type !== "champ" && p.type !== "manual" && p.type !== "molk").length;
     const short = NA ? H.prizes.filter((p) => p.type === "rank" && +p.rank > NA && +p.rank <= N).length : 0;
     $("#przSum").innerHTML = `<b>順位の賞 ${rankCount}個</b>` + (rankAll > rankCount ? `（名簿${N}人で対象外 ${rankAll - rankCount}個）` : "") + (manualCount ? ` ＋ 手動の賞 ${manualCount}個` : "") + (hasChamp ? ` ＋ ピリオドチャンピオン賞（ピリオド数ぶん）` : "") + `<br><span class="note">名簿 ${N}人で計算${NA ? `／いま参加 ${NA}人` : ""}</span>` + (short ? `<div class="pwarnbox">⚠ いまの参加は ${NA}人です。${NA + 1}位以下の賞 ${short}個は、このままだと表彰式で飛ばされます（参加者が増えれば自動で戻ります）</div>` : "");
     const tg = tieGroups().filter((g) => g.length > 1);
@@ -6686,6 +6706,7 @@ function hostPage() {
   const addPrize = (type, rank, label) => { H.prizes.push({ id: pid(), type, rank, label, memo: "" }); save(); render(); };
   $("#pAdd").onclick = () => { const r = parseInt(prompt("何位に賞を付けますか？（数字）", "15"), 10); if (r >= 1) addPrize("rank", r, "特別賞"); };
   $("#pBooby").onclick = () => addPrize("booby", 0, "ブービー賞");
+  $("#pMolkF").onclick = () => { if (H.prizes.some((p) => p.type === "molk")) return toast("すでにあります"); addPrize("molk", 0, "モルック決勝出場賞"); toast("決勝に出た人（本社チーム以外）が自動で受賞者になります"); };
   $("#pLast").onclick = () => addPrize("last", 0, "最下位賞");
   $("#pKiri").onclick = () => { [15, 25, 35, 45].forEach((r) => H.prizes.push({ id: pid(), type: "rank", rank: r, label: "キリ番賞", memo: "" })); save(); render(); };
   $("#pManual").onclick = () => { H.prizes.push({ id: pid(), type: "manual", rank: 0, label: "モルック大会 優勝", winner: "", memo: "", pos: "before" }); save(); render(); };
@@ -8157,7 +8178,7 @@ function hostPage() {
     if (card) {
       const h2 = card.querySelector("h2");
       h2 && h2.insertAdjacentHTML("beforeend", ` <button class="btn mini2" id="peditOn" style="float:right">🗂 景品の編集モード</button>`);
-      const bar = document.createElement("div"); bar.id = "peditBar"; bar.innerHTML = `<b>🗂 景品の編集モード</b><span class="note">賞の名前・景品メモの入力、▲▼で並べ替え、追加・削除ができます。</span><span style="flex:1"></span><button class="btn go" id="peditOff">✓ 編集を終わる</button>`;
+      const bar = document.createElement("div"); bar.id = "peditBar"; bar.innerHTML = `<b>🗂 景品の編集モード</b><span class="note">賞の名前・景品メモの入力、左の⋮⋮をドラッグ（または▲▼）で並べ替え、追加・削除ができます。<b>表彰は一覧の下から発表します。</b></span><span style="flex:1"></span><button class="btn go" id="peditOff">✓ 編集を終わる</button>`;
       card.prepend(bar);
       const set = (on) => { document.getElementById("hostV7").classList.toggle("pedit", on); card.classList.toggle("pecard", on); if (on) { setTab("cere"); window.scrollTo(0, 0); card.scrollIntoView({ block: "start" }); } render(); };
       $("#peditOn").onclick = (e) => { e.stopPropagation(); set(true); };
@@ -8504,7 +8525,7 @@ function hostPage() {
     const dst = document.querySelector('#hostV7 [data-hp="cere"] .colA') || document.querySelector('#hostV7 [data-hp="cere"]');
     const cg = document.createElement("div"); cg.className = "ctl"; cg.id = "cgCard";
     cg.innerHTML = `<h3 style="margin:0 0 4px">🎤 表彰の進行</h3>
-      <p class="note" style="margin:0 0 6px">景品の一覧の<b>下から</b>発表します。同じ名前の賞（「（…）」より前が同じ）が続くときは、<b>まとめて1回</b>で発表し、受賞者のスマホに「ステージ前へ」と出します。▶で好きな賞から発表できます。</p>
+      <p class="note" style="margin:0 0 6px">景品の一覧の<b>下から</b>発表します。同じ名前の賞（「（…）」より前が同じ）が続くときは、<b>まとめて1回</b>で発表し、受賞者のスマホに「ステージ前へ」と出します。▶で好きな賞から発表できます。<b>⋮⋮をドラッグ</b>で発表の順番を変えられます（景品の一覧の並びも連動します）。</p>
       <label class="chk2"><input type="checkbox" id="cgGrp"> 同じ名前の賞はまとめて発表する</label>
       <ol class="cgl" id="cgList"></ol>`;
     dst && dst.prepend(cg);
@@ -8517,13 +8538,35 @@ function hostPage() {
       const cur = live ? H.cere.i : -1, step = live ? H.cere.step : "";
       const h = B.groups.map((g, j) => { const its = g.idx.map((k) => B.items[k]);
         const sub = its.map((x) => `${x.kind === "champ" ? `第${x.period}P` : x.kind === "manual" ? "" : rankText(x)}${live || its.length < 6 ? " " + x.n : ""}`.trim()).join("・");
-        return `<li class="${j === cur ? "on" : j < cur ? "done" : ""}"><span class="cgno">${j + 1}</span><span class="cgn"><b>${esc(g.base)}</b>${its.length > 1 ? `（${its.length}名）` : ""}<small>${esc(sub)}</small></span>${j === cur ? `<span class="note">${step === "rank" ? "発表前" : step === "name" ? "発表中" : ""}</span>` : ""}<button class="mini" data-cgj="${j}">▶ 発表</button></li>`; }).join("") || '<li class="note">発表する賞がありません（参加者がいないか、景品の一覧が空です）</li>';
+        return `<li data-g="${j}" class="${j === cur ? "on" : j < cur ? "done" : ""}">${live ? "" : '<span class="cgh" title="ドラッグで並べ替え">⋮⋮</span>'}<span class="cgno">${j + 1}</span><span class="cgn"><b>${esc(g.base)}</b>${its.length > 1 ? `（${its.length}名）` : ""}<small>${esc(sub)}</small></span>${j === cur ? `<span class="note">${step === "rank" ? "発表前" : step === "name" ? "発表中" : ""}</span>` : ""}<button class="mini" data-cgj="${j}">▶ 発表</button></li>`; }).join("") || '<li class="note">発表する賞がありません（参加者がいないか、景品の一覧が空です）</li>';
       if (!force && box._h === h) return; box._h = h; box.innerHTML = h;
+      // ドラッグで発表の順番を入れ替え（＝景品の一覧の並びを入れ替える。一覧の下から発表するので、発表順を逆にして戻す）
+      if (!live) box.querySelectorAll("li[data-g]").forEach((li) => {
+        const j = +li.dataset.g; li.draggable = true; li.classList.add("drg");
+        li.ondragstart = (e) => { e.dataTransfer.setData("text/cg", String(j)); e.dataTransfer.effectAllowed = "move"; li.classList.add("dragging"); };
+        li.ondragend = () => li.classList.remove("dragging");
+        li.ondragover = (e) => { if ([...e.dataTransfer.types].includes("text/cg")) { e.preventDefault(); li.classList.add("dropto"); } };
+        li.ondragleave = () => li.classList.remove("dropto");
+        li.ondrop = (e) => { e.preventDefault(); li.classList.remove("dropto"); const from = +e.dataTransfer.getData("text/cg"); if (isNaN(from) || from === j) return; cgMove(B, from, j); };
+      });
       box.querySelectorAll("[data-cgj]").forEach((x) => (x.onclick = () => { const j = +x.dataset.cgj; if (!(H.cere && H.S.view === "cere") && !confirm("表彰式を始めて、この賞から発表します。よろしいですか？")) return; window.__cereJump(j); drawCg(true); }));
+    };
+    // グループ from を to の位置へ。発表に出ない賞（参加人数より下の順位など）は一覧の今の場所に残す
+    const cgMove = (B, from, to) => {
+      const pid = (it) => it.pid || (it.kind === "champ" ? String(it.id).replace(/-\d+$/, "") : it.id);
+      const ann = B.groups.map((g) => [...new Set(g.idx.map((k) => pid(B.items[k])))]);
+      const [mv] = ann.splice(from, 1); ann.splice(to, 0, mv);
+      const order = ann.flat().reverse(), present = new Set(order), byId = Object.fromEntries(H.prizes.map((p) => [p.id, p]));
+      let n = 0; H.prizes = H.prizes.map((p) => (present.has(p.id) ? byId[order[n++]] : p));
+      save(); render(); drawCg(true); toast(`「${B.groups[from].base}」を${to + 1}番目に移動しました`);
     };
     window.__drawCg = drawCg;
     setInterval(() => { if (H.tab === "cere" || document.querySelector('#hostV7 [data-hp="cere"]')?.offsetParent) drawCg(); }, 1200);
   }
+  // モルック決勝の出場者（本社チームを除く・2人1組なら2人とも）
+  window.__molkFinalists = () => { const g = G(); if (!g) return []; const P = g.stage === "F" && (g.players || []).length ? g.players : g.sd && g.sd.F && g.sd.F.players; const out = [];
+    (P || []).filter((p) => p && p.s !== "本社").forEach((p) => [p.n, p.n2].filter(Boolean).forEach((n) => { const k = normName(n); out.push({ n, key: H.roster[k] ? k : null, s: p.s || "" }); }));
+    return out; };
   document.querySelectorAll("#hostV7 [data-view]").forEach((b) => (b.onclick = () => act("view", { v: b.dataset.view })));
   function render() {
     const S = viewState(), l = answersList();
