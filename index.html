@@ -5172,7 +5172,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "11/2-11";
+const APPVER = "11/2-12";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -8093,7 +8093,7 @@ function hostPage() {
   // 一括リセット（設定の「得点などを一括リセット」から呼ばれる）
   window.__resetExtra = () => { const g = G();
     g.log = []; g.ordSt = null; g.introOn = false; g.shufOn = false; Object.values(g.sd || {}).forEach((x) => { if (x) x.log = []; });
-    if (g.stage && g.stage !== "free") { g.players = gBuild(g, g.stage); } (g.pool || []).forEach((p) => { if (p.g) p.g.F = false; });
+    if (g.stage && g.stage !== "free") { g.players = gBuild(g, g.stage); } /* 11/2-12：決勝で投げる人のチェック（p.g.F）はリセットで消さない */
     H.molkQ = null; H.molkPend = null; H.pairFlow = 0; H.flowCur = null; H.pollQ = null;
     (H.pairs || []).forEach((x) => (x.partner = null));
     if (H.seat) H.seat.hobby = null;
