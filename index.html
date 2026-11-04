@@ -1394,6 +1394,17 @@ body.v-player.offline #offBar{display:block}
 .tv .cg-nm{font:900 64px/1.15 var(--lux,serif);overflow-wrap:anywhere;text-align:center}
 .tv .cg-s{font-size:26px;color:#5B4A7A}.tv .cg-m{font-size:24px;color:#7A4B00}
 .tv .cg-go{font:900 44px/1.3 var(--lux,serif);color:#FFE7A0;text-shadow:0 0 20px rgba(255,210,90,.6)}
+/* 表彰式：人数が多いときはカードを小さく（3段・4段以上） */
+.tv .cg-wrap.cg-r3{gap:12px}.tv .cg-wrap.cg-r3 .cg-grid{gap:12px}.tv .cg-wrap.cg-r3 .cg-card{padding:12px 10px;gap:2px}.tv .cg-wrap.cg-r3 .cg-nm{font-size:50px}.tv .cg-wrap.cg-r3 .cg-r{font-size:24px}.tv .cg-wrap.cg-r3 .cg-s{font-size:22px}.tv .cg-wrap.cg-r3 .cg-go{font-size:34px}.tv .cg-wrap.cg-r3 .memo{margin-top:0;padding:6px 22px;font-size:34px}
+.tv .cg-wrap.cg-r4{gap:8px}.tv .cg-wrap.cg-r4 .kick{font-size:40px}.tv .cg-wrap.cg-r4 .cg-grid{gap:8px}.tv .cg-wrap.cg-r4 .cg-card{padding:8px 8px;gap:0}.tv .cg-wrap.cg-r4 .cg-nm{font-size:40px}.tv .cg-wrap.cg-r4 .cg-r{font-size:20px}.tv .cg-wrap.cg-r4 .cg-s{font-size:18px}.tv .cg-wrap.cg-r4 .cg-go{font-size:28px}.tv .cg-wrap.cg-r4 .memo{margin-top:0;padding:4px 18px;font-size:28px}
+.tv .cg-wrap .cg-grid{width:1760px;max-width:92%}.tv .cg-wrap .cg-card{min-width:0}.tv .cg-wrap .cg-nm{white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:clip}
+.tv .cg-wrap.cg-c5 .cg-nm{font-size:48px}.tv .cg-wrap.cg-c5.cg-r4 .cg-nm{font-size:40px}
+.tv .cg-wrap.cg-c6 .cg-nm{font-size:40px}.tv .cg-wrap.cg-c6.cg-r4 .cg-nm{font-size:36px}
+/* 11/2-11：ペア抽選（全員同時）は同じ大きさのカードを並べる */
+.ex-wrap.pa .ex-card{flex:0 0 520px;height:440px;border-width:5px}
+.ex-wrap.pa .ex-lab{font-size:60px;letter-spacing:.02em;display:flex;flex-direction:column;align-items:center;gap:8px;white-space:nowrap}
+.ex-wrap.pa .ex-lab small{font-size:34px;letter-spacing:.1em}
+.ex-wrap.pa .ex-nm{font-size:74px}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -1871,6 +1882,12 @@ select option{color:#0E1846;background:#fff}
 .cgl li .cgh{opacity:.5;cursor:grab;padding:0 2px}
 #przList .pzh{display:inline-block;cursor:grab;opacity:.6;font-weight:900;padding:6px 6px 6px 0;user-select:none;vertical-align:middle}#przList .pzh:hover{opacity:1}
 #przList tr.drg{cursor:default}#przList td:first-child{white-space:nowrap}
+/* 11/2-9：右下のリンク再生プレイヤーは小さく（♪だけ）。クリックで動画を開閉 */
+#linkBox{padding:3px 4px;cursor:pointer;user-select:none}
+#linkBox .lbhead{padding:2px 6px;font-size:.8rem}
+#linkBox:not(.big) .lbstage{position:absolute;left:-10000px;top:0}
+#linkBox:not(.big) .lbhead::after{content:" ▸";opacity:.7}
+#linkBox.big .lbhead::after{content:" ▾ 小さくする";opacity:.7}
 
 .ox{position:fixed;inset:0;z-index:70;display:grid;place-items:center;pointer-events:none;animation:oxf 1.7s both}
 .ox b{font-family:var(--disp);font-size:min(78vw,60vh);line-height:1;font-weight:400}
@@ -5155,7 +5172,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "11/2-7";
+const APPVER = "11/2-11";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -5328,7 +5345,7 @@ function monHTML(S, list, joinURL) {
     if (c.step === "intro") body = `<div class="tv-center spot"><div class="kick">いよいよ</div><div class="giant gold pop">表彰式</div><div class="sub">全 ${c.total || 0} 賞を発表します</div></div>`;
     else if (c.step === "end") { body = `<div class="tv-center spot"><div class="giant gold pop">おめでとう<br>ございます！</div><div class="sub">ご参加ありがとうございました</div></div>`; fx = confetti(90); }
     else if (c.step === "rank" && it.multi) body = `<div class="tv-center spot"><div class="kick">${it.n}名 まとめて発表</div><div class="giant gold">${esc(it.label)}は…</div>${it.ranks && it.ranks.length ? `<div class="sub">${esc(it.ranks.join("・"))}</div>` : ""}<div class="drum">♪ ドゥルルルル…</div></div>`;
-    else if (c.step === "name" && it.multi) { const L = it.list || [], n = L.length; body = `<div class="tv-center spot cg-wrap"><div class="kick">${esc(it.label)}　${n}名</div><div class="cg-grid cg-n${Math.min(n, 9)}">${L.map((x) => `<div class="cg-card pop">${x.r ? `<span class="cg-r">${esc(x.r)}</span>` : ""}<b class="cg-nm">${esc(x.n)}</b>${x.s ? `<small class="cg-s">${esc(x.s)}</small>` : ""}${x.m ? `<small class="cg-m">🎁 ${esc(x.m)}</small>` : ""}</div>`).join("")}</div><div class="cg-go">受賞者のみなさん、ステージ前へどうぞ！</div>${it.memo ? `<div class="memo">🎁 ${esc(it.memo)}</div>` : ""}</div>`; fx = confetti(80); }
+    else if (c.step === "name" && it.multi) { const L = it.list || [], n = L.length, cols = n <= 3 ? Math.max(n, 1) : n === 4 ? 4 : n <= 6 ? 3 : n <= 8 ? 4 : n <= 10 ? 5 : n <= 12 ? 4 : n <= 15 ? 5 : 6, rows = Math.ceil(n / cols), sz = (rows <= 2 ? "" : rows === 3 ? " cg-r3" : " cg-r4") + (cols >= 5 ? " cg-c" + cols : ""); body = `<div class="tv-center spot cg-wrap${sz}"><div class="kick">${esc(it.label)}　${n}名</div><div class="cg-grid cg-n${Math.min(n, 3)}" style="grid-template-columns:repeat(${cols},minmax(0,1fr))">${L.map((x) => `<div class="cg-card pop">${x.r ? `<span class="cg-r">${esc(x.r)}</span>` : ""}<b class="cg-nm">${esc(x.n)}</b>${x.s ? `<small class="cg-s">${esc(x.s)}</small>` : ""}${x.m ? `<small class="cg-m">🎁 ${esc(x.m)}</small>` : ""}</div>`).join("")}</div><div class="cg-go">受賞者のみなさん、ステージ前へどうぞ！</div>${it.memo ? `<div class="memo">🎁 ${esc(it.memo)}</div>` : ""}</div>`; fx = confetti(80); }
     else if (c.step === "rank") body = `<div class="tv-center spot${it.big ? " hot" : ""}"><div class="kick">${esc(it.label)}</div><div class="giant gold">${esc(it.rankText)}は…</div><div class="drum">♪ ドゥルルルル…</div></div>`;
     else { body = `<div class="tv-center spot${it.big ? " hot" : ""}"><div class="kick">${esc(it.rankText)}　${esc(it.label)}</div><div class="winner pop">${esc(it.name)}</div>${it.info ? `<div class="sub">${esc(it.info)}</div>` : ""}${it.memo ? `<div class="memo">🎁 ${esc(it.memo)}</div>` : ""}</div>`; if (it.first || it.kind === "champ" || it.big) fx = confetti(it.first ? 150 : 80); }
     const prog = c.step === "rank" || c.step === "name" ? `<div class="tv-prog">${(c.i || 0) + 1} / ${c.total || 0}</div>` : "";
@@ -5635,7 +5652,7 @@ function rulesMonHTML(S) {
 const LOTDONE = {};
 function lotMonHTML(S) {
   const t = S.lot || {}, isP = t.kind === "pair";
-  if (t.kind === "exec") return execMonHTML(S);
+  if (t.kind === "exec" || t.kind === "pairAll") return execMonHTML(S);
   const pool = isP ? (t.pool || []) : [];
   const fin = t.res != null ? String(t.res) : "";
   const sub = isP ? "" : t.name ? `<div class="lot-nm"><small>${esc(String(t.res))}位</small>${esc(t.name)}<small>さん</small></div>` : "";
@@ -5857,9 +5874,9 @@ const EXT = {};
 function execMonHTML(S) {
   const t = S.lot || {}, R = t.res || [], at = t.at || 0;
   const conf = Array.from({ length: 90 }, (_, i) => `<i style="left:${(i * 37) % 100}%;background:${["#FFD55A", "#FFF3C4", "#E8B923", "#ffffff", "#FF8FB1"][i % 5]};animation-delay:${((i % 15) * 0.09).toFixed(2)}s;--dx:${((i * 53) % 240) - 120}px;--rt:${(i * 47) % 720}deg"></i>`).join("");
-  const cards = R.map((r, i) => `<div class="ex-card ex-c${i}"><div class="ex-lab">${esc(r.label || "")}</div><div class="ex-box"><div class="ex-nm js-exn" data-i="${i}">？？？</div></div><div class="ex-st">${esc(r.s || "")}</div><div class="ex-burst"></div></div>`).join("");
-  return { key: "ex-" + at, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="ex-wrap js-ex" data-at="${at}" data-pool="${esc(JSON.stringify(t.pool || []))}" data-res="${esc(JSON.stringify(R.map((r) => r.n)))}">
-    <div class="ex-rays"></div><div class="ex-t"><small>豪華</small>${esc(t.title || "役員賞 大抽選会")}</div><div class="ex-row">${cards}</div><div class="ex-conf">${conf}</div></div></div>${telopHTML("抽選", esc(t.title || "役員賞 大抽選会"))}` };
+  const cards = R.map((r, i) => `<div class="ex-card ex-c${i}"><div class="ex-lab">${esc(r.label || "")}${t.kind === "pairAll" ? "<small>さんの相棒</small>" : ""}</div><div class="ex-box"><div class="ex-nm js-exn" data-i="${i}">？？？</div></div><div class="ex-st">${esc(r.s || "")}</div><div class="ex-burst"></div></div>`).join("");
+  return { key: "ex-" + at, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="ex-wrap js-ex${t.kind === "pairAll" ? " pa" : ""}" data-at="${at}" data-pool="${esc(JSON.stringify(t.pool || []))}" data-res="${esc(JSON.stringify(R.map((r) => r.n)))}">
+    <div class="ex-rays"></div><div class="ex-t"><small>${t.kind === "pairAll" ? "スタッフの相棒は？" : "豪華"}</small>${esc(t.title || "役員賞 大抽選会")}</div><div class="ex-row">${cards}</div><div class="ex-conf">${conf}</div></div></div>${telopHTML("抽選", esc(t.title || "役員賞 大抽選会"))}` };
 }
 setInterval(() => { document.querySelectorAll(".js-ex").forEach((w) => {
   const at = +w.dataset.at; if (!EXT[at]) { const late = hostNow() - at; EXT[at] = performance.now() - (late > 4000 ? late : 0); } // 途中から開いた画面は、その時点から
@@ -7862,14 +7879,30 @@ function hostPage() {
     const lotBoom = (at) => setTimeout(() => { if (H.S.view === "lot" && H.S.lot && H.S.lot.at === at) setS(sfx("correct")); }, 6500);
     window.__lotAddPrize = () => { const l = H.lotLast; if (!l) return; H.prizes.push({ id: "m" + Date.now().toString(36), type: "manual", label: l.title, memo: "", winner: l.name || `${l.res}位`, pos: "after" }); save(); render(); toast(`「${l.title}」を賞に追加しました（表彰式の最後に発表）`); };
     $("#pairAddB").onclick = () => { const k = $("#pairAdd").value; if (!k || H.pairs.some((x) => x.k === k)) return; H.pairs.push({ k, partner: null }); save(); render(); };
+    // 11/2-11：まだ決まっていないペアを全員同時に抽選（役員賞と同じ演出で並べて発表）
+    window.__pairDrawAll = () => {
+      const pend = (H.pairs || []).filter((x) => H.roster[x.k] && !(x.partner && H.roster[x.partner])); if (!pend.length) return false;
+      const ghosts = new Set(H.pairs.map((x) => x.k)), taken = new Set(H.pairs.map((x) => x.partner).filter(Boolean));
+      let cand = joined().filter((x) => !ghosts.has(x) && !taken.has(x));
+      if (!cand.length && H.sim) cand = Object.keys(H.ever).filter((x) => H.roster[x] && !ghosts.has(x) && !taken.has(x));
+      if (!cand.length) { toast("抽選できる参加者がいません（スマホで参加している人から選びます）。ペア抽選は飛ばして次へ進めます"); return false; }
+      const sh = cand.slice(); for (let i = sh.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [sh[i], sh[j]] = [sh[j], sh[i]]; }
+      const got = pend.slice(0, sh.length); got.forEach((x, i) => (x.partner = sh[i])); save();
+      if (got.length < pend.length) toast(`参加者が足りないため、${pend.length - got.length}人はペアなしです`);
+      const pool = cand.map((x) => H.roster[x]).sort(() => Math.random() - 0.5).slice(0, 80);
+      const at = Date.now(); setS({ view: "lot", lot: { kind: "pairAll", title: "ペア抽選", res: got.map((x) => ({ label: H.roster[x.k], n: H.roster[x.partner], s: H.rstore[x.partner] || "" })), pool, at }, ...sfx("execLot") });
+      return true;
+    };
     window.__pairDraw = (k) => {
       const pr = H.pairs.find((x) => x.k === k); if (!pr) return;
       const ghosts = new Set(H.pairs.map((x) => x.k)), taken = new Set(H.pairs.filter((x) => x.k !== k).map((x) => x.partner));
-      const cand = joined().filter((x) => !ghosts.has(x) && !taken.has(x));
-      if (!cand.length) return toast("抽選できる参加者がいません（参加者がスマホで参加してから抽選してください）");
+      let cand = joined().filter((x) => !ghosts.has(x) && !taken.has(x));
+      if (!cand.length && H.sim) cand = Object.keys(H.ever).filter((x) => H.roster[x] && !ghosts.has(x) && !taken.has(x)); // 名簿全員リハーサル中はスマホなしでも抽選できる
+      if (!cand.length) { toast("抽選できる参加者がいません（スマホで参加している人から選びます）。ペア抽選は飛ばして次へ進めます"); return false; }
       pr.partner = cand[Math.floor(Math.random() * cand.length)]; save();
       const pool = cand.map((x) => H.roster[x]).sort(() => Math.random() - 0.5).slice(0, 80);
       const at = Date.now(); setS({ view: "lot", lot: { kind: "pair", title: `${H.roster[k]}さんのペアは…`, pool, res: H.roster[pr.partner], at }, ...sfx("drum") }); lotBoom(at);
+      return true;
     };
     window.__lotReset = () => { H.lotUsed = []; save(); render(); toast("出た数字をリセットしました"); };
     // ---- 👔 役員賞 大抽選会（社長賞・副社長賞・常務賞を同時に） ----
@@ -7921,14 +7954,14 @@ function hostPage() {
     const FLOWV = { open: "seat", seatList: "seat", title: "title", att: "att", rules: "rules", seatHobby: "seat", roll: "roll", exec: "lot", cere: "cere", ending: "title" };
     window.__startFlow = (f) => {
       H.flowCur = { f, at: Date.now() };
-      if (f === "open") return window.__seatShow("names"); // 会場オープン：名前つきの座席表（スマホにも「○卓へ」）
+      if (f === "open") return window.__seatShow("store"); // 会場オープン：丸テーブルに店舗名だけの座席表（スマホには名前つきで「○卓へ」が出る）
       if (f === "seatHobby") return window.__seatShow("hobby");
       if (f === "seatList") return window.__seatShow("names");
       if (f === "title" || f === "att" || f === "roll" || f === "ending") { act("view", { v: f === "ending" ? "title" : f }); return true; }
       if (f === "exec") { $("#exGo").click(); return !!(H.S.view === "lot" && H.S.lot && H.S.lot.kind === "exec"); }
       if (f === "cere") { act("cereStart"); return true; }
       if (f === "rules") { act("view", { v: "rules" }); return true; }
-      if (f === "pair") { const p = pairPend(); if (!p.length) { toast("ペアはもう全員決まっています"); return false; } H.pairFlow = 1; save(); window.__pairDraw(p[0].k); return true; }
+      if (f === "pair") { const p = pairPend(); H.pairFlow = 1; save(); if (!p.length) { toast("ペアはもう全員決まっています。もう一度押すと次へ進みます"); return true; } window.__pairDrawAll(); return true; }
       return false;
     };
     const nextBankName = () => { const b = H.bank[H.bankIdx || 0]; if (!b) return ""; if (b.flow) return (FLOW[b.flow] || b.q).replace(/（.*）/, ""); if (b.bonus) return b.bonus === "name" ? "🎁 ボーナス①名前当て" : "🎁 ボーナス②趣味当て"; if (b.molk) return "🎯 モルック" + ({ A: "予選①", B: "予選②", F: "決勝" }[b.molk] || ""); const n = H.bank.slice(0, H.bankIdx || 0).filter((x) => !x.bonus && !x.molk && !x.flow).length + 1; return `第${n}問`; };
@@ -7941,11 +7974,11 @@ function hostPage() {
       return true; };
     window.__flowAdv = () => { const S = H.S;
       if (flowDone(S) && !(H.pairFlow)) { H.flowCur = null; save(); setS({ view: "q" }); if (window.__goNextBank && H.bank[H.bankIdx || 0]) window.__goNextBank(); return true; }
-      if (!(H.pairFlow && S.view === "lot" && S.lot && S.lot.kind === "pair")) return false;
-      const p = pairPend(); if (p.length) { window.__pairDraw(p[0].k); return true; }
+      if (!H.pairFlow) return false;
+      // ペア抽選（全員同時）のあとは次の項目へ
       H.pairFlow = 0; H.flowCur = null; save(); setS({ view: "q" }); if (window.__goNextBank && H.bank[H.bankIdx || 0]) window.__goNextBank(); return true; };
     window.__flowLabel = (S) => { if (flowDone(S) && !H.pairFlow) { const nn = nextBankName(); return nn ? `▶ 次へ：${nn}` : "▶ 進行表はここまで（問題の表示へ）"; }
-      if (H.pairFlow && S.view === "lot" && S.lot && S.lot.kind === "pair") { const p = pairPend(); if (p.length) return `🤝 次のペア抽選（${H.roster[p[0].k]}さん）▶`; const nn = nextBankName(); return nn ? `▶ 次へ：${nn}` : "🤝 ペア抽選を終わる ▶"; }
+      if (H.pairFlow) { const nn = nextBankName(); return nn ? `▶ 次へ：${nn}` : "🤝 ペア抽選を終わる ▶"; }
       const nbk = H.bank[H.bankIdx || 0], st0 = S.stage || S.phase; if (nbk && nbk.flow && (!S.view || S.view === "q") && (S.phase === "idle" || !S.rid || st0 === "list" || st0 === "champ")) return `${(FLOW[nbk.flow] || "").replace(/（.*）/, "")}へ ▶`;
       return null; };
     window.__pairDel = (k) => { H.pairs = H.pairs.filter((x) => x.k !== k); save(); render(); };
@@ -8571,6 +8604,8 @@ function hostPage() {
   if (!H.execAfterV1) { const b = H.bank || [], ie = b.findIndex((x) => x.flow === "exec"), ic = b.findIndex((x) => x.flow === "cere");
     if (ie >= 0 && ic > ie) { const [x] = b.splice(ie, 1); b.splice(ic, 0, x); if ((H.bankIdx || 0) > ie && (H.bankIdx || 0) <= ic) H.bankIdx--; }
     H.execAfterV1 = 1; save(); }
+  // 11/2-9：リンク再生プレイヤー（右下）は「♪ 再生中」だけの小さい表示。押すと動画を開く／閉じる
+  document.addEventListener("click", (e) => { const h = e.target.closest && e.target.closest("#linkBox .lbhead"); if (h) h.parentNode.classList.toggle("big"); });
   document.querySelectorAll("#hostV7 [data-view]").forEach((b) => (b.onclick = () => act("view", { v: b.dataset.view })));
   function render() {
     const S = viewState(), l = answersList();
