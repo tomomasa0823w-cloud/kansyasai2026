@@ -5155,7 +5155,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "11/2-6";
+const APPVER = "11/2-7";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -7888,7 +7888,7 @@ function hostPage() {
     const exIsExec = (k) => EXEC_NM.some((n) => normName(n) === k || normName(n) === normName(H.roster[k] || ""));
     const exInfo = () => {
       const A = typeof awards === "function" ? awards() : [], won = new Set();
-      A.forEach((a) => { if (a.kind === "manual") { if (/^exec\d$/.test(String((H.prizes.find((p) => p.id === a.id) || {}).gid || ""))) return; const w = normName(a.n || ""); Object.keys(H.roster).forEach((k) => { if (w && w.includes(normName(H.roster[k]))) won.add(k); }); } else if (a.key) won.add(a.key); });
+      A.forEach((a) => { if (a.molk) return; /* モルック決勝出場賞は重複OK（役員賞の抽選に残す） */ if (a.kind === "manual") { if (/^exec\d$/.test(String((H.prizes.find((p) => p.id === a.id) || {}).gid || ""))) return; const w = normName(a.n || ""); Object.keys(H.roster).forEach((k) => { if (w && w.includes(normName(H.roster[k]))) won.add(k); }); } else if (a.key) won.add(a.key); });
       const pairK = new Set((H.pairs || []).map((x) => x.k)), extra = new Set(H.exNoK);
       const all0 = R().filter((r) => !r.pair), has = new Set(all0.map((r) => r.key));
       // ペア枠の人も役員賞の抽選に入れる（総合順位ではペアの行になるので、本人の名前で追加する）
@@ -8507,7 +8507,7 @@ function hostPage() {
             if (!confirm("問題・ボーナス・モルックの順番はそのままで、会場オープン・オープニング・ルール説明・ペア抽選・趣味で席替え・総合順位・役員賞・表彰式・エンディングを入れた進行表にします。\n（いま入っている進行の項目は入れ直します）よろしいですか？")) return;
             const core = H.bank.filter((b) => !b.flow), out = ["open", "title", "rules", "pair"].map(FI);
             core.forEach((b) => { out.push(b); if (b.bonus === "hobby") out.push(FI("seatHobby")); });
-            ["roll", "exec", "cere", "ending"].forEach((fl) => out.push(FI(fl)));
+            ["roll", "cere", "exec", "ending"].forEach((fl) => out.push(FI(fl)));
             H.bank = out; H.bankIdx = 0; save(); render(); toast("進行表を作りました。②本番の一番上のボタンで最初から進められます"); }; }
         { const m = document.createElement("div"); m.className = "row bnins"; m.innerHTML = `<button class="btn" data-mkins="A">🎯 モルック予選①の予想 を差し込む</button><button class="btn" data-mkins="B">🎯 予選②の予想</button><button class="btn" data-mkins="F">🎯 決勝の予想</button><label class="chk2">配点 <select id="mkPts" style="width:auto">${[1, 2, 3, 5].map((p) => `<option>${p}</option>`).join("")}</select>点</label><span class="note">予想を出題 → 締切後「次へ」で試合 → 試合が終わったら「次へ」で正解発表（選択肢は出場者から自動）</span>`; card.append(m);
           m.querySelectorAll("[data-mkins]").forEach((x) => (x.onclick = () => { const st = x.dataset.mkins, t = { A: "予選①", B: "予選②", F: "決勝" }[st]; if (H.bank.some((y) => y.molk === st) && !confirm(`モルック${t}の予想はもう入っています。もう1つ追加しますか？`)) return;
@@ -8567,6 +8567,10 @@ function hostPage() {
   window.__molkFinalists = () => { const g = G(); if (!g) return []; const P = g.stage === "F" && (g.players || []).length ? g.players : g.sd && g.sd.F && g.sd.F.players; const out = [];
     (P || []).filter((p) => p && p.s !== "本社").forEach((p) => [p.n, p.n2].filter(Boolean).forEach((n) => { const k = normName(n); out.push({ n, key: H.roster[k] ? k : null, s: p.s || "" }); }));
     return out; };
+  // 11/2-7：役員賞の抽選は表彰式のあと（進行表で「役員賞」が「表彰式」より前にあれば、1回だけ入れ替える）
+  if (!H.execAfterV1) { const b = H.bank || [], ie = b.findIndex((x) => x.flow === "exec"), ic = b.findIndex((x) => x.flow === "cere");
+    if (ie >= 0 && ic > ie) { const [x] = b.splice(ie, 1); b.splice(ic, 0, x); if ((H.bankIdx || 0) > ie && (H.bankIdx || 0) <= ic) H.bankIdx--; }
+    H.execAfterV1 = 1; save(); }
   document.querySelectorAll("#hostV7 [data-view]").forEach((b) => (b.onclick = () => act("view", { v: b.dataset.view })));
   function render() {
     const S = viewState(), l = answersList();
