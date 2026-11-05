@@ -1405,6 +1405,14 @@ body.v-player.offline #offBar{display:block}
 .ex-wrap.pa .ex-lab{font-size:60px;letter-spacing:.02em;display:flex;flex-direction:column;align-items:center;gap:8px;white-space:nowrap}
 .ex-wrap.pa .ex-lab small{font-size:34px;letter-spacing:.1em}
 .ex-wrap.pa .ex-nm{font-size:74px}
+/* 11/2-13：スライド（写真で紹介・題字） */
+.tv .sl-ph{position:absolute;inset:0 0 120px 0;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:1}
+.tv .sl-blur{position:absolute;inset:-40px;background-size:cover;background-position:center;filter:blur(30px) brightness(.45)}
+.tv .sl-img{position:relative;max-width:96%;max-height:94%;object-fit:contain;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:slIn .7s ease both}
+@keyframes slIn{from{opacity:0;transform:scale(1.03)}to{opacity:1;transform:none}}
+.tv .sl-cnt{position:absolute;left:40px;top:36px;z-index:5;padding:8px 22px;border-radius:14px;background:rgba(0,0,0,.55);color:#fff;font:800 34px var(--disp,sans-serif)}
+.tv .sl-wait{color:#fff;font-size:48px;opacity:.7}
+.tv .sl-title .giant{font-size:150px}.tv .sl-sub{font-size:84px;margin-top:26px;font-weight:900}
 
 /* ===== v7 本部レイアウト ===== */
 #hostV7{max-width:1500px;margin:0 auto}
@@ -5172,7 +5180,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "11/2-12";
+const APPVER = "11/2-14";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -5312,6 +5320,7 @@ function monHTML(S, list, joinURL) {
   if (view === "lot") return lotMonHTML(S);
   if (view === "mkop") return mkOpenHTML(S);
   if (view === "seat") return seatMonHTML(S);
+  if (view === "slide") return slideMonHTML(S);
   if (view === "poll") return pollMonHTML(S);
   if (view === "bonus") return bonusMonHTML(S);
   if (view === "roll") {
@@ -5462,14 +5471,14 @@ function fitTexts(root) {
 function renderMonitor(el, S, list, joinURL) {
   if (!el) return;
   const { key, html } = monHTML(S, list, joinURL);
-  if (el._html === html) { camSync(el); ytvSync(el, S); return vidSync(el, S); }
+  if (el._html === html) { camSync(el); ytvSync(el, S); slvSync(el); return vidSync(el, S); }
   const same = el._key === key;
   el._key = key; el._html = html;
   el.classList.add("tvhost");
   el.classList.toggle("noanim", same);
   el.innerHTML = `<div class="tv deep">${html}</div>`;
   qrInto(el.querySelector(".js-qr"), joinURL);
-  vidSync(el, S); camSync(el); lotRun(el); shPrep(el); ytvSync(el, S);
+  vidSync(el, S); camSync(el); lotRun(el); shPrep(el); ytvSync(el, S); slvSync(el);
   fitTV(el); fitTexts(el); if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitTexts(el)); setTimeout(() => fitTexts(el), 400);
   if (!tvObs.has(el) && window.ResizeObserver) { const o = new ResizeObserver(() => { fitTV(el); fitTexts(el); }); o.observe(el); tvObs.set(el, o); }
 }
@@ -5991,6 +6000,28 @@ function pollMonHTML(S) {
     <div class="po-ch n${ch.length}">${ch.map((c, i) => `<div class="po-c c${i}"><span class="L">${L[i]}</span><span class="T">${esc(c)}</span></div>`).join("")}</div>
     <div class="po-foot"><div class="po-n">回答 <b>${po.n || 0}</b> 人</div><div class="bn-time js-bt" data-bend="${end}"></div></div></div></div>${telopHTML("アンケート", "いちばん多いのはどれ？　結果は回答のあとで発表！")}` };
 }
+
+// ================= 🖼 スライド（あいさつ・乾杯の題字／写真で紹介） =================
+function slideMonHTML(S) {
+  const sl = S.slide || {}, ids = (sl.imgs || []).filter((id) => IMG[id] || /^v/.test(id)), n = (sl.imgs || []).length, i = Math.max(0, Math.min(n - 1, sl.i || 0));
+  const key = "slide-" + (sl.at || 0) + "-" + i + "-" + (ids.length ? 1 : 0);
+  if (!n) return { key, html: `<div class="tv-bg"></div>${logoHTML(S)}<div class="tv-main"><div class="tv-center rays sl-title">${sl.kick ? `<div class="kick">${esc(sl.kick)}</div>` : ""}<div class="giant gold pop">${esc(sl.title || "")}</div>${sl.sub ? `<div class="sub sl-sub">${esc(sl.sub)}</div>` : ""}</div></div>${telopHTML(sl.tag || "ご案内", esc(sl.title || ""))}` };
+  const id = (sl.imgs || [])[i], src = IMG[id];
+  if (/^v/.test(id || "")) return { key, html: `<div class="tv-bg"></div><div class="sl-ph"><video class="sl-img sl-v js-slv" data-k="${esc(id)}" playsinline preload="auto"></video></div>${logoHTML(S)}<div class="sl-cnt">${i + 1} / ${n}</div>${telopHTML(sl.tag || "ご紹介", esc(sl.title || ""))}` };
+  return { key, html: `<div class="tv-bg"></div><div class="sl-ph">${src ? `<div class="sl-blur" style="background-image:url('${src}')"></div><img class="sl-img" src="${src}" alt="">` : '<div class="sl-wait">写真を読み込み中…</div>'}</div>${logoHTML(S)}<div class="sl-cnt">${i + 1} / ${n}</div>${telopHTML(sl.tag || "ご紹介", esc(sl.title || ""))}` };
+}
+
+// スライドの動画：このPCに保存した動画を再生（司会画面のプレビューは消音）
+let SLV_TRY = 0;
+function slvSync(el) {
+  el.querySelectorAll(".js-slv").forEach((v) => {
+    const k = v.dataset.k, d = VID[k];
+    if (!d) { if (Date.now() - SLV_TRY > 3000) { SLV_TRY = Date.now(); vidLoadAll().then(() => { if (VID[k]) slvSync(el); }); } if (!v._msg) { v._msg = 1; v.insertAdjacentHTML("afterend", '<div class="sl-wait" style="position:absolute">🎬 この動画はこのPCに入っていません</div>'); } return; }
+    if (v._msg) { v._msg = 0; const w = v.parentNode.querySelector(".sl-wait"); w && w.remove(); }
+    v.muted = el.id === "hMon" || (el.id === "fMon" && window.__quiet && window.__quiet());
+    if (v._src !== d.url) { v._src = d.url; v.src = d.url; const pr = v.play(); if (pr) pr.catch(() => { v.muted = true; v.play().catch(() => {}); }); }
+  });
+}
 // ================= 司会・サブ司会の操作パネル（共通） =================
 let hostMode = "choice", pickedCorrect = [], preCorrect = [], curS = { ...DEF };
 const STAGE_LABEL = { review: "写真のふりかえり", cutshow: "予選落ちの発表", read: "問題を表示中（選択肢はまだ）", open: "回答受付中", closed: "締め切り", dist: "回答分布", correct: "正解発表", fast: "最速正解者", list: "正解者一覧", champ: "ピリオドチャンピオン" };
@@ -6391,7 +6422,7 @@ function hostPage() {
       if (kan() && H.period.active && !predict) H.period.q++;
       const rf = H.opt.readFirst !== false;
       setS({ rid, no: (S.no || 0) + 1, phase: rf ? "read" : "open", stage: rf ? "read" : "open", mode, nch, predict, pts: predict ? Math.max(1, Math.min(10, +a.pts || 1)) : 1, question: String(a.question || "").slice(0, 300), choices,
-        limit: [5, 10, 15, 20, 30, 60].includes(+a.limit) ? +a.limit : 10, correct: null, view: "q", openedAt: Date.now(),
+        limit: +a.limit >= 3 && +a.limit <= 600 ? Math.round(+a.limit) : 10, correct: null, view: "q", openedAt: Date.now(),
         counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], revivedNow: [], revive: !!a.revive && !predict && mode === "choice", cut: null, champ: null, rvZoom: null, ansNote: "", cans: null, img: cleanImg(a.img), vid: cleanVid(a.vid), vctl: null, ...sfx("open") });
       if (!rf) { t0 = performance.now(); t0rid = rid; scheduleClose(); pubLive(); }
     } else if (cmd === "endHere") {
@@ -6639,8 +6670,8 @@ function hostPage() {
     const b = H.bank[i]; if (!b) return toast("登録された問題はもうありません");
     if (b.bonus) { H.bankIdx = i + 1; save(); if (window.__startBonus) window.__startBonus(b.bonus); render(); return; }
     if (b.poll) { if (window.__startPoll && window.__startPoll(b)) { H.bankIdx = i + 1; save(); } render(); return; }
-    if (b.flow) { if (window.__startFlow && window.__startFlow(b.flow)) { H.bankIdx = i + 1; save(); } render(); return; }
-    if (b.molk) { if (window.__molkSplash && window.__molkSplash(b.molk, b.pts)) { H.bankIdx = i + 1; save(); } render(); return; }
+    if (b.flow) { if (window.__startFlow && window.__startFlow(b.flow, b)) { H.bankIdx = i + 1; save(); } render(); return; }
+    if (b.molk) { if (window.__molkSplash && window.__molkSplash(b.molk, b.pts, b.limit)) { H.bankIdx = i + 1; save(); } render(); return; }
     H.bankIdx = i + 1; save(); window.__pendImg = b.img || null; window.__pendVid = b.vid || null; window.__pendRevive = !!b.revive; window.__pendAns = b.ans || ""; window.__pendCans = Array.isArray(b.cans) ? b.cans.slice() : null;
     hostMode = b.mode === "buzzer" ? "buzzer" : b.nch === 5 ? "choice5" : b.nch === 3 ? "choice3" : "choice";
     preCorrect = Array.isArray(b.correct) ? b.correct.slice() : b.correct == null ? [] : [b.correct];
@@ -6652,7 +6683,7 @@ function hostPage() {
   $("#bankNext").onclick = () => loadBank(H.bankIdx || 0);
   function renderBank() {
     $("#bankCount").textContent = H.bank.length ? `${H.bank.length}問（次は ${Math.min((H.bankIdx || 0) + 1, H.bank.length + 1)}問目）` : "未登録";
-    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}${b.bonus || b.molk || b.flow ? " bnrow" : ""}"><td>${b.bonus ? "🎁" : b.molk ? "🎯" : b.flow ? "▶" : i + 1}</td><td class="wrap">${b.flow ? `<b class="bnbank">${esc(b.q)}</b><span class="note">（「次へ」で進みます）</span>` : b.molk ? `<b class="bnbank">🎯 ${esc(b.q)}</b><span class="note">（${b.pts || 1}点・開催の演出 → 予想 → 分布 → 選手発表 → 投球順シャッフル → 試合 → 正解発表）</span>` : b.bonus ? `<b class="bnbank">🎁 ${esc(b.q)}</b><span class="note">（ここでボーナスカットイン → 歓談 → 記入 → 結果。「次へ」で進みます）</span>${(() => { const d = window.__bnDurGet && window.__bnDurGet(b.bonus); if (!d) return ""; const inp = (f, v) => `<input type="number" class="bndurin" min="0.5" max="30" step="0.5" value="${Math.round(v / 30) / 2}" onchange="window.__bnDurRow('${b.bonus}','${f}',this.value)" onclick="event.stopPropagation()">`; return `<div class="bndurrow">⏱ 歓談 ${inp("talk", d.talk)} 分　✏️ 回答 ${inp("inp", d.inp)} 分</div>`; })()}` : (b.poll ? `<b>📊 ${esc(b.q)}</b><span class="note">（会場アンケート：予想 → 締切 → 自分はどれ？を${b.pollDur || 60}秒 → いちばん多いものが正解・${b.pts || 1}点）</span>` : esc(b.q))}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td><select class="blim" data-blim="${i}" title="回答時間">${[5, 10, 15, 20, 30, 60].map((s) => `<option value="${s}"${+b.limit === s ? " selected" : ""}>${s}秒</option>`).join("")}</select> ${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td style="white-space:nowrap">${b.predict ? `予想${b.pts || 1}点${b.poll ? ` <label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label>` : ""}` : b.mode === "choice" ? `<label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label><label class="bchk rv${b.revive ? " on" : ""}"><input type="checkbox" data-brev="${i}" ${b.revive ? "checked" : ""}>🔥復活</label>` : ""}</td><td style="white-space:nowrap"><button class="mini mv" data-mv="${i}:-1" ${i ? "" : "disabled"} title="上へ">▲</button><button class="mini mv" data-mv="${i}:1" ${i < H.bank.length - 1 ? "" : "disabled"} title="下へ">▼</button> <button class="mini" data-bedit="${i}">✏️編集</button> <button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button> <button class="mini" data-bdel="${i}" title="この問題を消す">🗑</button><label class="bto">→<input type="number" min="1" max="${H.bank.length}" data-bto="${i}" placeholder="${i + 1}">番へ</label></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
+    $("#bankList").innerHTML = H.bank.map((b, i) => `<tr class="${i === (H.bankIdx || 0) ? "nextq" : ""}${b.bonus || b.molk || b.flow ? " bnrow" : ""}"><td>${b.bonus ? "🎁" : b.molk ? "🎯" : b.flow ? "▶" : i + 1}</td><td class="wrap">${b.flow ? `<b class="bnbank">${esc(b.q)}</b><span class="note">（「次へ」で進みます）</span>${b.flow === "slide" && window.__slideRow ? window.__slideRow(b, i) : ""}` : b.molk ? `<b class="bnbank">🎯 ${esc(b.q)}</b><span class="note">（${b.pts || 1}点・開催の演出 → 予想 → 分布 → 選手発表 → 投球順シャッフル → 試合 → 正解発表）</span><div class="bndurrow" onclick="event.stopPropagation()">⏱ 予想の回答時間 <select class="mklim" onchange="window.__mkLim(${i}, this.value)">${[15, 20, 30, 45, 60, 90, 120, 180].map((s) => `<option value="${s}"${(+b.limit || 30) === s ? " selected" : ""}>${s < 60 ? s + "秒" : Math.floor(s / 60) + "分" + (s % 60 ? "30秒" : "")}</option>`).join("")}</select></div>` : b.bonus ? `<b class="bnbank">🎁 ${esc(b.q)}</b><span class="note">（ここでボーナスカットイン → 歓談 → 記入 → 結果。「次へ」で進みます）</span>${(() => { const d = window.__bnDurGet && window.__bnDurGet(b.bonus); if (!d) return ""; const inp = (f, v) => `<input type="number" class="bndurin" min="0.5" max="30" step="0.5" value="${Math.round(v / 30) / 2}" onchange="window.__bnDurRow('${b.bonus}','${f}',this.value)" onclick="event.stopPropagation()">`; return `<div class="bndurrow">⏱ 歓談 ${inp("talk", d.talk)} 分　✏️ 回答 ${inp("inp", d.inp)} 分</div>`; })()}` : (b.poll ? `<b>📊 ${esc(b.q)}</b><span class="note">（会場アンケート：予想 → 締切 → 自分はどれ？を${b.pollDur || 60}秒 → いちばん多いものが正解・${b.pts || 1}点）</span>` : esc(b.q))}${b.ans ? ` <span class="note">🏷${esc(b.ans)}</span>` : ""}${b.cans ? ` <span class="note">🏷${b.cans.map((x, j) => x ? L[j] + ":" + esc(x) : "").filter(Boolean).join(" ")}</span>` : ""}${!b.img && b.vid ? ' <span class="note">🎬動画</span>' : ""}${b.img ? (() => { const ids = [b.img.q, ...(b.img.c || []), ...(b.img.qx || []), ...(b.img.cx || []).flat()].filter(Boolean), miss = ids.filter((id) => !IMG[id]).length; return ` <span class="note">${b.vid ? "🎬動画 " : ""}📷${ids.length}枚${miss ? ` <b style="color:var(--ng)">写真が未読込 ${miss}枚</b>` : ""}</span>`; })() : ""}</td><td><select class="blim" data-blim="${i}" title="回答時間">${[5, 10, 15, 20, 30, 45, 60, 90, 120].map((s) => `<option value="${s}"${+b.limit === s ? " selected" : ""}>${s}秒</option>`).join("")}</select> ${b.mode === "choice" ? `${b.nch || 4}択・正解 ${(Array.isArray(b.correct) ? b.correct : b.correct == null ? [] : [b.correct]).map((c) => L[c]).join("") || "当日"}` : "早押し"}</td><td style="white-space:nowrap">${b.predict ? `予想${b.pts || 1}点${b.poll ? ` <label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label>` : ""}` : b.mode === "choice" ? `<label class="bchk${b.last ? " on" : ""}"><input type="checkbox" data-blast="${i}" ${b.last ? "checked" : ""}>最終</label><label class="bchk rv${b.revive ? " on" : ""}"><input type="checkbox" data-brev="${i}" ${b.revive ? "checked" : ""}>🔥復活</label>` : ""}</td><td style="white-space:nowrap"><button class="mini mv" data-mv="${i}:-1" ${i ? "" : "disabled"} title="上へ">▲</button><button class="mini mv" data-mv="${i}:1" ${i < H.bank.length - 1 ? "" : "disabled"} title="下へ">▼</button> <button class="mini" data-bedit="${i}">✏️編集</button> <button class="mini" data-photo="${i}">📷写真・動画</button> <button class="mini" data-load="${i}">読込</button> <button class="mini" data-bdel="${i}" title="この問題を消す">🗑</button><label class="bto">→<input type="number" min="1" max="${H.bank.length}" data-bto="${i}" placeholder="${i + 1}">番へ</label></td></tr>`).join("") || '<tr><td class="note">まだ登録されていません</td></tr>';
     $("#bankList").querySelectorAll("[data-load]").forEach((x) => (x.onclick = () => loadBank(+x.dataset.load)));
     $("#bankList").querySelectorAll("[data-blast]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.blast]; if (!b) return; b.last = x.checked; save(); render(); }));
     $("#bankList").querySelectorAll("[data-brev]").forEach((x) => (x.onchange = () => { const b = H.bank[+x.dataset.brev]; if (!b) return; b.revive = x.checked; save(); render(); }));
@@ -7666,7 +7697,7 @@ function hostPage() {
       const p = { v: 1, at: Date.now(), from: H.room, setup: {}, imgs: {} };
       SETUP.forEach((k) => { if (H[k] !== undefined) p.setup[k] = H[k]; });
       if (prog) { p.prog = {}; PROG.forEach((k) => { if (H[k] !== undefined) p.prog[k] = H[k]; }); }
-      (H.bank || []).forEach((b) => { const im = b.img; if (!im) return; [im.q, ...(im.c || []), ...(im.qx || []), ...(im.cx || []).flat()].filter(Boolean).forEach((id) => { if (IMG[id]) p.imgs[id] = IMG[id]; }); });
+      (H.bank || []).forEach((b) => { if (b.slide) (b.slide.imgs || []).forEach((id) => { if (IMG[id]) p.imgs[id] = IMG[id]; }); const im = b.img; if (!im) return; [im.q, ...(im.c || []), ...(im.qx || []), ...(im.cx || []).flat()].filter(Boolean).forEach((id) => { if (IMG[id]) p.imgs[id] = IMG[id]; }); });
       return p;
     };
     const pkgSum = (p) => { const st = p.setup || {}; const bk = st.bank || []; return `名簿 ${Object.keys(st.roster || {}).length}人・問題 ${bk.filter((b) => !b.flow && !b.bonus && !b.molk).length}問・進行表 ${bk.length}項目（ボーナス${bk.filter((b) => b.bonus).length}・モルック${bk.filter((b) => b.molk).length}）${st.seat ? "・座席表" : ""}・写真 ${Object.keys(p.imgs || {}).length}枚・賞 ${(st.prizes || []).length}個${(st.gameSets || []).length ? `・選手リスト ${st.gameSets.length}件` : ""}${p.prog ? "・得点と進行" : ""}`; };
@@ -7744,10 +7775,11 @@ function hostPage() {
       const pkg = buildPkg($("#xProg").checked), parts = [], vids = [];
       if ($("#xVid").checked) {
         const seen = new Set();
-        for (const b of H.bank || []) {
-          if (!b.vid || seen.has(b.vid.id)) continue; seen.add(b.vid.id);
-          const v = VID[b.vid.id]; if (!v) continue;
-          try { const blob = await (await fetch(v.url)).blob(); vids.push({ id: b.vid.id, name: b.vid.name, size: blob.size, type: blob.type }); parts.push(blob); } catch (x) {}
+        const L = []; (H.bank || []).forEach((b) => { if (b.vid) L.push({ id: b.vid.id, name: b.vid.name }); if (b.slide) (b.slide.imgs || []).filter((x) => /^v/.test(x)).forEach((x) => L.push({ id: x, name: (VID[x] || {}).name || x })); });
+        for (const it of L) {
+          if (seen.has(it.id)) continue; seen.add(it.id);
+          const v = VID[it.id]; if (!v) continue;
+          try { const blob = await (await fetch(v.url)).blob(); vids.push({ id: it.id, name: it.name, size: blob.size, type: blob.type }); parts.push(blob); } catch (x) {}
         }
       }
       pkg.vids = vids;
@@ -7951,9 +7983,10 @@ function hostPage() {
     const pairPend = () => (H.pairs || []).filter((x) => H.roster[x.k] && !(x.partner && H.roster[x.partner]));
     const FLOW = { open: "🚪 会場オープン（座席案内・店舗ごと）", seatList: "🪑 座席表（名前つき）", title: "🎤 オープニング（QR・スマホで参加）", att: "📊 参加状況", rules: "📖 ゲームのルール説明", pair: "🤝 ペア抽選（ゲーム進行の人）", seatHobby: "🪑 趣味で席替え", roll: "📜 総合順位の発表", exec: "👔 役員賞 大抽選会", cere: "🏆 表彰式（景品発表）", ending: "🎉 エンディング" };
     window.__FLOW = FLOW;
-    const FLOWV = { open: "seat", seatList: "seat", title: "title", att: "att", rules: "rules", seatHobby: "seat", roll: "roll", exec: "lot", cere: "cere", ending: "title" };
-    window.__startFlow = (f) => {
+    const FLOWV = { slide: "slide", open: "seat", seatList: "seat", title: "title", att: "att", rules: "rules", seatHobby: "seat", roll: "roll", exec: "lot", cere: "cere", ending: "title" };
+    window.__startFlow = (f, b) => {
       H.flowCur = { f, at: Date.now() };
+      if (f === "slide") { const sl = (b && b.slide) || {}, imgs = (sl.imgs || []).filter(Boolean); pubImgs({ q: null, c: [], qx: imgs }); setS({ view: "slide", slide: { title: sl.title || (b && b.q) || "", sub: sl.sub || "", kick: sl.kick || "", tag: sl.tag || "", imgs, i: 0, at: Date.now() }, ...sfx("chime") }); return true; }
       if (f === "open") return window.__seatShow("store"); // 会場オープン：丸テーブルに店舗名だけの座席表（スマホには名前つきで「○卓へ」が出る）
       if (f === "seatHobby") return window.__seatShow("hobby");
       if (f === "seatList") return window.__seatShow("names");
@@ -7970,16 +8003,18 @@ function hostPage() {
       if (S.view !== v) return false;
       if (c.f === "rules") { const n = S.ruleN || 1; return (S.ruleIdx || 0) >= n - 1; }
       if (c.f === "cere") return S.cere && S.cere.step === "end";
+      if (c.f === "slide") return !S.slide || (S.slide.i || 0) >= (S.slide.imgs || []).length - 1;
       if (c.f === "exec") return S.lot && S.lot.kind === "exec";
       return true; };
     window.__flowAdv = () => { const S = H.S;
+      if (H.flowCur && H.flowCur.f === "slide" && S.view === "slide" && S.slide && (S.slide.i || 0) < (S.slide.imgs || []).length - 1) { setS({ slide: { ...S.slide, i: (S.slide.i || 0) + 1 } }); return true; } // 写真を1枚ずつ
       if (flowDone(S) && !(H.pairFlow)) { H.flowCur = null; save(); setS({ view: "q" }); if (window.__goNextBank && H.bank[H.bankIdx || 0]) window.__goNextBank(); return true; }
       if (!H.pairFlow) return false;
       // ペア抽選（全員同時）のあとは次の項目へ
       H.pairFlow = 0; H.flowCur = null; save(); setS({ view: "q" }); if (window.__goNextBank && H.bank[H.bankIdx || 0]) window.__goNextBank(); return true; };
-    window.__flowLabel = (S) => { if (flowDone(S) && !H.pairFlow) { const nn = nextBankName(); return nn ? `▶ 次へ：${nn}` : "▶ 進行表はここまで（問題の表示へ）"; }
+    window.__flowLabel = (S) => { if (H.flowCur && H.flowCur.f === "slide" && S.view === "slide" && S.slide && (S.slide.i || 0) < (S.slide.imgs || []).length - 1) return `🖼 次の写真・動画へ ▶（${(S.slide.i || 0) + 2}/${S.slide.imgs.length}）`; if (flowDone(S) && !H.pairFlow) { const nn = nextBankName(); return nn ? `▶ 次へ：${nn}` : "▶ 進行表はここまで（問題の表示へ）"; }
       if (H.pairFlow) { const nn = nextBankName(); return nn ? `▶ 次へ：${nn}` : "🤝 ペア抽選を終わる ▶"; }
-      const nbk = H.bank[H.bankIdx || 0], st0 = S.stage || S.phase; if (nbk && nbk.flow && (!S.view || S.view === "q") && (S.phase === "idle" || !S.rid || st0 === "list" || st0 === "champ")) return `${(FLOW[nbk.flow] || "").replace(/（.*）/, "")}へ ▶`;
+      const nbk = H.bank[H.bankIdx || 0], st0 = S.stage || S.phase; if (nbk && nbk.flow && (!S.view || S.view === "q") && (S.phase === "idle" || !S.rid || st0 === "list" || st0 === "champ")) return `${(FLOW[nbk.flow] || nbk.q || "").replace(/（.*）/, "")}へ ▶`;
       return null; };
     window.__pairDel = (k) => { H.pairs = H.pairs.filter((x) => x.k !== k); save(); render(); };
     window.__pairClr = (k) => { const pr = H.pairs.find((x) => x.k === k); if (pr) pr.partner = null; save(); render(); };
@@ -8104,14 +8139,14 @@ function hostPage() {
   const MK = { A: "予選①", B: "予選②", F: "決勝" };
   const mkKey = (p) => p.n + "|" + (p.n2 || "");
   const mkTeams = (st) => { const g = G(); const sd = (g.sd || {})[st]; const pl = st === g.stage ? g.players : sd && sd.players && sd.players.length ? sd.players : gBuild(g, st); return (pl || []).map((p) => ({ ...p })); };
-  window.__startMolk = (st, pts) => {
+  window.__startMolk = (st, pts, lim) => {
     if (!MK[st]) return false;
     if (st === "F") { const g = G(), sd = (g.sd || {}).F; if (!(g.stage === "F" ? g.log.length : sd && sd.log && sd.log.length)) autoFinal(true); }
     const T = mkTeams(st);
     if (T.length < 2) { toast(`モルック${MK[st]}の出場者が決まっていません（④ゲームで${MK[st]}のメンバーにチェックしてください）`); return false; }
     if (T.length > 10) { toast(`モルック${MK[st]}は${T.length}組いるので予想問題にできません（10組まで）`); return false; }
     const ch = T.map((p) => (p.n2 ? `${p.s ? p.s + "：" : ""}${p.n}・${p.n2}` : `${p.n}${p.s ? `（${p.s}）` : ""}`));
-    act("open", { mode: "choice", nch: T.length, choices: ch, predict: true, pts: pts || 1, limit: 30, question: `【予想】モルック${MK[st]}　勝つのは${st === "F" ? "どのチーム" : "誰"}？`, correct: [] });
+    act("open", { mode: "choice", nch: T.length, choices: ch, predict: true, pts: pts || 1, limit: +lim || 30, question: `【予想】モルック${MK[st]}　勝つのは${st === "F" ? "どのチーム" : "誰"}？`, correct: [] });
     H.molkQ = { st, keys: T.map(mkKey), rid: H.S.rid, played: false, done: false }; save(); render(); return true;
   };
   // ---- 📊 会場アンケート問題：予想（どれがいちばん多い？）→ 自分のことをアンケート → いちばん多いものが正解 ----
@@ -8161,10 +8196,10 @@ function hostPage() {
     const w = d.P.filter((p) => (g.mode === "qual" ? p.win : p.rank === 1 || p.win)); const ks = g.players.map(mkKey);
     const idx = w.map((p) => q.keys.indexOf(ks[d.P.indexOf(p)])).filter((i) => i >= 0); return idx.length ? idx : null; };
   // 🎉 モルック大会 開催！（予想問題の前に全画面）
-  window.__molkSplash = (st, pts) => { if (!MK[st]) return false; H.molkPend = { st, pts: pts || 1 }; save(); setS({ view: "mkop", mkop: { st, at: Date.now() }, ...sfx("mkOpen") }); return true; };
+  window.__molkSplash = (st, pts, lim) => { if (!MK[st]) return false; H.molkPend = { st, pts: pts || 1, lim: +lim || 30 }; save(); setS({ view: "mkop", mkop: { st, at: Date.now() }, ...sfx("mkOpen") }); return true; };
   window.__molkAdv = () => {
     const S = H.S, st0 = S.stage || S.phase;
-    if (S.view === "mkop") { const pd = H.molkPend; if (pd && window.__startMolk(pd.st, pd.pts)) { H.molkPend = null; save(); } return true; }
+    if (S.view === "mkop") { const pd = H.molkPend; if (pd && window.__startMolk(pd.st, pd.pts, pd.lim)) { H.molkPend = null; save(); } return true; }
     const q = mkCur(); if (!q) return false;
     if (S.view === "game") { const g = G();
       if (g.ordSt === "hide") { mkShuffle(); return true; }
@@ -8538,7 +8573,7 @@ function hostPage() {
           $("#flAdd").onclick = () => { const fl = $("#flSel").value; H.bank.push(FI(fl)); save(); render(); toast(`${(window.__FLOW || {})[fl]}を最後に追加しました。並べ替えで位置を決めてください`); };
           $("#flAuto").onclick = () => {
             if (!confirm("問題・ボーナス・モルックの順番はそのままで、会場オープン・オープニング・ルール説明・ペア抽選・趣味で席替え・総合順位・役員賞・表彰式・エンディングを入れた進行表にします。\n（いま入っている進行の項目は入れ直します）よろしいですか？")) return;
-            const core = H.bank.filter((b) => !b.flow), out = ["open", "title", "rules", "pair"].map(FI);
+            const core = H.bank.filter((b) => !b.flow), keepSl = H.bank.filter((b) => b.flow === "slide"), out = [FI("open"), ...(keepSl.length ? keepSl : window.__slideDefaults()), ...["title", "rules", "pair"].map(FI)];
             core.forEach((b) => { out.push(b); if (b.bonus === "hobby") out.push(FI("seatHobby")); });
             ["roll", "cere", "exec", "ending"].forEach((fl) => out.push(FI(fl)));
             H.bank = out; H.bankIdx = 0; save(); render(); toast("進行表を作りました。②本番の一番上のボタンで最初から進められます"); }; }
@@ -8606,6 +8641,34 @@ function hostPage() {
     H.execAfterV1 = 1; save(); }
   // 11/2-9：リンク再生プレイヤー（右下）は「♪ 再生中」だけの小さい表示。押すと動画を開く／閉じる
   document.addEventListener("click", (e) => { const h = e.target.closest && e.target.closest("#linkBox .lbhead"); if (h) h.parentNode.classList.toggle("big"); });
+  // ---- 11/2-13：🖼 スライド（あいさつ・乾杯の題字／写真で紹介）----
+  {
+    const SL0 = () => [
+      { q: "🎤 開会のごあいさつ（吉田社長）", flow: "slide", slide: { kick: "開会のごあいさつ", title: "代表取締役社長", sub: "吉田 康志", tag: "開会", imgs: [] } },
+      { q: "🥂 乾杯（中川副社長）", flow: "slide", slide: { kick: "乾杯のご発声", title: "取締役副社長", sub: "中川 始", tag: "乾杯", imgs: [] } },
+      { q: "🏠 新店「稲荷公園店」のご紹介（写真）", flow: "slide", slide: { title: "新店「稲荷公園店」のご紹介", tag: "新店紹介", imgs: [] } },
+      { q: "🏃 金沢城リレーマラソン 報告（写真）", flow: "slide", slide: { title: "金沢城リレーマラソン 報告", tag: "報告", imgs: [] } },
+    ].map((x) => ({ mode: "choice", nch: 4, ch: ["", "", "", ""], correct: [], limit: 10, ...x }));
+    window.__slideDefaults = SL0;
+    // 進行表に1回だけ差し込む（会場オープンのすぐ後。なければ先頭）
+    if (!H.slideV1) { const b = H.bank || []; if (b.some((x) => x.flow) && !b.some((x) => x.flow === "slide")) { const io = b.findIndex((x) => x.flow === "open"), at = io >= 0 ? io + 1 : 0; b.splice(at, 0, ...SL0()); if ((H.bankIdx || 0) >= at && (H.bankIdx || 0) > 0) H.bankIdx += 4; } H.slideV1 = 1; save(); }
+    const shrinkBig = (file) => new Promise((res, rej) => { const fr = new FileReader(); fr.onerror = rej; fr.onload = () => { const im = new Image(); im.onerror = rej; im.onload = () => { const k = Math.min(1, 1280 / Math.max(im.width, im.height)); const c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); let q = 0.72, d = c.toDataURL("image/jpeg", q); while (d.length > 190000 && q > 0.4) { q -= 0.08; d = c.toDataURL("image/jpeg", q); } res(d); }; im.src = fr.result; }; fr.readAsDataURL(file); });
+    const th = (id) => (/^v/.test(id) ? `<span class="note" style="display:inline-block;padding:10px 8px;margin:2px;border:1px solid #C9A03A;border-radius:6px">🎬${VID[id] ? "" : "（このPCになし）"}</span>` : IMG[id] ? `<img src="${IMG[id]}" alt="" style="height:44px;border-radius:6px;margin:2px">` : '<i class="miss">写真なし</i>');
+    window.__slideRow = (b, i) => { const sl = b.slide || {}, ids = sl.imgs || [];
+      return `<div class="slrow" onclick="event.stopPropagation()" style="margin-top:4px">${sl.kick || sl.title ? `<span class="note">画面：${esc([sl.kick, sl.title, sl.sub].filter(Boolean).join(" ／ "))}</span><br>` : ""}${ids.length ? `<span class="note">📷 ${ids.length}件（「次へ」で1つずつ。🎬は動画）</span><div>${ids.map(th).join("")}</div>` : '<span class="note">写真なし（題字だけ表示）</span>'}
+        <div class="row" style="gap:6px;margin-top:4px"><label class="btn mini2 fileb">📷 写真・動画を追加<input type="file" accept="image/*,video/*" multiple hidden onchange="window.__slideAdd(${i}, this)"></label>${ids.length ? `<button class="mini" onclick="window.__slideClr(${i})">写真を全部外す</button>` : ""}<button class="mini" onclick="window.__slideEd(${i})">✏️ 画面の文字</button></div></div>`; };
+    window.__slideAdd = async (i, inp) => { const b = H.bank[i]; if (!b || !b.slide) return; const fs = [...inp.files]; inp.value = ""; let n = 0;
+      for (const f of fs) { try { if (/^video\//.test(f.type)) { const id = "v" + rand(9, lower); await VDB.put(id, { name: f.name, blob: f }); vidAdd(id, f.name, f); b.slide.imgs = (b.slide.imgs || []).concat(id); n++; continue; } const d = await shrinkBig(f); const id = "i" + rand(9, lower); window.__hostImgs[id] = d; IMG[id] = d; b.slide.imgs = (b.slide.imgs || []).concat(id); n++; } catch (e) {} }
+      try { localStorage.setItem("hq-imgs", JSON.stringify(window.__hostImgs)); } catch (e) { toast("写真が多すぎて、このPCに保存しきれませんでした。枚数を減らしてください"); }
+      save(); render(); toast(`写真・動画を${n}件入れました`); };
+    window.__slideClr = (i) => { const b = H.bank[i]; if (!b || !b.slide || !confirm("このスライドの写真を全部外しますか？")) return; b.slide.imgs = []; save(); render(); };
+    window.__slideEd = (i) => { const b = H.bank[i]; if (!b || !b.slide) return; const sl = b.slide;
+      const k = prompt("上の小さい文字（例：開会のごあいさつ。なしなら空のまま）", sl.kick || ""); if (k == null) return;
+      const t = prompt("大きい文字（例：代表取締役社長／新店「稲荷公園店」のご紹介）", sl.title || ""); if (t == null) return;
+      const s2 = prompt("下の文字（例：吉田 康志。なしなら空のまま）", sl.sub || ""); if (s2 == null) return;
+      sl.kick = k.trim(); sl.title = t.trim(); sl.sub = s2.trim(); save(); render(); toast("画面の文字を変えました"); };
+  }
+  window.__mkLim = (i, v) => { const b = H.bank[i]; if (!b || !b.molk) return; b.limit = +v || 30; save(); render(); toast(`モルック予想の回答時間を${b.limit}秒にしました`); };
   document.querySelectorAll("#hostV7 [data-view]").forEach((b) => (b.onclick = () => act("view", { v: b.dataset.view })));
   function render() {
     const S = viewState(), l = answersList();
@@ -8650,6 +8713,9 @@ function remotePage(room, bi) {
   let pin = store.get("hq-pin-" + room, "");
   const pURL = baseOf(BASE);
   const watchSfx = sfxWatcher(), watchCount = countWatcher();
+  // 同じPCで開いたプロジェクター画面は、司会画面が保存した写真をそのまま使う（大きい写真も中継を通さず表示できる）
+  const ldImgs = () => { try { Object.entries(JSON.parse(localStorage.getItem("hq-imgs") || "{}")).forEach(([k, v]) => { if (typeof v === "string") IMG[k] = v; }); } catch (e) {} };
+  ldImgs(); window.addEventListener("storage", (e) => { if (e.key === "hq-imgs") ldImgs(); });
   const cli = connectAny(bi, room, ["state", "live", "img/+", "cam", "clock"], (t, d) => {
     if (t === "clock") return hostClock(d && d.now);
     if (t === "cam") return camMsg(d);
