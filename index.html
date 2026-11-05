@@ -5183,7 +5183,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "11/2-16";
+const APPVER = "11/2-18";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
@@ -6425,7 +6425,7 @@ function hostPage() {
       H.secret = { last: !!a.last && (!predict || !!a.pollLast), correct: cleanC(a.correct, nch), judged: false, champ: null, ans: String(a.ans || "").slice(0, 80), cans: Array.isArray(a.cans) && a.cans.some(Boolean) ? a.cans.slice(0, 10).map((x) => String(x || "").slice(0, 40)) : null };
       if (kan() && H.period.active && !predict) H.period.q++;
       const rf = H.opt.readFirst !== false;
-      setS({ rid, no: (S.no || 0) + 1, phase: rf ? "read" : "open", stage: rf ? "read" : "open", mode, nch, predict, pts: predict ? Math.max(1, Math.min(10, +a.pts || 1)) : 1, question: String(a.question || "").slice(0, 300), choices,
+      setS({ rid, no: (S.no || 0) + 1, phase: rf ? "read" : "open", stage: rf ? "read" : "open", mode, nch, predict, pts: predict ? Math.max(1, Math.min(10, +a.pts || 1)) : 1, question: String(a.question || "").replace(/^[\s　]*[（(][^）)]{1,20}[）)][\s　]*/, "").slice(0, 300), choices,
         limit: +a.limit >= 3 && +a.limit <= 600 ? Math.round(+a.limit) : 10, correct: null, view: "q", openedAt: Date.now(),
         counts: null, winners: null, order: null, total: 0, last: false, seatedNow: [], revivedNow: [], revive: !!a.revive && !predict && mode === "choice", cut: null, champ: null, rvZoom: null, ansNote: "", cans: null, img: cleanImg(a.img), vid: cleanVid(a.vid), vctl: null, ...sfx("open") });
       if (!rf) { t0 = performance.now(); t0rid = rid; scheduleClose(); pubLive(); }
@@ -7990,7 +7990,7 @@ function hostPage() {
     const FLOWV = { slide: "slide", open: "seat", seatList: "seat", title: "title", att: "att", rules: "rules", seatHobby: "seat", roll: "roll", exec: "lot", cere: "cere", ending: "title" };
     window.__startFlow = (f, b) => {
       H.flowCur = { f, at: Date.now() };
-      if (f === "slide") { const sl = (b && b.slide) || {}, imgs = (sl.imgs || []).filter(Boolean); pubImgs({ q: null, c: [], qx: imgs }); setS({ view: "slide", slide: { show: !!sl.show, title: sl.show ? sl.title || "" : sl.title || (b && b.q) || "", sub: sl.sub || "", kick: sl.kick || "", tag: sl.tag || "", imgs, i: 0, at: Date.now() }, ...sfx("chime") }); return true; }
+      if (f === "slide") { const sl = (b && b.slide) || {}, imgs = (sl.imgs || []).filter(Boolean); pubImgs({ q: null, c: [], qx: imgs }); setS({ view: "slide", slide: { show: !!sl.show, title: sl.show ? sl.title || "" : sl.title || (b && b.q) || "", sub: sl.sub || "", kick: sl.kick || "", tag: sl.tag || "", imgs, i: 0, at: Date.now() } }); return true; } // 11/2-16：スライドの切り替えは音なし
       if (f === "open") return window.__seatShow("store"); // 会場オープン：丸テーブルに店舗名だけの座席表（スマホには名前つきで「○卓へ」が出る）
       if (f === "seatHobby") return window.__seatShow("hobby");
       if (f === "seatList") return window.__seatShow("names");
