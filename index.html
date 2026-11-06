@@ -5056,7 +5056,7 @@ const SFX = (() => {
     play(name, opt) {
       if (window.__quiet && window.__quiet()) return; // プロジェクター画面が開いている司会PCでは鳴らさない（二重に鳴るのを防ぐ）
       if (!unlocked || !on || !ensure()) return;
-      if (name === "think" && opt && opt.endAt) { stopCustom(); try { P.dodon(); } catch (e) {}
+      if (name === "think" && opt && opt.endAt) { stopCustom();
         const ls = "think" + (opt.limit || ""), slot = custom[ls] || LINKS.has(ls) ? ls : "think";
         const b = custom[slot];
         if (b) { const rem = (opt.endAt - Date.now()) / 1000, off = Math.max(0, b.duration - rem), wait = Math.max(0, rem - b.duration);
@@ -5184,7 +5184,7 @@ function sfxWatcher() {
   };
 }
 
-const APPVER = "11/2-19";
+const APPVER = "11/2-20";
 // 店舗の並び順（営業開始順）。ここにない店舗は後ろに名前順、店舗なしは最後
 const STORE_ORDER = ["本社", "駅西", "小立野", "神宮寺", "新神田", "泉野", "松任", "額", "富樫", "婦中", "立山", "稲荷公園", "訪問", "トレーディング"];
 function stIdx(s) { const n = String(s || "").trim(), i = STORE_ORDER.indexOf(n.replace(/店$/, "")); return i >= 0 ? i : !n || /店舗なし/.test(n) ? 999 : 500; }
